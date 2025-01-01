@@ -129,7 +129,7 @@ export const TxUI: FC<UIProps> = ({
 
   const otherFields = Object.keys(txFields).filter(k => !richFields.includes(k)) as [keyof TxFields]
   const amountOptions = [
-    { label: 'XAH', value: 'xrp' },
+    { label: 'XAH', value: 'xah' },
     { label: 'Token', value: 'token' }
   ] as const
 
@@ -296,7 +296,7 @@ export const TxUI: FC<UIProps> = ({
                       value={isXrpAmount ? amountOptions['0'] : amountOptions['1']}
                       onChange={(e: any) => {
                         const opt = e as typeof amountOptions[number]
-                        if (opt.value === 'xrp') {
+                        if (opt.value === 'xah') {
                           setRawField(field, 'amount.xrp', '0')
                         } else {
                           setRawField(field, 'amount.token', defaultTokenAmount)
