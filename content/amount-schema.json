@@ -1,7 +1,7 @@
 {
   "uri": "file:///amount-schema.json",
   "title": "Amount",
-  "description": "Specify xrp in drops and tokens as objects.",
+  "description": "Specify xah in drops and tokens as objects.",
   "schema": {
     "anyOf": [
       {
@@ -13,7 +13,7 @@
         "type": "object",
         "properties": {
           "currency": {
-            "description": "Arbitrary currency code for the token. Cannot be XRP."
+            "description": "Arbitrary currency code for the token. Cannot be XAH."
           },
           "value": {
             "type": ["string", "number"],
@@ -28,7 +28,7 @@
     ],
     "defaultSnippets": [
       {
-        "label": "Xrp",
+        "label": "Xah",
         "body": "1000000"
       },
       {
