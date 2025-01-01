@@ -58,22 +58,22 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <meta name="format-detection" content="telephone=no" />
         <meta property="og:url" content={`${origin}${router.asPath}`} />
 
-        <title>XRPL Hooks Builder</title>
-        <meta property="og:title" content="XRPL Hooks Builder" />
-        <meta name="twitter:title" content="XRPL Hooks Builder" />
+        <title>Xahau Hooks Builder</title>
+        <meta property="og:title" content="Xahau Hooks Builder" />
+        <meta name="twitter:title" content="Xahau Hooks Builder" />
         <meta name="twitter:card" content="summary_large_image" />
         <meta name="twitter:site" content="@XRPLF" />
         <meta
           name="description"
-          content="Hooks Builder, add smart contract functionality to the XRP Ledger."
+          content="Hooks Builder, add smart contract functionality to the Xahau Network."
         />
         <meta
           property="og:description"
-          content="Hooks Builder, add smart contract functionality to the XRP Ledger."
+          content="Hooks Builder, add smart contract functionality to the Xahau Network."
         />
         <meta
           name="twitter:description"
-          content="Hooks Builder, add smart contract functionality to the XRP Ledger."
+          content="Hooks Builder, add smart contract functionality to the Xahau Network."
         />
         <meta property="og:image" content={`${origin}${shareImg}`} />
         <meta property="og:image:width" content="1200" />

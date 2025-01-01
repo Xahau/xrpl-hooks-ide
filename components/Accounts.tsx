@@ -200,7 +200,7 @@ export const AccountDialog = ({
                     .toUnit()
                     .toLocaleString(undefined, {
                       style: 'currency',
-                      currency: 'XRP',
+                      currency: 'XAH',
                       currencyDisplay: 'name'
                     })}
                   <Button
@@ -459,7 +459,7 @@ const Accounts: FC<AccountProps> = props => {
                         .toUnit()
                         .toLocaleString(undefined, {
                           style: 'currency',
-                          currency: 'XRP',
+                          currency: 'XAH',
                           currencyDisplay: 'name'
                         })})`
                     ) : (
