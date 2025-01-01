@@ -1,8 +1,8 @@
-# XRPL Hooks Builder
+# Xahau Hooks Builder
 
-https://hooks-builder.xrpl.org/
+https://builder.xahau.network/
 
-This is the repository for XRPL Hooks Builder. This project is built with Next.JS
+This is the repository for Xahau Hooks Builder. This project is built with Next.JS
 
 ## General
 
