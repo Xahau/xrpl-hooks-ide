@@ -210,9 +210,9 @@ const Navigation = () => {
                             as="a"
                             rel="noreferrer noopener"
                             target="_blank"
-                            href="https://github.com/XRPL-Labs/xrpld-hooks"
+                            href="https://github.com/Xahau"
                           >
-                            <ArrowUpRight size="15px" /> Hooks Github
+                            <ArrowUpRight size="15px" /> Xahau Github
                           </Text>
 
                           <Text
@@ -231,7 +231,7 @@ const Navigation = () => {
                             as="a"
                             rel="noreferrer noopener"
                             target="_blank"
-                            href="https://xrpl-hooks.readme.io/docs"
+                            href="https://docs.xahau.network/readme-1"
                           >
                             <ArrowUpRight size="15px" /> Hooks documentation
                           </Text>
