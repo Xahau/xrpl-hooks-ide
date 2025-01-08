@@ -93,6 +93,7 @@ export const prepareDeployHookTx = async (
           HookNamespace,
           HookApiVersion: 0,
           Flags: 1,
+          Fee: data.JSHookFee,
           // ...(filteredHookGrants.length > 0 && { HookGrants: filteredHookGrants }),
           ...(filteredHookParameters.length > 0 && {
             HookParameters: filteredHookParameters
@@ -241,9 +242,8 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
       })
       state.deployLogs.push({
         type: 'error',
-        message: `[${submitRes.engine_result || submitRes.error}] ${
-          submitRes.engine_result_message || submitRes.error_exception
-        }`
+        message: `[${submitRes.engine_result || submitRes.error}] ${submitRes.engine_result_message || submitRes.error_exception
+          }`
       })
     }
   } catch (err) {

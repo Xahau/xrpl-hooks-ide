@@ -5,6 +5,8 @@ import state from '../index'
 import { saveFile } from './saveFile'
 import { decodeBinary } from '../../utils/decodeBinary'
 import { ref } from 'valtio'
+import * as esbuild from "esbuild-wasm";
+import * as Path from 'path'
 
 /* compileCode sends the code of the active file to compile endpoint
  * If all goes well you will get base64 encoded wasm file back with
@@ -15,14 +17,9 @@ import { ref } from 'valtio'
 export const compileCode = async (activeId: number) => {
   // Save the file to global state
   saveFile(false, activeId)
-  const file = state.files[activeId]
-  if (file.name.endsWith('.wat')) {
-    return compileWat(activeId)
-  }
 
-  if (!process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT) {
-    throw Error('Missing env!')
-  }
+  const file = state.files[activeId]
+
   // Bail out if we're already compiling
   if (state.compiling) {
     // if compiling is ongoing return // TODO Inform user about it.
@@ -31,11 +28,71 @@ export const compileCode = async (activeId: number) => {
   // Set loading state to true
   state.compiling = true
   state.logs = []
+
+  if (file.name.endsWith('.wat')) {
+    return compileWat(activeId)
+  }
+
+  if (file.name.endsWith('.js') || file.name.endsWith('.ts')) {
+    return compileJs(activeId)
+  }
+
+  return compileC(activeId)
+}
+
+export const compileWat = async (activeId: number) => {
+  const file = state.files[activeId]
+  try {
+    const wabt = await (await import('wabt')).default()
+    const module = wabt.parseWat(file.name, file.content);
+    module.resolveNames();
+    module.validate();
+    const { buffer } = module.toBinary({
+      log: false,
+      write_debug_names: true,
+    });
+
+    file.compiledContent = ref(buffer)
+    file.lastCompiled = new Date()
+    file.compiledValueSnapshot = file.content
+    file.compiledWatContent = file.content
+    file.compiledExtension = 'wasm'
+
+    toast.success('Compiled successfully!', { position: 'bottom-center' })
+    state.logs.push({
+      type: 'success',
+      message: `File ${state.files?.[activeId]?.name} compiled successfully. Ready to deploy.`,
+      link: Router.asPath.replace('develop', 'deploy'),
+      linkText: 'Go to deploy'
+    })
+  } catch (err) {
+    console.log(err)
+    let message = "Error compiling WAT file!"
+    if (err instanceof Error) {
+      message = err.message
+    }
+    state.logs.push({
+      type: 'error',
+      message
+    })
+    toast.error(`Error occurred while compiling!`, { position: 'bottom-center' })
+    file.containsErrors = true
+  }
+  state.compiling = false
+}
+
+export const compileC = async (activeId: number) => {
+  const file = state.files[activeId]
+
+  if (!process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT) {
+    throw Error('Missing env!')
+  }
+
   try {
     file.containsErrors = false
     let res: Response
     try {
-      res = await fetch(process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT, {
+      res = await fetch(process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT!, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -88,6 +145,7 @@ export const compileCode = async (activeId: number) => {
       file.lastCompiled = new Date()
       file.compiledValueSnapshot = file.content
       file.compiledWatContent = wast
+      file.compiledExtension = 'wasm'
     } catch (error) {
       throw Error('Invalid compilation result produced, check your code for errors and try again!')
     }
@@ -127,25 +185,131 @@ export const compileCode = async (activeId: number) => {
   }
 }
 
-export const compileWat = async (activeId: number) => {
-  if (state.compiling) return;
-  const file = state.files[activeId]
-  state.compiling = true
-  state.logs = []
-  try {
-    const wabt = await (await import('wabt')).default()
-    const module = wabt.parseWat(file.name, file.content);
-    module.resolveNames();
-    module.validate();
-    const { buffer } = module.toBinary({
-      log: false,
-      write_debug_names: true,
-    });
+function customResolver(tree: Record<string, string>): esbuild.Plugin {
+  const map = new Map(Object.entries(tree))
+  return {
+    name: 'example',
+    setup: (build: esbuild.PluginBuild) => {
+      build.onResolve({ filter: /.*/, }, (args: esbuild.OnResolveArgs) => {
+        if (args.kind === 'entry-point') {
+          return { path: '/' + args.path }
+        }
+        if (args.kind === 'import-statement') {
+          const dirname = Path.dirname(args.importer)
+          const path = Path.join(dirname, args.path)
+          return { path }
+        }
+        throw Error('not resolvable')
+      })
 
-    file.compiledContent = ref(buffer)
+      build.onLoad({ filter: /.*/ }, (args: esbuild.OnLoadArgs) => {
+        const path = args.path.replace(/^\//, '')
+        console.log('path', path, args)
+        if (!map.has(path)) {
+          console.log(map)
+          console.log(path)
+          throw Error('not loadable')
+        }
+        const ext = Path.extname(path)
+        const contents = map.get(path)!
+        const loader = (ext === '.ts') ? 'ts' :
+          (ext === '.js') ? 'js' :
+            'default'
+        return { contents, loader }
+      })
+    }
+  }
+}
+
+function clean(content: string): string {
+  const importPattern = /^\s*import\s+.*?;\s*$/gm;
+  const exportPattern = /^\s*export\s*\{[^}]*\};?\s*$/gm;
+  const commentPattern = /^\s*\/\/.*$/gm;
+  let cleanedCode = content.replace(importPattern, "");
+  cleanedCode = cleanedCode.replace(exportPattern, "");
+  cleanedCode = cleanedCode.replace(commentPattern, "");
+  cleanedCode = cleanedCode.trim();
+  return cleanedCode;
+}
+
+export const compileJs = async (activeId: number) => {
+  const file = state.files[activeId]
+
+  if (!process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT) {
+    throw Error('Missing env!')
+  }
+
+  const tree = state.files.reduce((prev, file) => {
+    prev[file.name] = file.content
+    return prev
+  }, {} as Record<string, string>)
+
+  if (!(window as any).isEsbuildRunning) {
+    (window as any).isEsbuildRunning = true
+    await esbuild.initialize({
+      wasmURL: 'https://unpkg.com/esbuild-wasm/esbuild.wasm',
+    })
+  }
+  const result = await esbuild.build({
+    entryPoints: [file.name],
+    bundle: true,
+    format: "esm",
+    write: false,
+    plugins: [customResolver(tree)]
+  })
+
+  let compiledContent = clean(result.outputFiles?.[0].text)
+  file.language = 'javascript'
+
+  try {
+    const res = await fetch(process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT!, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        output: 'bc',
+        compress: true,
+        strip: true,
+        files: [
+          {
+            type: file.language,
+            options: '-O3',
+            name: file.name,
+            src: compiledContent
+          }
+        ]
+      })
+    })
+
+    const json = await res.json()
+
+    state.compiling = false
+    if (!json.success) {
+      const errors = [json.message]
+      if (json.tasks && json.tasks.length > 0) {
+        json.tasks.forEach((task: any) => {
+          if (!task.success) {
+            errors.push(task?.console)
+          }
+        })
+      }
+      throw errors
+    }
+
+    if (!json.success) {
+      throw new Error(json.error || 'Failed to compile JavaScript')
+    }
+
+
+    const binary = await decodeBinary(json.output)
+    file.compiledContent = ref(binary)
     file.lastCompiled = new Date()
     file.compiledValueSnapshot = file.content
-    file.compiledWatContent = file.content
+    file.compiledWatContent = compiledContent
+    file.compiledExtension = 'js'
+
+    console.log(file)
 
     toast.success('Compiled successfully!', { position: 'bottom-center' })
     state.logs.push({
@@ -156,16 +320,28 @@ export const compileWat = async (activeId: number) => {
     })
   } catch (err) {
     console.log(err)
-    let message = "Error compiling WAT file!"
-    if (err instanceof Error) {
-      message = err.message
+
+    if (err instanceof Array && typeof err[0] === 'string') {
+      err.forEach(message => {
+        state.logs.push({
+          type: 'error',
+          message
+        })
+      })
+    } else if (err instanceof Error) {
+      state.logs.push({
+        type: 'error',
+        message: err.message
+      })
+    } else {
+      state.logs.push({
+        type: 'error',
+        message: 'Something went wrong, come back later!'
+      })
     }
-    state.logs.push({
-      type: 'error',
-      message
-    })
+
+    state.compiling = false
     toast.error(`Error occurred while compiling!`, { position: 'bottom-center' })
     file.containsErrors = true
   }
-  state.compiling = false
 }

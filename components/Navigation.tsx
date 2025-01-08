@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import Link from 'next/link'
 
 import { useSnapshot } from 'valtio'
@@ -27,8 +27,9 @@ import {
   DialogTrigger
 } from './Dialog'
 import PanelBox from './PanelBox'
-import { templateFileIds } from '../state/constants'
+import { templateCFileIds, templateJSFileIds } from '../state/constants'
 import { styled } from '../stitches.config'
+import { Tab, Tabs } from './Tabs'
 
 const ImageWrapper = styled(Flex, {
   position: 'relative',
@@ -48,6 +49,7 @@ const ImageWrapper = styled(Flex, {
 const Navigation = () => {
   const router = useRouter()
   const snap = useSnapshot(state)
+  const [language, setLanguage] = useState<'C' | 'JavaScript'>('C')
   const slug = router.query?.slug
   const gistId = Array.isArray(slug) ? slug[0] : null
 
@@ -261,34 +263,62 @@ const Navigation = () => {
 
                     <Flex
                       css={{
-                        display: 'grid',
-                        gridTemplateColumns: '1fr',
-                        gridTemplateRows: 'max-content',
                         flex: 1,
                         p: '$7',
                         pb: '$16',
                         gap: '$3',
-                        alignItems: 'normal',
+                        alignItems: 'center',
+                        justifyContent: 'center',
                         flexWrap: 'wrap',
                         backgroundColor: '$mauve1',
-                        '@md': {
-                          gridTemplateColumns: '1fr 1fr',
-                          gridTemplateRows: 'max-content'
-                        },
-                        '@lg': {
-                          gridTemplateColumns: '1fr 1fr 1fr',
-                          gridTemplateRows: 'max-content'
-                        }
+                        flexDirection: 'column',
+                        width: '100%'
                       }}
                     >
-                      {Object.values(templateFileIds).map(template => (
-                        <PanelBox key={template.id} as="a" href={`/develop/${template.id}`}>
-                          <ImageWrapper>{template.icon()}</ImageWrapper>
-                          <Heading>{template.name}</Heading>
+                      <Box css={{ alignSelf: 'center' }}>
+                        <Tabs css={{ marginLeft: '$4' }} onChangeActive={(_, header) => setLanguage(header as 'C' | 'JavaScript')}>
+                          <Tab header="C" />
+                          <Tab header="JavaScript" />
+                        </Tabs>
+                      </Box>
+                      <Flex
+                        css={{
+                          display: 'grid',
+                          gridTemplateColumns: '1fr',
+                          gridTemplateRows: 'max-content',
+                          flex: 1,
+                          p: '$7',
+                          pb: '$16',
+                          gap: '$3',
+                          alignItems: 'normal',
+                          flexWrap: 'wrap',
+                          backgroundColor: '$mauve1',
+                          '@md': {
+                            gridTemplateColumns: '1fr 1fr',
+                            gridTemplateRows: 'max-content'
+                          },
+                          '@lg': {
+                            gridTemplateColumns: '1fr 1fr 1fr',
+                            gridTemplateRows: 'max-content'
+                          }
+                        }}
+                      >
+                        {language === 'C' ? Object.values(templateCFileIds).map(template => (
+                          <PanelBox key={template.id} as="a" href={`/develop/${template.id}`}>
+                            <ImageWrapper>{template.icon()}</ImageWrapper>
+                            <Heading>{template.name}</Heading>
 
-                          <Text>{template.description}</Text>
-                        </PanelBox>
-                      ))}
+                            <Text>{template.description}</Text>
+                          </PanelBox>
+                        )) : Object.values(templateJSFileIds).map(template => (
+                          <PanelBox key={template.id} as="a" href={`/develop/${template.id}`}>
+                            <ImageWrapper>{template.icon()}</ImageWrapper>
+                            <Heading>{template.name}</Heading>
+
+                            <Text>{template.description}</Text>
+                          </PanelBox>
+                        ))}
+                      </Flex>
                     </Flex>
                   </Flex>
                   <DialogClose asChild>

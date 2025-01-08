@@ -4,7 +4,7 @@ import Notary from '../../components/icons/Notary'
 import Peggy from '../../components/icons/Peggy'
 import Starter from '../../components/icons/Starter'
 
-export const templateFileIds = {
+export const templateCFileIds = {
   starter: {
     id: '1f8109c80f504e6326db2735df2f0ad6', // Forked
     name: 'Starter',
@@ -36,6 +36,16 @@ export const templateFileIds = {
     description: 'An oracle based stable coin hook',
     icon: Peggy
   }
+}
+
+export const templateJSFileIds = {
+  starter: {
+    id: 'e64b8286f04b3ab84cab63ec3abd8771',
+    name: 'Starter',
+    description:
+      'Just a basic starter with essential imports, just accepts any transaction coming through',
+    icon: Starter
+  },
 }
 
 export const apiHeaderFiles = ['hookapi.h', 'sfcodes.h', 'macro.h', 'extern.h', 'error.h']

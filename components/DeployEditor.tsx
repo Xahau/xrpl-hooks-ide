@@ -31,7 +31,8 @@ const DeployEditor = () => {
   const renderNav = () => (
     <Tabs activeIndex={snap.activeWat} onChangeActive={idx => (state.activeWat = idx)}>
       {compiledFiles.map((file, index) => {
-        return <Tab key={file.name} header={`${file.name}.wat`} />
+        const compiledViewableExtension = file.compiledExtension === 'wasm' ? 'wat' : 'js'
+        return <Tab key={file.name} header={`${file.name.split('.')[0]}.${compiledViewableExtension}`} />
       })}
     </Tabs>
   )
@@ -41,10 +42,14 @@ const DeployEditor = () => {
     compiledSize > FILESIZE_BREAKPOINTS[1]
       ? '$error'
       : compiledSize > FILESIZE_BREAKPOINTS[0]
-      ? '$warning'
-      : '$success'
+        ? '$warning'
+        : '$success'
 
   const isContentChanged = activeFile && activeFile.compiledValueSnapshot !== activeFile.content
+  if (isContentChanged) {
+    console.log('compiledValueSnapshot', activeFile.compiledValueSnapshot)
+    console.log('content', activeFile.content)
+  }
   // const hasDeployErrors = activeFile && activeFile.containsErrors;
 
   const CompiledStatView = activeFile && (
@@ -58,7 +63,7 @@ const DeployEditor = () => {
       }}
     >
       <Flex row align="center">
-        <Text css={{ mr: '$1' }}>Compiled {activeFile.name.split('.')[0] + '.wasm'}</Text>
+        <Text css={{ mr: '$1' }}>Compiled {activeFile.name.split('.')[0] + '.' + activeFile.compiledExtension}</Text>
         {activeFile?.lastCompiled && <ReactTimeAgo date={activeFile.lastCompiled} locale="en-US" />}
 
         {activeFile.compiledContent?.byteLength && (
@@ -73,7 +78,7 @@ const DeployEditor = () => {
         </Flex>
       )}
       <Button variant="link" onClick={() => setShowContent(true)}>
-        View as WAT-file
+        {activeFile.compiledExtension === 'wasm' ? 'View as WAT-file' : 'View as JS-file'}
       </Button>
       {isContentChanged && (
         <Text warning>
@@ -128,14 +133,14 @@ const DeployEditor = () => {
         ) : (
           <Monaco
             className="hooks-editor"
-            defaultLanguage={'wat'}
-            language={'wat'}
-            path={`file://tmp/c/${activeFile?.name}.wat`}
+            defaultLanguage={activeFile?.compiledExtension === 'wasm' ? 'wat' : 'javascript'}
+            language={activeFile?.compiledExtension === 'wasm' ? 'wat' : 'javascript'}
+            path={`file://tmp/c/${activeFile?.name}.${activeFile?.language}`}
             value={activeFile?.compiledWatContent || ''}
             beforeMount={monaco => {
-              monaco.languages.register({ id: 'wat' })
-              monaco.languages.setLanguageConfiguration('wat', wat.config)
-              monaco.languages.setMonarchTokensProvider('wat', wat.tokens)
+              monaco.languages.register({ id: activeFile.language })
+              monaco.languages.setLanguageConfiguration(activeFile.language, wat.config)
+              monaco.languages.setMonarchTokensProvider(activeFile.language, wat.tokens)
             }}
             onMount={editor => {
               editor.updateOptions({

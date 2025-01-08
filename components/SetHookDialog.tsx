@@ -276,8 +276,41 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                     </Button>
                   </Stack>
                 </Box>
+                {activeFile?.language === 'javascript' &&
+                  <Box css={{ width: '100%', position: 'relative' }}>
+                    <Label>Hook Fee</Label>
+                    <Box css={{ display: 'flex', alignItems: 'center' }}>
+                      <Input
+                        type="number"
+                        {...register('JSHookFee', { required: true })}
+                        autoComplete={'off'}
+                        onKeyPress={e => {
+                          if (e.key === '.' || e.key === ',') {
+                            e.preventDefault()
+                          }
+                        }}
+                        step="1"
+                        defaultValue={10000}
+                        css={{
+                          '-moz-appearance': 'textfield',
+                          '&::-webkit-outer-spin-button': {
+                            '-webkit-appearance': 'none',
+                            margin: 0
+                          },
+                          '&::-webkit-inner-spin-button ': {
+                            '-webkit-appearance': 'none',
+                            margin: 0
+                          }
+                        }}
+                      />
+                    </Box>
+                    {errors.JSHookFee?.type === 'required' && (
+                      <Box css={{ display: 'inline', color: '$red11' }}>Hook Fee is required</Box>
+                    )}
+                  </Box>
+                }
                 <Box css={{ width: '100%', position: 'relative' }}>
-                  <Label>Fee</Label>
+                  <Label>SetHook Fee</Label>
                   <Box css={{ display: 'flex', alignItems: 'center' }}>
                     <Input
                       type="number"
@@ -329,7 +362,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                               setValue('Fee', Math.round(Number(res.base_fee || '')).toString())
                             }
                           }
-                        } catch (err) {}
+                        } catch (err) { }
 
                         setEstimateLoading(false)
                       }}
@@ -338,7 +371,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                     </Button>
                   </Box>
                   {errors.Fee?.type === 'required' && (
-                    <Box css={{ display: 'inline', color: '$red11' }}>Fee is required</Box>
+                    <Box css={{ display: 'inline', color: '$red11' }}>SetHook Fee is required</Box>
                   )}
                 </Box>
                 {/* <Box css={{ width: "100%" }}>

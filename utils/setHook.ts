@@ -11,6 +11,7 @@ export type SetHookData = {
     value: keyof TTS
     label: string
   }[]
+  JSHookFee?: string
   Fee: string
   HookNamespace: string
   HookParameters: {

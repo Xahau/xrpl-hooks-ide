@@ -150,7 +150,7 @@ const Home: NextPage = () => {
 
   const activeFile = snap.files[snap.active] as IFile | undefined
   const activeFileExt = getFileExtention(activeFile?.name)
-  const canCompile = activeFileExt === 'c' || activeFileExt === 'wat'
+  const canCompile = ['c', 'wat', 'js', 'ts'].includes(activeFileExt || '')
   return (
     <Split
       direction="vertical"
@@ -187,13 +187,15 @@ const Home: NextPage = () => {
                 onClick={() => compileCode(snap.active)}
               >
                 <Play weight="bold" size="16px" />
-                Compile to Wasm
+                {activeFileExt === 'js' || activeFileExt === 'ts' ? 'Compile' : 'Compile to Wasm'}
               </Button>
-              <Popover content={<CompilerSettings />}>
-                <Button variant="primary" css={{ px: '10px' }}>
-                  <Gear size="16px" />
-                </Button>
-              </Popover>
+              {activeFileExt === 'js' || activeFileExt === 'ts' && (
+                <Popover content={<CompilerSettings />}>
+                  <Button variant="primary" css={{ px: '10px' }}>
+                    <Gear size="16px" />
+                  </Button>
+                </Popover>
+              )}
             </Flex>
           </Hotkeys>
         )}

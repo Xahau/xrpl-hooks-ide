@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/core'
 import state, { IFile } from '../index'
-import { templateFileIds } from '../constants'
+import { templateCFileIds } from '../constants'
 
 const octokit = new Octokit()
 
@@ -18,12 +18,12 @@ export const fetchFiles = async (gistId: string) => {
   try {
     const res = await octokit.request('GET /gists/{gist_id}', { gist_id: gistId })
 
-    const isTemplate = (id: string) =>
-      Object.values(templateFileIds)
+    const isCTemplate = (id: string) =>
+      Object.values(templateCFileIds)
         .map(v => v.id)
         .includes(id)
 
-    if (isTemplate(gistId)) {
+    if (isCTemplate(gistId)) {
       // fetch headers
       const headerRes = await fetch(
         `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
@@ -43,6 +43,8 @@ export const fetchFiles = async (gistId: string) => {
       }
       res.data.files = files
     }
+
+    // TODO: fetch JS template headers(eg. global.d.ts)
 
     if (!res.data.files) throw Error('No files could be fetched from given gist id!')
 

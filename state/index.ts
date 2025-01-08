@@ -13,6 +13,7 @@ export interface IFile {
   name: string
   language: string
   content: string
+  compiledExtension?: 'wasm' | 'js'
   compiledValueSnapshot?: string
   compiledContent?: ArrayBuffer | null
   compiledWatContent?: string | null
