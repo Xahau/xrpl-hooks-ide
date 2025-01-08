@@ -91,7 +91,7 @@ export const prepareDeployHookTx = async (
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
           HookOn: calculateHookOn(hookOnValues),
           HookNamespace,
-          HookApiVersion: 0,
+          HookApiVersion: activeFile.language === 'javascript' ? 1 : 0,
           Flags: 1,
           Fee: data.JSHookFee,
           // ...(filteredHookGrants.length > 0 && { HookGrants: filteredHookGrants }),

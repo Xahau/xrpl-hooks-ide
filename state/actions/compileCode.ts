@@ -92,7 +92,7 @@ export const compileC = async (activeId: number) => {
     file.containsErrors = false
     let res: Response
     try {
-      res = await fetch(process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT!, {
+      res = await fetch(process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json'
@@ -262,7 +262,7 @@ export const compileJs = async (activeId: number) => {
   file.language = 'javascript'
 
   try {
-    const res = await fetch(process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT!, {
+    const res = await fetch(process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
@@ -273,7 +273,7 @@ export const compileJs = async (activeId: number) => {
         strip: true,
         files: [
           {
-            type: file.language,
+            type: 'js',
             options: '-O3',
             name: file.name,
             src: compiledContent
@@ -301,8 +301,7 @@ export const compileJs = async (activeId: number) => {
       throw new Error(json.error || 'Failed to compile JavaScript')
     }
 
-
-    const binary = await decodeBinary(json.output)
+    const binary = Buffer.from(Buffer.from(await decodeBinary(json.output)).toString(), 'hex')
     file.compiledContent = ref(binary)
     file.lastCompiled = new Date()
     file.compiledValueSnapshot = file.content

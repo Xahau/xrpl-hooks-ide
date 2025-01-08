@@ -46,10 +46,6 @@ const DeployEditor = () => {
         : '$success'
 
   const isContentChanged = activeFile && activeFile.compiledValueSnapshot !== activeFile.content
-  if (isContentChanged) {
-    console.log('compiledValueSnapshot', activeFile.compiledValueSnapshot)
-    console.log('content', activeFile.content)
-  }
   // const hasDeployErrors = activeFile && activeFile.containsErrors;
 
   const CompiledStatView = activeFile && (
