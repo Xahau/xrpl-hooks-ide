@@ -221,10 +221,31 @@ function customResolver(tree: Record<string, string>): esbuild.Plugin {
   }
 }
 
+function validateExportContent(content: string): void {
+  const words = content
+    .split(",")
+    .map((word) => word.trim())
+    .filter((word) => word.length > 0);
+  if (!words.includes("Hook")) {
+    throw Error("Invalid export: Hook is required");
+  }
+  if (!words.every((word) => word === "Hook" || word === "Callback")) {
+    throw Error("Invalid export: Only Hook and Callback are allowed");
+  }
+}
+
+
 function clean(content: string): string {
   const importPattern = /^\s*import\s+.*?;\s*$/gm;
-  const exportPattern = /^\s*export\s*\{[^}]*\};?\s*$/gm;
+  const exportPattern = /^\s*export\s*\{([^}]*)\};?\s*$/gm;
   const commentPattern = /^\s*\/\/.*$/gm;
+
+  const match = exportPattern.exec(content);
+  if (!match) {
+    throw Error("Invalid export: No export found");
+  }
+  const exportContent = match[1];
+  validateExportContent(exportContent);
   let cleanedCode = content.replace(importPattern, "");
   cleanedCode = cleanedCode.replace(exportPattern, "");
   cleanedCode = cleanedCode.replace(commentPattern, "");
@@ -250,18 +271,18 @@ export const compileJs = async (activeId: number) => {
       wasmURL: 'https://unpkg.com/esbuild-wasm/esbuild.wasm',
     })
   }
-  const result = await esbuild.build({
-    entryPoints: [file.name],
-    bundle: true,
-    format: "esm",
-    write: false,
-    plugins: [customResolver(tree)]
-  })
-
-  let compiledContent = clean(result.outputFiles?.[0].text)
-  file.language = 'javascript'
 
   try {
+    const result = await esbuild.build({
+      entryPoints: [file.name],
+      bundle: true,
+      format: "esm",
+      write: false,
+      plugins: [customResolver(tree)]
+    })
+
+    let compiledContent = clean(result.outputFiles?.[0].text)
+    file.language = 'javascript'
     const res = await fetch(process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT, {
       method: 'POST',
       headers: {
