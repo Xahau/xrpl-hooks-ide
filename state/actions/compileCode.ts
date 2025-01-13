@@ -196,18 +196,26 @@ function customResolver(tree: Record<string, string>): esbuild.Plugin {
         }
         if (args.kind === 'import-statement') {
           const dirname = Path.dirname(args.importer)
-          const path = Path.join(dirname, args.path)
-          return { path }
+          const basePath = Path.join(dirname, args.path)
+          // If extension is specified, try that path directly
+          if (Path.extname(args.path)) {
+            return { path: basePath }
+          }
+          // If no extension specified, try .ts and .js in order
+          const extensions = ['.ts', '.js']
+          for (const ext of extensions) {
+            const pathWithExt = basePath + ext
+            if (map.has(pathWithExt.replace(/^\//, ''))) {
+              return { path: pathWithExt }
+            }
+          }
         }
         throw Error('not resolvable')
       })
 
       build.onLoad({ filter: /.*/ }, (args: esbuild.OnLoadArgs) => {
         const path = args.path.replace(/^\//, '')
-        console.log('path', path, args)
         if (!map.has(path)) {
-          console.log(map)
-          console.log(path)
           throw Error('not loadable')
         }
         const ext = Path.extname(path)
