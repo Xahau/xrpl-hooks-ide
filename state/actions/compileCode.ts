@@ -337,8 +337,6 @@ export const compileJs = async (activeId: number) => {
     file.compiledWatContent = compiledContent
     file.compiledExtension = 'js'
 
-    console.log(file)
-
     toast.success('Compiled successfully!', { position: 'bottom-center' })
     state.logs.push({
       type: 'success',

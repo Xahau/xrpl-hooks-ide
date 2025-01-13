@@ -1,8 +1,36 @@
 import { Octokit } from '@octokit/core'
 import state, { IFile } from '../index'
-import { templateCFileIds } from '../constants'
+import { jsHeaderGistId, templateCFileIds } from '../constants'
 
 const octokit = new Octokit()
+
+const fileNameToFile = (files: any, filename: string) => ({
+  name: files[filename]?.filename || 'untitled.c',
+  language: files[filename]?.language?.toLowerCase() || '',
+  content: files[filename]?.content || ''
+})
+
+const sortFiles = (a: IFile, b: IFile) => {
+  const aBasename = a.name.split('.')?.[0]
+  const aExt = a.name.split('.').pop() || ''
+  const bBasename = b.name.split('.')?.[0]
+  const bExt = b.name.split('.').pop() || ''
+
+  // default priority is undefined == 0
+  const extPriority: Record<string, number> = {
+    c: 3,
+    wat: 3,
+    md: 2,
+    h: -1
+  }
+
+  // Sort based on extention priorities
+  const comp = (extPriority[bExt] || 0) - (extPriority[aExt] || 0)
+  if (comp !== 0) return comp
+
+  // Otherwise fallback to alphabetical sorting
+  return aBasename.localeCompare(bBasename)
+}
 
 /**
  * Fetches files from Github Gists based on gistId and stores them in global state
@@ -17,11 +45,14 @@ export const fetchFiles = async (gistId: string) => {
   })
   try {
     const res = await octokit.request('GET /gists/{gist_id}', { gist_id: gistId })
+    if (!res.data.files) throw Error('No files could be fetched from given gist id!')
 
     const isCTemplate = (id: string) =>
       Object.values(templateCFileIds)
         .map(v => v.id)
         .includes(id)
+    
+    let files: IFile[] = []
 
     if (isCTemplate(gistId)) {
       // fetch headers
@@ -37,44 +68,28 @@ export const fetchFiles = async (gistId: string) => {
         const fname = `${key}.h`
         headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
       })
-      const files = {
+      const _files = {
         ...res.data.files,
         ...headerFiles
       }
-      res.data.files = files
+      files = Object.keys(_files)
+        .map((filename) => fileNameToFile(_files, filename))
+      files.sort(sortFiles)
+    } else {
+      // fetch JS headers(eg. global.d.ts)
+      const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: jsHeaderGistId })
+      if (!resHeader.data.files) throw Error('No header files could be fetched from given gist id!')
+
+      files = Object.keys(resHeader.data.files)
+        .map((filename) => fileNameToFile(resHeader.data.files, filename))
+      files.sort(sortFiles)
+      
+      // Put entry point files at the beginning
+      files = [
+        ...Object.keys(res.data.files).map((filename) => fileNameToFile(res.data.files, filename)),
+        ...files
+      ]
     }
-
-    // TODO: fetch JS template headers(eg. global.d.ts)
-
-    if (!res.data.files) throw Error('No files could be fetched from given gist id!')
-
-    const files: IFile[] = Object.keys(res.data.files).map(filename => ({
-      name: res.data.files?.[filename]?.filename || 'untitled.c',
-      language: res.data.files?.[filename]?.language?.toLowerCase() || '',
-      content: res.data.files?.[filename]?.content || ''
-    }))
-
-    files.sort((a, b) => {
-      const aBasename = a.name.split('.')?.[0]
-      const aExt = a.name.split('.').pop() || ''
-      const bBasename = b.name.split('.')?.[0]
-      const bExt = b.name.split('.').pop() || ''
-
-      // default priority is undefined == 0
-      const extPriority: Record<string, number> = {
-        c: 3,
-        wat: 3,
-        md: 2,
-        h: -1
-      }
-
-      // Sort based on extention priorities
-      const comp = (extPriority[bExt] || 0) - (extPriority[aExt] || 0)
-      if (comp !== 0) return comp
-
-      // Otherwise fallback to alphabetical sorting
-      return aBasename.localeCompare(bBasename)
-    })
 
     state.logs.push({
       type: 'success',

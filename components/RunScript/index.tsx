@@ -214,7 +214,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
               setIframeCode('')
             }}
           >
-            <Play weight="bold" size="16px" /> {name}
+            <Play weight="bold" size="16px" /> Run Script
           </Button>
         </DialogTrigger>
         <DialogContent>

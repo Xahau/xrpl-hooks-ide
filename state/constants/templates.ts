@@ -40,7 +40,7 @@ export const templateCFileIds = {
 
 export const templateJSFileIds = {
   starter: {
-    id: 'e64b8286f04b3ab84cab63ec3abd8771',
+    id: '894137a0ebd67568c877237140f4586f',
     name: 'Starter',
     description:
       'Just a basic starter with essential imports, just accepts any transaction coming through',
@@ -49,3 +49,5 @@ export const templateJSFileIds = {
 }
 
 export const apiHeaderFiles = ['hookapi.h', 'sfcodes.h', 'macro.h', 'extern.h', 'error.h']
+// error.ts, global.ts, keylets.ts, sfcodes.ts, tts.ts
+export const jsHeaderGistId = 'e64b8286f04b3ab84cab63ec3abd8771'
