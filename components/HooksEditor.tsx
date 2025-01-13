@@ -224,6 +224,13 @@ const HooksEditor = () => {
                   mimetypes: ['text/plain'],
                 })
 
+                monaco.languages.register({
+                  id: 'typescript',
+                  extensions: ['.ts', '.js'],
+                  mimetypes: ['text/plain'],
+                })
+
+                // Set global variables
                 snap.files.filter(file => file.content.includes('declare global'))
                   .forEach(file => {
                     monaco.languages.typescript.javascriptDefaults.addExtraLib(
