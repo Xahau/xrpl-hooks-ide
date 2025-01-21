@@ -46,10 +46,15 @@ const ImageWrapper = styled(Flex, {
   }
 })
 
+const cEnabled = !!process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT
+const jsEnabled = !!process.env.NEXT_PUBLIC_JS_COMPILE_API_ENDPOINT
+
+const defaultLanguage = cEnabled ? 'C' : 'JavaScript'
+
 const Navigation = () => {
   const router = useRouter()
   const snap = useSnapshot(state)
-  const [language, setLanguage] = useState<'C' | 'JavaScript'>('C')
+  const [language, setLanguage] = useState<'C' | 'JavaScript'>(defaultLanguage)
   const slug = router.query?.slug
   const gistId = Array.isArray(slug) ? slug[0] : null
 
@@ -275,12 +280,14 @@ const Navigation = () => {
                         width: '100%'
                       }}
                     >
-                      <Box css={{ alignSelf: 'center' }}>
-                        <Tabs css={{ marginLeft: '$4' }} onChangeActive={(_, header) => setLanguage(header as 'C' | 'JavaScript')}>
-                          <Tab header="C" />
-                          <Tab header="JavaScript" />
-                        </Tabs>
-                      </Box>
+                      {cEnabled && jsEnabled && (
+                        <Box css={{ alignSelf: 'center' }}>
+                          <Tabs css={{ marginLeft: '$4' }} onChangeActive={(_, header) => setLanguage(header as 'C' | 'JavaScript')}>
+                            <Tab header="C" />
+                            <Tab header="JavaScript" />
+                          </Tabs>
+                        </Box>
+                      )}
                       <Flex
                         css={{
                           display: 'grid',
