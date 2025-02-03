@@ -44,6 +44,7 @@ export const compileCode = async (activeId: number) => {
           output: 'wasm',
           compress: true,
           strip: state.compileOptions.strip,
+          optimize: false,
           files: [
             {
               type: 'c',
