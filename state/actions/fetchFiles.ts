@@ -1,6 +1,6 @@
 import { Octokit } from '@octokit/core'
 import state, { IFile } from '../index'
-import { jsHeaderGistId, templateCFileIds } from '../constants'
+import { templateCFileIds, templateJSFileIds } from '../constants'
 
 const octokit = new Octokit()
 
@@ -51,23 +51,35 @@ export const fetchFiles = async (gistId: string) => {
       Object.values(templateCFileIds)
         .map(v => v.id)
         .includes(id)
-    
+
+    const isJSTemplate = (id: string) =>
+      Object.values(templateJSFileIds)
+        .map(v => v.id)
+        .includes(id)
+
     let files: IFile[] = []
 
     if (isCTemplate(gistId)) {
-      // fetch headers
-      const headerRes = await fetch(
-        `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
-      )
-      if (!headerRes.ok) throw Error('Failed to fetch headers')
-
-      const headerJson = await headerRes.json()
-      const headerFiles: Record<string, { filename: string; content: string; language: string }> =
+      const template = Object.values(templateCFileIds).find(tmp => tmp.id === gistId)
+      let headerFiles: Record<string, { filename: string; content: string; language: string }> =
         {}
-      Object.entries(headerJson).forEach(([key, value]) => {
-        const fname = `${key}.h`
-        headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
-      })
+      if (template?.headerId) {
+        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
+        if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
+        headerFiles = resHeader.data.files as any
+      } else {
+        // fetch headers
+        const headerRes = await fetch(
+          `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
+        )
+        if (!headerRes.ok) throw Error('Failed to fetch headers')
+
+        const headerJson = await headerRes.json()
+        Object.entries(headerJson).forEach(([key, value]) => {
+          const fname = `${key}.h`
+          headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
+        })
+      }
       const _files = {
         ...res.data.files,
         ...headerFiles
@@ -75,20 +87,27 @@ export const fetchFiles = async (gistId: string) => {
       files = Object.keys(_files)
         .map((filename) => fileNameToFile(_files, filename))
       files.sort(sortFiles)
-    } else {
+    } else if (isJSTemplate(gistId)) {
       // fetch JS headers(eg. global.d.ts)
-      const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: jsHeaderGistId })
-      if (!resHeader.data.files) throw Error('No header files could be fetched from given gist id!')
+      const template = Object.values(templateJSFileIds).find(tmp => tmp.id === gistId)
+      if (template?.headerId) {
+        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
+        if (!resHeader.data.files) throw Error('No header files could be fetched from given gist id!')
+        files = Object.keys(resHeader.data.files)
+          .map((filename) => fileNameToFile(resHeader.data.files, filename))
+        files.sort(sortFiles)
+      }
 
-      files = Object.keys(resHeader.data.files)
-        .map((filename) => fileNameToFile(resHeader.data.files, filename))
-      files.sort(sortFiles)
-      
       // Put entry point files at the beginning
       files = [
         ...Object.keys(res.data.files).map((filename) => fileNameToFile(res.data.files, filename)),
         ...files
       ]
+    } else {
+      const _files = res.data.files
+      files = Object.keys(_files)
+        .map((filename) => fileNameToFile(_files, filename))
+      files.sort(sortFiles)
     }
 
     state.logs.push({
