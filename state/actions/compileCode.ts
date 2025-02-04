@@ -330,7 +330,7 @@ export const compileJs = async (activeId: number) => {
       throw new Error(json.error || 'Failed to compile JavaScript')
     }
 
-    const binary = Buffer.from(Buffer.from(await decodeBinary(json.output)).toString(), 'hex')
+    const binary = await decodeBinary(json.output)
     file.compiledContent = ref(binary)
     file.lastCompiled = new Date()
     file.compiledValueSnapshot = file.content
