@@ -24,19 +24,28 @@ export const fetchFiles = async (gistId: string) => {
         .includes(id)
 
     if (isTemplate(gistId)) {
-      // fetch headers
-      const headerRes = await fetch(
-        `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
-      )
-      if (!headerRes.ok) throw Error('Failed to fetch headers')
-
-      const headerJson = await headerRes.json()
-      const headerFiles: Record<string, { filename: string; content: string; language: string }> =
+      const template = Object.values(templateFileIds).find(tmp => tmp.id === gistId)
+      let headerFiles: Record<string, { filename: string; content: string; language: string }> =
         {}
-      Object.entries(headerJson).forEach(([key, value]) => {
-        const fname = `${key}.h`
-        headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
-      })
+      if (template?.headerId) {
+        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
+        if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
+        headerFiles = resHeader.data.files as any
+      } else {
+        // fetch headers
+        const headerRes = await fetch(
+          `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
+        )
+        if (!headerRes.ok) throw Error('Failed to fetch headers')
+
+        const headerJson = await headerRes.json()
+        const headerFiles: Record<string, { filename: string; content: string; language: string }> =
+          {}
+        Object.entries(headerJson).forEach(([key, value]) => {
+          const fname = `${key}.h`
+          headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
+        })
+      }
       const files = {
         ...res.data.files,
         ...headerFiles
