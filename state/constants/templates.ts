@@ -60,6 +60,13 @@ export const templateJSFileIds: Record<string, Template> = {
     headerId: 'e64b8286f04b3ab84cab63ec3abd8771',
     icon: Starter
   },
+  carbon: {
+    id: '9fa48d4fba17b2bbe2148eb9c3f15914',
+    name: 'Carbon',
+    description: 'Send a percentage of sum to an address',
+    headerId: 'e64b8286f04b3ab84cab63ec3abd8771',
+    icon: Carbon
+  }
 }
 
 export const apiHeaderFiles = ['hookapi.h', 'sfcodes.h', 'macro.h', 'extern.h', 'error.h']
