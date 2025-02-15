@@ -37,3 +37,6 @@ yarn-error.log*
 # yarn
 .yarnrc.yml
 .yarn/
+
+# esbuild
+public/esbuild.wasm

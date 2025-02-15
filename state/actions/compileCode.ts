@@ -276,7 +276,7 @@ export const compileJs = async (activeId: number) => {
   if (!(window as any).isEsbuildRunning) {
     (window as any).isEsbuildRunning = true
     await esbuild.initialize({
-      wasmURL: 'https://unpkg.com/esbuild-wasm/esbuild.wasm',
+      wasmURL: '/esbuild.wasm',
     })
   }
 
