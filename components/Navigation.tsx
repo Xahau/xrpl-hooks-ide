@@ -191,7 +191,7 @@ const Navigation = () => {
                             mb: '$7'
                           }}
                         >
-                          Hooks add smart contract functionality to the Xahau Network.
+                          Hooks empower the Xahau Network with transformative smart contract functionality—originally designed for the XRP Ledger. As the cornerstone of account-based programmability, Hooks are the key to bringing blockchain technology to 8 billion people worldwide.
                         </Text>
                         <Flex css={{ flexDirection: 'column', gap: '$2', mt: '$2' }}>
                           <Text
