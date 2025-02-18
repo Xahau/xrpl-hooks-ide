@@ -43,6 +43,7 @@ interface Props {
     regex: string | RegExp
     error: string
   }
+  css?: Record<string, any>
   onCreateNewTab?: (name: string) => any
   onRenameTab?: (index: number, nwName: string, oldName?: string) => any
   onCloseTab?: (index: number, header?: string) => any
@@ -65,7 +66,8 @@ export const Tabs = ({
   headerExtraValidation,
   extensionRequired,
   defaultExtension = '',
-  allowedExtensions
+  allowedExtensions,
+  css
 }: Props) => {
   const [active, setActive] = useState(activeIndex || 0)
   const tabs: TabProps[] = children.map(elem => elem.props)
@@ -205,7 +207,8 @@ export const Tabs = ({
             flexWrap: 'nowrap',
             marginBottom: '$2',
             width: '100%',
-            overflow: 'auto'
+            overflow: 'auto',
+            ...css
           }}
         >
           {tabs.map((tab, idx) => (
@@ -347,28 +350,28 @@ export const Tabs = ({
       )}
       {keepAllAlive
         ? tabs.map((tab, idx) => {
-            // TODO Maybe rule out fragments as children
-            if (!isValidElement(tab.children)) {
-              if (active !== idx) return null
-              return tab.children
-            }
-            let key = tab.children.key || tab.header || idx
-            let { children } = tab
-            let { style, ...props } = children.props
-            return (
-              <children.type
-                key={key}
-                {...props}
-                style={{
-                  ...style,
-                  display: active !== idx ? 'none' : undefined
-                }}
-              />
-            )
-          })
+          // TODO Maybe rule out fragments as children
+          if (!isValidElement(tab.children)) {
+            if (active !== idx) return null
+            return tab.children
+          }
+          let key = tab.children.key || tab.header || idx
+          let { children } = tab
+          let { style, ...props } = children.props
+          return (
+            <children.type
+              key={key}
+              {...props}
+              style={{
+                ...style,
+                display: active !== idx ? 'none' : undefined
+              }}
+            />
+          )
+        })
         : tabs[active] && (
-            <Fragment key={tabs[active].header || active}>{tabs[active].children}</Fragment>
-          )}
+          <Fragment key={tabs[active].header || active}>{tabs[active].children}</Fragment>
+        )}
     </>
   )
 }

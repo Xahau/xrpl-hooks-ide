@@ -1,3 +1,6 @@
+const CopyPlugin = require('copy-webpack-plugin');
+const path = require('path');
+
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
@@ -15,6 +18,18 @@ module.exports = {
       test: [/\.md$/, /hook-bundle\.js$/],
       use: 'raw-loader'
     })
+    if (!isServer) {
+      config.plugins.push(
+        new CopyPlugin({
+          patterns: [
+            {
+              from: path.resolve(__dirname, 'node_modules/esbuild-wasm/esbuild.wasm'),
+              to: path.resolve(__dirname, 'public/esbuild.wasm')
+            }
+          ]
+        })
+      );
+    }
     return config
   }
 }

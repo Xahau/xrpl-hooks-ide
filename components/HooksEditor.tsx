@@ -200,15 +200,15 @@ const HooksEditor = () => {
             defaultValue={file?.content}
             // onChange={val => (state.files[snap.active].content = val)} // Auto save?
             beforeMount={monaco => {
-              // if (!snap.editorCtx) {
-              //   snap.files.forEach(file =>
-              //     monaco.editor.createModel(
-              //       file.content,
-              //       file.language,
-              //       monaco.Uri.parse(`file:///work/c/${file.name}`)
-              //     )
-              //   )
-              // }
+              if (!snap.editorCtx) {
+                snap.files.forEach(file =>
+                  monaco.editor.createModel(
+                    file.content,
+                    file.language,
+                    monaco.Uri.parse(`file:///work/c/${file.name}`)
+                  )
+                )
+              }
 
               // create the web socket
               if (!subscriptionRef.current) {
@@ -223,6 +223,21 @@ const HooksEditor = () => {
                   extensions: ['.txt'],
                   mimetypes: ['text/plain'],
                 })
+
+                monaco.languages.register({
+                  id: 'typescript',
+                  extensions: ['.ts', '.js'],
+                  mimetypes: ['text/plain'],
+                })
+
+                // Set global variables
+                snap.files.filter(file => file.content.includes('declare global'))
+                  .forEach(file => {
+                    monaco.languages.typescript.javascriptDefaults.addExtraLib(
+                      file.content
+                    )
+                  })
+
                 MonacoServices.install(monaco)
                 const webSocket = createWebSocket(
                   process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT || ''

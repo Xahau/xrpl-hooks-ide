@@ -150,7 +150,7 @@ const Home: NextPage = () => {
 
   const activeFile = snap.files[snap.active] as IFile | undefined
   const activeFileExt = getFileExtention(activeFile?.name)
-  const canCompile = activeFileExt === 'c' || activeFileExt === 'wat'
+  const canCompile = ['c', 'wat', 'js', 'ts'].includes(activeFileExt || '')
   return (
     <Split
       direction="vertical"
@@ -163,60 +163,50 @@ const Home: NextPage = () => {
     >
       <main style={{ display: 'flex', flex: 1, position: 'relative' }}>
         <HooksEditor />
-        {canCompile && (
-          <Hotkeys
-            keyName="command+b,ctrl+b"
-            onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
-          >
-            <Flex
-              css={{
-                position: 'absolute',
-                bottom: '$4',
-                left: '$4',
-                alignItems: 'center',
-                display: 'flex',
-                cursor: 'pointer',
-                gap: '$2'
-              }}
+        <Flex
+          css={{
+            position: 'absolute',
+            bottom: '$4',
+            left: '$4',
+            alignItems: 'center',
+            display: 'flex',
+            cursor: 'pointer',
+            gap: '$2'
+          }}
+        >
+          {canCompile && (
+            <Hotkeys
+              keyName="command+b,ctrl+b"
+              onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
             >
-              <Button
-                variant="primary"
-                uppercase
-                disabled={!snap.files.length}
-                isLoading={snap.compiling}
-                onClick={() => compileCode(snap.active)}
-              >
-                <Play weight="bold" size="16px" />
-                Compile to Wasm
-              </Button>
-              <Popover content={<CompilerSettings />}>
-                <Button variant="primary" css={{ px: '10px' }}>
-                  <Gear size="16px" />
+                <Button
+                  variant="primary"
+                  uppercase
+                  disabled={!snap.files.length}
+                  isLoading={snap.compiling}
+                  onClick={() => compileCode(snap.active)}
+                >
+                  <Play weight="bold" size="16px" />
+                  {activeFileExt === 'js' || activeFileExt === 'ts' ? 'Compile' : 'Compile to Wasm'}
                 </Button>
-              </Popover>
-            </Flex>
-          </Hotkeys>
-        )}
-        {activeFileExt === 'js' && (
-          <Hotkeys
-            keyName="command+b,ctrl+b"
-            onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
-          >
-            <Flex
-              css={{
-                position: 'absolute',
-                bottom: '$4',
-                left: '$4',
-                alignItems: 'center',
-                display: 'flex',
-                cursor: 'pointer',
-                gap: '$2'
-              }}
+                {activeFileExt === 'js' || activeFileExt === 'ts' && (
+                  <Popover content={<CompilerSettings />}>
+                    <Button variant="primary" css={{ px: '10px' }}>
+                      <Gear size="16px" />
+                    </Button>
+                  </Popover>
+                )}
+            </Hotkeys>
+          )}
+          {activeFileExt === 'js' && (
+            <Hotkeys
+              keyName="command+b,ctrl+b"
+              onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
             >
-              <RunScript file={activeFile as IFile} />
-            </Flex>
-          </Hotkeys>
-        )}
+                <RunScript file={activeFile as IFile} />
+            </Hotkeys>
+          )}
+        </Flex>
       </main>
       <Flex css={{ width: '100%' }}>
         <Flex
