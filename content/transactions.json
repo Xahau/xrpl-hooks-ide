@@ -106,7 +106,6 @@
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
     "Flags": "0",
-    "LastLedgerSequence": 7108629,
     "OfferSequence": 6,
     "Sequence": 7
   },
@@ -115,7 +114,6 @@
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
     "Flags": "0",
-    "LastLedgerSequence": 7108682,
     "Sequence": 8,
     "TakerGets": {
       "$type": "amount.xrp",
@@ -124,8 +122,8 @@
     "TakerPays": {
       "$type": "amount.token",
       "$value": {
-        "currency": "GKO",
-        "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
+        "currency": "USD",
+        "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
         "value": "2"
       }
     }
@@ -223,12 +221,11 @@
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
     "Flags": "262144",
-    "LastLedgerSequence": 8007750,
     "LimitAmount": {
       "$type": "amount.token",
       "$value": {
         "currency": "USD",
-        "issuer": "rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc",
+        "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
         "value": "100"
       }
     },
