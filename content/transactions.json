@@ -122,8 +122,8 @@
     "TakerPays": {
       "$type": "amount.token",
       "$value": {
-        "currency": "GKO",
-        "issuer": "ruazs5h1qEsqpke88pcqnaseXdm6od2xc",
+        "currency": "USD",
+        "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
         "value": "2"
       }
     }
@@ -225,7 +225,7 @@
       "$type": "amount.token",
       "$value": {
         "currency": "USD",
-        "issuer": "rsP3mgGb2tcYUrxiLFiHJiQXhsziegtwBc",
+        "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
         "value": "100"
       }
     },
