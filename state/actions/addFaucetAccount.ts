@@ -57,18 +57,6 @@ export const addFaucetAccount = async (name?: string, showToast: boolean = false
   }
 }
 
-  // fetch initial faucets
-  ; (async function fetchFaucets() {
-    if (typeof window !== 'undefined') {
-      if (state.accounts.length === 0) {
-        await addFaucetAccount()
-        // setTimeout(() => {
-        //   addFaucetAccount();
-        // }, 10000);
-      }
-    }
-  })()
-
 export const addFunds = async (address: string) => {
   const toastId = toast.loading('Requesting funds')
   const res = await fetch(`${window.location.origin}/api/faucet?account=${address}`, {

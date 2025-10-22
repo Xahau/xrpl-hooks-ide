@@ -37,7 +37,7 @@ export const TxUI: FC<UIProps> = ({
   switchToJson
 }) => {
   const { accounts } = useSnapshot(state)
-  const { selectedAccount, selectedTransaction, txFields, selectedFlags, hookParameters, memos } =
+  const { selectedAccount, selectedTransaction, txFields, selectedFlags, memos } =
     txState
 
   const accountOptions: SelectOption[] = accounts.map(acc => ({
@@ -191,27 +191,38 @@ export const TxUI: FC<UIProps> = ({
 
           let value: string | undefined
           if (typeIs(_value, 'object')) {
+            // @ts-expect-error -- todo
             if (_value.$type === 'json' && typeIs(_value.$value, ['object', 'array'])) {
+              // @ts-expect-error -- todo
               value = JSON.stringify(_value.$value, null, 2)
             } else {
+              // @ts-expect-error -- todo
               value = _value.$value?.toString()
             }
           } else {
             value = _value?.toString()
           }
 
+          // @ts-expect-error -- todo
           const isAccount = typeIs(_value, 'object') && _value.$type === 'account'
+          // @ts-expect-error -- todo
           const isXrpAmount = typeIs(_value, 'object') && _value.$type === 'amount.xrp'
+          // @ts-expect-error -- todo
           const isTokenAmount = typeIs(_value, 'object') && _value.$type === 'amount.token'
+          // @ts-expect-error -- todo
           const isJson = typeof _value === 'object' && _value.$type === 'json'
           const isFee = field === 'Fee'
           let rows = isJson ? (value?.match(/\n/gm)?.length || 0) + 1 : undefined
           if (rows && rows > 5) rows = 5
           let tokenAmount = defaultTokenAmount
+          // @ts-expect-error -- todo
           if (isTokenAmount && typeIs(_value, 'object') && typeIs(_value.$value, 'object')) {
             tokenAmount = {
+              // @ts-expect-error -- todo
               value: _value.$value.value,
+              // @ts-expect-error -- todo
               currency: _value.$value.currency,
+              // @ts-expect-error -- todo
               issuer: _value.$value.issuer
             }
           }
@@ -296,7 +307,7 @@ export const TxUI: FC<UIProps> = ({
                       value={isXrpAmount ? amountOptions['0'] : amountOptions['1']}
                       onChange={(e: any) => {
                         const opt = e as typeof amountOptions[number]
-                        if (opt.value === 'xah') {
+                        if (opt.value === 'xrp') {
                           setRawField(field, 'amount.xrp', '0')
                         } else {
                           setRawField(field, 'amount.token', defaultTokenAmount)
@@ -387,64 +398,6 @@ export const TxUI: FC<UIProps> = ({
             </TxField>
           )
         })}
-        <TxField multiLine label="Hook parameters">
-          <Flex column fluid>
-            {Object.entries(hookParameters).map(([id, { label, value }]) => (
-              <Flex column key={id} css={{ mb: '$2' }}>
-                <Flex row>
-                  <Input
-                    placeholder="Parameter name"
-                    value={label}
-                    onChange={e => {
-                      setState({
-                        hookParameters: {
-                          ...hookParameters,
-                          [id]: { label: e.target.value, value }
-                        }
-                      })
-                    }}
-                  />
-                  <Input
-                    css={{ mx: '$2' }}
-                    placeholder="Value (hex-quoted)"
-                    value={value}
-                    onChange={e => {
-                      setState({
-                        hookParameters: {
-                          ...hookParameters,
-                          [id]: { label, value: e.target.value }
-                        }
-                      })
-                    }}
-                  />
-                  <Button
-                    onClick={() => {
-                      const { [id]: _, ...rest } = hookParameters
-                      setState({ hookParameters: rest })
-                    }}
-                    variant="destroy"
-                  >
-                    <Trash weight="regular" size="16px" />
-                  </Button>
-                </Flex>
-              </Flex>
-            ))}
-            <Button
-              outline
-              fullWidth
-              type="button"
-              onClick={() => {
-                const id = Object.keys(hookParameters).length
-                setState({
-                  hookParameters: { ...hookParameters, [id]: { label: '', value: '' } }
-                })
-              }}
-            >
-              <Plus size="16px" />
-              Add Hook Parameter
-            </Button>
-          </Flex>
-        </TxField>
         <TxField multiLine label="Memos">
           <Flex column fluid>
             {Object.entries(memos).map(([id, memo]) => (

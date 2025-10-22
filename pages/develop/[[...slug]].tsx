@@ -1,7 +1,7 @@
 import { Label } from '@radix-ui/react-label'
 import type { NextPage } from 'next'
 import dynamic from 'next/dynamic'
-import { Gear, Play } from 'phosphor-react'
+import { Play } from 'phosphor-react'
 import Hotkeys from 'react-hot-keys'
 import Split from 'react-split'
 import { useSnapshot } from 'valtio'
@@ -48,7 +48,7 @@ const StyledOptimizationText = styled(OptimizationText, {
   }
 })
 
-const CompilerSettings = () => {
+export const CompilerSettings = () => {
   const snap = useSnapshot(state)
   return (
     <Flex css={{ minWidth: 200, flexDirection: 'column', gap: '$5' }}>
@@ -188,11 +188,11 @@ const Home: NextPage = () => {
                 <Play weight="bold" size="16px" />
                 Compile to Wasm
               </Button>
-              <Popover content={<CompilerSettings />}>
+              {/* <Popover content={<CompilerSettings />}>
                 <Button variant="primary" css={{ px: '10px' }}>
                   <Gear size="16px" />
                 </Button>
-              </Popover>
+              </Popover> */}
             </Flex>
           </Hotkeys>
         )}

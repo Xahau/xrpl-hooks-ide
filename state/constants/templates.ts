@@ -1,7 +1,3 @@
-import Carbon from '../../components/icons/Carbon'
-import Firewall from '../../components/icons/Firewall'
-import Notary from '../../components/icons/Notary'
-import Peggy from '../../components/icons/Peggy'
 import Starter from '../../components/icons/Starter'
 
 type Template = {

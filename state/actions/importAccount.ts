@@ -32,7 +32,7 @@ export const importAccount = (secret: string, name?: string) => {
     secret: account.secret.familySeed || '',
     xrp: '0',
     sequence: 1,
-    hooks: [],
+    contract: null,
     isLoading: false,
     version: '2'
   })

@@ -43,16 +43,23 @@ export const sendTransaction = async (
 
     const result = response?.result
 
+    // @ts-ignore -- todo
+    const txResult = result.engine_result
+    // @ts-ignore -- todo
+    const txResultMessage = result.engine_result_message
+    
     const resultMsg = ref(
       <>
-        {logPrefix}[<ResultLink result={result.engine_result} />] {result.engine_result_message}
+        {logPrefix}[<ResultLink result={txResult} />] {txResultMessage}
       </>
     )
-    if (result.engine_result === 'tesSUCCESS') {
+    // @ts-ignore -- todo
+    if (txResult === 'tesSUCCESS') {
       state.transactionLogs.push({
         type: 'success',
         message: resultMsg
       })
+      // @ts-ignore -- todo
     } else if (result.engine_result) {
       state.transactionLogs.push({
         type: 'error',
@@ -61,11 +68,14 @@ export const sendTransaction = async (
     } else {
       state.transactionLogs.push({
         type: 'error',
+        // @ts-ignore -- todo
         message: `${logPrefix}[${result.error}] ${result.error_exception}`
       })
     }
     const currAcc = state.accounts.find(acc => acc.address === account.address)
+    // @ts-ignore -- todo
     if (currAcc && result.account_sequence_next) {
+      // @ts-ignore -- todo
       currAcc.sequence = result.account_sequence_next
     }
   } catch (err) {

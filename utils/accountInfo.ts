@@ -19,6 +19,7 @@ const fetchAccountInfo = async (
             command: 'account_info',
             account: address
         })
+        // @ts-ignore -- todo
         return res.result.account_data;
     } catch (err) {
         if (!opts.silent) {

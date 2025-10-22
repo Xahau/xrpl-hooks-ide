@@ -8,7 +8,7 @@ import Button from './Button'
 import { addFaucetAccount, importAccount } from '../state/actions'
 import state from '../state'
 import Box from './Box'
-import { Container, Heading, Stack, Text, Flex, Link } from '.'
+import { Container, Heading, Stack, Text, Flex } from '.'
 import {
   Dialog,
   DialogContent,
@@ -30,7 +30,7 @@ const labelStyle = css({
 import transactionsData from '../content/transactions.json'
 import { SetHookDialog } from './SetHookDialog'
 import { addFunds } from '../state/actions/addFaucetAccount'
-import { deleteHook } from '../state/actions/deployHook'
+import { deleteContract } from '../state/actions/deployHook'
 import { capitalize } from '../utils/helpers'
 import { deleteAccount } from '../state/actions/deleteAccount'
 import { rpc } from '../state/actions/xrpl-client'
@@ -203,21 +203,23 @@ export const AccountDialog = ({
                       currency: 'XRP',
                       currencyDisplay: 'name'
                     })}
-                  <Button
-                    css={{
-                      fontFamily: '$monospace',
-                      lineHeight: 2,
-                      mt: '2px',
-                      ml: '$3'
-                    }}
-                    ghost
-                    size="xs"
-                    onClick={() => {
-                      addFunds(activeAccount?.address || '')
-                    }}
-                  >
-                    Add Funds
-                  </Button>
+                  {activeAccount?.secret !== "none" && (
+                    <Button
+                      css={{
+                        fontFamily: '$monospace',
+                        lineHeight: 2,
+                        mt: '2px',
+                        ml: '$3'
+                      }}
+                      ghost
+                      size="xs"
+                      onClick={() => {
+                        addFunds(activeAccount?.address || '')
+                      }}
+                    >
+                      Add Funds
+                    </Button>
+                  )}
                 </Text>
               </Flex>
               <Flex
@@ -264,7 +266,7 @@ export const AccountDialog = ({
                     disabled={activeAccount.isLoading}
                     css={{ mt: '$3', mr: '$1', ml: 'auto' }}
                     onClick={() => {
-                      deleteHook(activeAccount)
+                      deleteContract(activeAccount)
                     }}
                   >
                     Delete Contract <Trash size="15px" />
@@ -510,6 +512,8 @@ const ImportAccountDialog = ({ type = 'import' }: { type?: 'import' | 'create' }
   const handleSubmit = async () => {
     if (type === 'create') {
       const value = capitalize(name)
+      console.log('Creating account:', value);
+      
       await addFaucetAccount(value, true)
       setName('')
       setSecret('')

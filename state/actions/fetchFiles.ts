@@ -24,31 +24,31 @@ export const fetchFiles = async (gistId: string) => {
         .includes(id)
 
     if (isTemplate(gistId)) {
-      const template = Object.values(templateFileIds).find(tmp => tmp.id === gistId)
-      let headerFiles: Record<string, { filename: string; content: string; language: string }> =
-        {}
-      if (template?.headerId) {
-        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
-        if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
-        headerFiles = resHeader.data.files as any
-      } else {
-        // fetch headers
-        const headerRes = await fetch(
-          `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
-        )
-        if (!headerRes.ok) throw Error('Failed to fetch headers')
+      // const template = Object.values(templateFileIds).find(tmp => tmp.id === gistId)
+      // // let headerFiles: Record<string, { filename: string; content: string; language: string }> =
+      //   {}
+      // if (template?.headerId) {
+      //   // const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
+      //   // if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
+      //   // headerFiles = resHeader.data.files as any
+      // } else {
+      //   // fetch headers
+      //   // const headerRes = await fetch(
+      //   //   `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
+      //   // )
+      //   // if (!headerRes.ok) throw Error('Failed to fetch headers')
 
-        const headerJson = await headerRes.json()
-        const headerFiles: Record<string, { filename: string; content: string; language: string }> =
-          {}
-        Object.entries(headerJson).forEach(([key, value]) => {
-          const fname = `${key}.h`
-          headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
-        })
-      }
+      //   // const headerJson = await headerRes.json()
+      //   // const headerFiles: Record<string, { filename: string; content: string; language: string }> =
+      //   //   {}
+      //   // Object.entries(headerJson).forEach(([key, value]) => {
+      //   //   const fname = `${key}.h`
+      //   //   headerFiles[fname] = { filename: fname, content: value as string, language: 'Rust' }
+      //   // })
+      // }
       const files = {
         ...res.data.files,
-        ...headerFiles
+        // ...headerFiles
       }
       res.data.files = files
     }
@@ -56,7 +56,7 @@ export const fetchFiles = async (gistId: string) => {
     if (!res.data.files) throw Error('No files could be fetched from given gist id!')
 
     const files: IFile[] = Object.keys(res.data.files).map(filename => ({
-      name: res.data.files?.[filename]?.filename || 'untitled.c',
+      name: res.data.files?.[filename]?.filename || 'untitled.rs',
       language: res.data.files?.[filename]?.language?.toLowerCase() || '',
       content: res.data.files?.[filename]?.content || ''
     }))

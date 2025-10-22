@@ -1,18 +1,35 @@
-import { Parameter, ParameterType, ParameterValue, Function as XRPLFunction } from '@transia/xrpl'
+import { Parameter } from '@transia/xrpl'
 import { getTags } from './comment-parser'
 
-export type DeployContractData = {
+export interface DeployContractData {
+  Account: string
   Fee: string
-  Functions: XRPLFunction[]
+  Functions: {
+    Function: {
+      FunctionName: string
+      Parameters?: Parameter[]
+    }
+  }[]
   InstanceParameters: {
     InstanceParameter: {
       ParameterFlag?: number
       ParameterName?: string
-      ParameterType?: ParameterType
+      ParameterType?: { type: string }
+      ParameterValue?: { value: string }
     }
     $metaData?: any
   }[]
+  InstanceParameterValues?: {
+    InstanceParameterValue: {
+      ParameterFlag?: number | string
+      ParameterValue: {
+        type: string
+        value: string
+      }
+    }
+  }[]
 }
+
 
 export const getParameters = (content?: string) => {
   const fieldTags = ['field', 'param', 'arg', 'argument']
@@ -22,6 +39,7 @@ export const getParameters = (content?: string) => {
 
   const parameters: DeployContractData['InstanceParameters'] = tags.map(tag => ({
     InstanceParameter: {
+      // @ts-ignore -- todo
       ParameterFlag: tag.flag,
       ParameterName: tag.name || '',
       ParameterType: { type: tag.type || '' }

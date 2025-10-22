@@ -6,8 +6,8 @@ import { ref } from 'valtio'
 import estimateFee from '../../utils/estimateFee'
 import { DeployContractData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
-import { Transaction, Wallet } from '@transia/xrpl'
-import { rpc } from './xrpl-client'
+import { SubmitResponse, SubmittableTransaction, Transaction, TransactionMetadata, TxResponse, Wallet } from '@transia/xrpl'
+import { rpc} from './xrpl-client'
 
 function arrayBufferToHex(arrayBuffer?: ArrayBuffer | null) {
   if (!arrayBuffer) {
@@ -88,10 +88,14 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
     : state.files.filter(file => file.compiledContent)[0]
   state.deployValues[activeFile.name] = data
 
-  const tx = await prepareDeployHookTx(account, data)
+  const tx = await prepareDeployHookTx(account, data) as Transaction
   if (!tx) {
     return
   }
+  const ledgerResponse = await rpc({
+    command: "ledger",
+  }) as any;
+  tx.LastLedgerSequence = ledgerResponse.result.closed.ledger.ledger_index + 3
   const wallet = Wallet.fromSeed(account.secret)
   const { tx_blob } = wallet.sign(tx as Transaction)
 
@@ -100,21 +104,20 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
     currentAccount.isLoading = true
   }
 
-  let submitRes
+  let submitResponse
+  let txResponse
+  let contractId: string | undefined
+  let contractAccount: string | undefined
   try {
-    submitRes = await rpc({
+    submitResponse = await rpc({
       command: 'submit',
       tx_blob: tx_blob
-    })
-
-    console.log(submitRes);
-    submitRes = submitRes.result;
+    }) as SubmitResponse;
     
-
-    const txHash = submitRes.tx_json?.hash
+    const txHash = submitResponse.result.tx_json?.hash
     const resultMsg = ref(
       <>
-        [<ResultLink result={submitRes.engine_result} />] {submitRes.engine_result_message}{' '}
+        [<ResultLink result={submitResponse.result.engine_result} />] {submitResponse.result.engine_result_message}{' '}
         {txHash && (
           <>
             Transaction hash:{' '}
@@ -130,16 +133,40 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
         )}
       </>
     )
-    if (submitRes.engine_result === 'tesSUCCESS') {
+    if (submitResponse.result.engine_result === 'tesSUCCESS') {
+      // wait 4 seconds for the transaction to be validated
+      await new Promise(resolve => setTimeout(resolve, 4000));
+      // get the transaction result
+      txResponse = await rpc({
+        command: 'tx',
+        transaction: submitResponse.result.tx_json.hash
+      }) as TxResponse;
+      const validated = txResponse.result.validated;
+      if (validated) {
+        const result = txResponse.result
+        const meta = result.meta as TransactionMetadata
+        if (typeof meta === 'object' && meta !== null && 'AffectedNodes' in meta) {
+          const affectedNodes = (meta as any).AffectedNodes as any[]
+          for (const node of affectedNodes) {
+            if (node.CreatedNode) {
+              const created = node.CreatedNode
+              if (created.LedgerEntryType === 'Contract') {
+                contractId = created.LedgerIndex
+                contractAccount = created.NewFields.ContractAccount
+              }
+            }
+          }
+        }
+      }
       state.deployLogs.push({
         type: 'success',
-        message: 'Hook deployed successfully ✅'
+        message: 'Contract deployed successfully ✅'
       })
       state.deployLogs.push({
         type: 'success',
         message: resultMsg
       })
-    } else if (submitRes.engine_result) {
+    } else if (submitResponse.result.engine_result) {
       state.deployLogs.push({
         type: 'error',
         message: resultMsg
@@ -147,11 +174,11 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
     } else {
       state.deployLogs.push({
         type: 'error',
-        message: `[${submitRes.error}] ${submitRes.error_exception}`
+        // @ts-ignore -- todo
+        message: `[${submitResponse.result.error}] ${submitResponse.result.error_exception}`
       })
     }
   } catch (err) {
-    console.error(err)
     state.deployLogs.push({
       type: 'error',
       message: 'Error occurred while deploying'
@@ -161,63 +188,62 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
     currentAccount.isLoading = false
   }
 
-  const { id, psuedoId } = {
-    id: `EBA39EEF9AB1F7060D344962CA5E4BAD19A3029769E2A44CBDCFFCB8B8DBC1AB`,
-    psuedoId: "r4guGvSWLtNuZmaRG4xdApbqAdfW6dpU4F"
+  if (contractId && contractAccount) {
+    state.accounts.push({
+      name: `SC-${contractId?.substring(0, 6)}`,
+      xrp: "0",
+      address: contractAccount as string,
+      secret: "none",
+      sequence: 1,
+      contract: contractId as string,
+      isLoading: false,
+      version: '0'
+    })
   }
-  state.accounts.push({
-    name: `SC-${id.substring(0, 6)}`,
-    xrp: "0",
-    address: psuedoId,
-    secret: "none",
-    sequence: 1,
-    contract: id,
-    isLoading: false,
-    version: '0'
-  })
-  return submitRes
+  return {
+    validated: txResponse?.result.validated,
+    // @ts-ignore -- todo
+    finalResult: txResponse?.result.meta?.TransactionResult,
+    errorMessage: txResponse?.result.validated ? undefined : submitResponse?.result.engine_result_message
+  }
 }
 
-export const deleteHook = async (account: IAccount & { name?: string }) => {
-  const currentAccount = state.accounts.find(acc => acc.address === account.address)
-  if (currentAccount?.isLoading || !currentAccount?.hooks.length) {
+export const deleteContract = async (account: IAccount & { name?: string }) => {
+  const contractAccount = state.accounts.find(acc => acc.address === account.address)
+  if (contractAccount?.isLoading || !contractAccount?.contract) {
     return
   }
+  const submitAccount = state.accounts.find(acc => acc.contract === null) as IAccount
   const tx = {
-    Account: account.address,
-    TransactionType: 'SetHook',
-    Sequence: account.sequence,
-    Fee: '100000',
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
-    Hooks: [
-      {
-        Hook: {
-          CreateCode: '',
-          Flags: 1
-        }
-      }
-    ]
+    Account: submitAccount?.address,
+    TransactionType: 'ContractDelete',
+    ContractAccount: contractAccount.address,
+    Sequence: submitAccount?.sequence,
+    Fee: '200000000',
+    NetworkID: Number(process.env.NEXT_PUBLIC_NETWORK_ID),
   }
-  const keypair = derive.familySeed(account.secret)
+  const wallet = Wallet.fromSeed(submitAccount?.secret)
+  
   try {
     // Update tx Fee value with network estimation
-    const res = await estimateFee(tx, account)
+    const res = await estimateFee(tx, submitAccount)
     tx['Fee'] = res?.base_fee || '1000'
   } catch (err) {
     console.error(err)
   }
-  const { signedTransaction } = sign(tx, keypair)
-  if (currentAccount) {
-    currentAccount.isLoading = true
+  const { tx_blob } = wallet.sign(tx as SubmittableTransaction)
+  if (contractAccount) {
+    contractAccount.isLoading = true
   }
   let submitRes
   const toastId = toast.loading('Deleting hook...')
   try {
     submitRes = await rpc({
       command: 'submit',
-      tx_blob: signedTransaction
-    })
+      tx_blob: tx_blob
+    }) as SubmitResponse
 
+    submitRes = submitRes.result
     if (submitRes.engine_result === 'tesSUCCESS') {
       toast.success('Hook deleted successfully ✅', { id: toastId })
       state.deployLogs.push({
@@ -228,14 +254,17 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
         type: 'success',
         message: `[${submitRes.engine_result}] ${submitRes.engine_result_message} Validated ledger index: ${submitRes.validated_ledger_index}`
       })
-      currentAccount.hooks = []
+      contractAccount.contract = null
     } else {
+      // @ts-ignore -- todo
       toast.error(`${submitRes.engine_result_message || submitRes.error_exception}`, {
         id: toastId
       })
       state.deployLogs.push({
         type: 'error',
+        // @ts-ignore -- todo
         message: `[${submitRes.engine_result || submitRes.error}] ${
+          // @ts-ignore -- todo
           submitRes.engine_result_message || submitRes.error_exception
         }`
       })
@@ -248,8 +277,8 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
       message: 'Error occurred while deleting hook'
     })
   }
-  if (currentAccount) {
-    currentAccount.isLoading = false
+  if (contractAccount) {
+    contractAccount.isLoading = false
   }
   return submitRes
 }

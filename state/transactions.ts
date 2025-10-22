@@ -243,9 +243,11 @@ export const prepareState = (value: string, transactionType?: string) => {
 
     const isAmount = schemaVal &&
       typeIs(schemaVal, "object") &&
+      // @ts-ignore -- todo
       schemaVal.$type.startsWith('amount.');
     const isAccount = schemaVal &&
       typeIs(schemaVal, "object") &&
+      // @ts-ignore -- todo
       schemaVal.$type.startsWith("account");
 
     if (isAmount && ["number", "string"].includes(typeof value)) {
@@ -284,7 +286,9 @@ export const getTxFields = (tt?: string) => {
   if (!txFields) return {}
 
   let _txFields = Object.keys(txFields)
+  // @ts-ignore -- todo
     .filter(key => !commonFields.includes(key as any))
+    // @ts-ignore -- todo
     .reduce<TxFields>((tf, key) => ((tf[key as keyof TxFields] = (txFields as any)[key]), tf), {})
   return _txFields
 }

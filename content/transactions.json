@@ -9,7 +9,7 @@
     "DestinationTag": 13,
     "Fee": "2000000",
     "Sequence": 2470665,
-    "Flags": "2147483648"
+    "Flags": 0
   },
   {
     "TransactionType": "AccountSet",
@@ -253,17 +253,26 @@
   {
     "TransactionType": "ContractCall",
     "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
-    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
-    "FunctionName": "transfer",
+    "ContractAccount": {
+      "$type": "account",
+      "$value": ""
+    },
+    "FunctionName": {
+      "$type": "hexable",
+      "$ishex": false,
+      "$value": "transfer"
+    },
     "Parameters": [
       {
         "Parameter": {
+          "ParameterFlag": 0,
           "ParameterName": "to",
           "ParameterValue": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck"
         }
       },
       {
         "Parameter": {
+          "ParameterFlag": 0,
           "ParameterName": "amount",
           "ParameterValue": "1000000"
         }
@@ -385,7 +394,7 @@
     "Account": "rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8",
     "Authorize": "rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de",
     "Fee": "10",
-    "Flags": "2147483648",
+    "Flags": 0,
     "Sequence": 2
   },
   {
@@ -516,7 +525,7 @@
     "TransactionType": "OfferCancel",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
-    "Flags": "0",
+    "Flags": 0,
     "OfferSequence": 6,
     "Sequence": 7
   },
@@ -524,7 +533,7 @@
     "TransactionType": "OfferCreate",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
-    "Flags": "0",
+    "Flags": 0,
     "Sequence": 8,
     "TakerGets": {
       "$type": "amount.xrp",
@@ -576,7 +585,7 @@
       "$type": "amount.xrp"
     },
     "Fee": "12",
-    "Flags": "2147483648",
+    "Flags": 0,
     "Sequence": 2
   },
   {
@@ -645,14 +654,14 @@
     "Fee": "10"
   },
   {
-    "Flags": "0",
+    "Flags": 0,
     "TransactionType": "SetRegularKey",
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
     "Fee": "12",
     "RegularKey": "rAR8rR8sUkBoCZFawhkWzY4Y5YoyuznwD"
   },
   {
-    "Flags": "0",
+    "Flags": 0,
     "TransactionType": "SignerListSet",
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
     "Fee": "12",
@@ -689,7 +698,7 @@
     "TransactionType": "TrustSet",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
-    "Flags": "262144",
+    "Flags": 0,
     "LimitAmount": {
       "$type": "amount.token",
       "$value": {
