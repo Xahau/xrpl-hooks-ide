@@ -7,7 +7,8 @@ const languageMapping: Record<string, string | undefined> = {
   md: 'markdown',
   c: 'c',
   h: 'c',
-  txt: 'text'
+  txt: 'text',
+  rs: 'rust'
 }
 
 export const createNewFile = (name: string) => {

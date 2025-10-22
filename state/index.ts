@@ -1,7 +1,7 @@
 import type monaco from 'monaco-editor'
 import { proxy, ref, subscribe } from 'valtio'
 import { devtools, subscribeKey } from 'valtio/utils'
-import { XrplClient } from 'xrpl-client'
+import { Client } from '@transia/xrpl'
 import { SplitSize } from './actions/persistSplits'
 
 declare module 'valtio' {
@@ -34,7 +34,7 @@ export interface IAccount {
   secret: string
   xrp: string
   sequence: number
-  hooks: string[]
+  contract: string | null
   isLoading: boolean
   version?: string
   error?: {
@@ -78,7 +78,7 @@ export interface IState {
   splits: {
     [id: string]: SplitSize
   }
-  client: XrplClient
+  client: Client
   clientStatus: 'offline' | 'online'
   mainModalOpen: boolean
   mainModalShowed: boolean
@@ -152,14 +152,15 @@ const state = proxy<IState>({
   logs: []
 })
 // Initialize socket connection
-const client = new XrplClient(`wss://${process.env.NEXT_PUBLIC_TESTNET_URL}`)
+const client = new Client(`wss://${process.env.NEXT_PUBLIC_TESTNET_URL}`)
+client.connect()
 state.client = ref(client);
 
-client.on('online', () => {
+client.on('connected', () => {
   state.clientStatus = 'online'
 })
 
-client.on('offline', () => {
+client.on('disconnected', () => {
   state.clientStatus = 'offline'
 })
 

@@ -1,23 +1,13 @@
-import { derive, sign } from 'xrpl-accountlib'
 import toast from 'react-hot-toast'
 
 import state, { IAccount } from '../index'
-import calculateHookOn, { TTS } from '../../utils/hookOnCalculator'
 import { Link } from '../../components'
 import { ref } from 'valtio'
 import estimateFee from '../../utils/estimateFee'
-import { SetHookData, toHex } from '../../utils/setHook'
+import { DeployContractData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
-import { xrplSend } from './xrpl-client'
-
-export const sha256 = async (string: string) => {
-  const utf8 = new TextEncoder().encode(string)
-  const hashBuffer = await crypto.subtle.digest('SHA-256', utf8)
-  const hashArray = Array.from(new Uint8Array(hashBuffer))
-  const hashHex = hashArray.map(bytes => bytes.toString(16).padStart(2, '0')).join('')
-  return hashHex
-}
-
+import { Transaction, Wallet } from '@transia/xrpl'
+import { rpc } from './xrpl-client'
 
 function arrayBufferToHex(arrayBuffer?: ArrayBuffer | null) {
   if (!arrayBuffer) {
@@ -45,7 +35,7 @@ function arrayBufferToHex(arrayBuffer?: ArrayBuffer | null) {
 
 export const prepareDeployHookTx = async (
   account: IAccount & { name?: string },
-  data: SetHookData
+  data: DeployContractData
 ) => {
   const activeFile = state.files[state.active]?.compiledContent
     ? state.files[state.active]
@@ -58,48 +48,33 @@ export const prepareDeployHookTx = async (
   if (!activeFile?.compiledContent) {
     return
   }
-  const HookNamespace = (await sha256(data.HookNamespace)).toUpperCase()
-  const hookOnValues: (keyof TTS)[] = data.Invoke.map(tt => tt.value)
-  const { HookParameters } = data
-  const filteredHookParameters = HookParameters.filter(
-    hp => hp.HookParameter.HookParameterName && hp.HookParameter.HookParameterValue
+
+  const { InstanceParameters, Functions } = data
+  const filteredInstanceParameters = InstanceParameters.filter(
+    hp => hp.InstanceParameter.ParameterFlag !== undefined && hp.InstanceParameter.ParameterName && hp.InstanceParameter.ParameterType
   )?.map(aa => ({
-    HookParameter: {
-      HookParameterName: toHex(aa.HookParameter.HookParameterName || ''),
-      HookParameterValue: aa.HookParameter.HookParameterValue || ''
+    InstanceParameter: {
+      ParameterFlag: aa.InstanceParameter.ParameterFlag || 0,
+      ParameterName: toHex(aa.InstanceParameter.ParameterName || ''),
+      ParameterType: aa.InstanceParameter.ParameterType || { type: '' },
     }
   }))
-  // const filteredHookGrants = HookGrants.filter(hg => hg.HookGrant.Authorize || hg.HookGrant.HookHash).map(hg => {
-  //   return {
-  //     HookGrant: {
-  //       ...(hg.HookGrant.Authorize && { Authorize: hg.HookGrant.Authorize }),
-  //       // HookHash: hg.HookGrant.HookHash || undefined
-  //       ...(hg.HookGrant.HookHash && { HookHash: hg.HookGrant.HookHash })
-  //     }
-  //   }
-  // });
+
   if (typeof window === 'undefined') return
   const tx = {
     Account: account.address,
-    TransactionType: 'SetHook',
+    TransactionType: 'ContractCreate',
     Sequence: account.sequence,
     Fee: data.Fee,
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
-    Hooks: [
-      {
-        Hook: {
-          CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
-          HookOn: calculateHookOn(hookOnValues),
-          HookNamespace,
-          HookApiVersion: 0,
-          Flags: 1,
-          // ...(filteredHookGrants.length > 0 && { HookGrants: filteredHookGrants }),
-          ...(filteredHookParameters.length > 0 && {
-            HookParameters: filteredHookParameters
-          })
-        }
-      }
-    ]
+    ContractCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
+    NetworkID: Number(process.env.NEXT_PUBLIC_NETWORK_ID),
+    Flags: 0,
+    ...(filteredInstanceParameters.length > 0 && {
+      InstanceParameters: filteredInstanceParameters
+    }),
+    ...(Functions && Functions.length > 0 && {
+      Functions: Functions
+    })
   }
   return tx
 }
@@ -107,7 +82,7 @@ export const prepareDeployHookTx = async (
 /*
  * Turns the wasm binary into hex string, signs the transaction and deploys it to Hooks testnet.
  */
-export const deployHook = async (account: IAccount & { name?: string }, data: SetHookData) => {
+export const deployHook = async (account: IAccount & { name?: string }, data: DeployContractData) => {
   const activeFile = state.files[state.active]?.compiledContent
     ? state.files[state.active]
     : state.files.filter(file => file.compiledContent)[0]
@@ -117,8 +92,8 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
   if (!tx) {
     return
   }
-  const keypair = derive.familySeed(account.secret)
-  const { signedTransaction } = sign(tx, keypair)
+  const wallet = Wallet.fromSeed(account.secret)
+  const { tx_blob } = wallet.sign(tx as Transaction)
 
   const currentAccount = state.accounts.find(acc => acc.address === account.address)
   if (currentAccount) {
@@ -127,10 +102,14 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
 
   let submitRes
   try {
-    submitRes = await xrplSend({
+    submitRes = await rpc({
       command: 'submit',
-      tx_blob: signedTransaction
+      tx_blob: tx_blob
     })
+
+    console.log(submitRes);
+    submitRes = submitRes.result;
+    
 
     const txHash = submitRes.tx_json?.hash
     const resultMsg = ref(
@@ -181,6 +160,21 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
   if (currentAccount) {
     currentAccount.isLoading = false
   }
+
+  const { id, psuedoId } = {
+    id: `EBA39EEF9AB1F7060D344962CA5E4BAD19A3029769E2A44CBDCFFCB8B8DBC1AB`,
+    psuedoId: "r4guGvSWLtNuZmaRG4xdApbqAdfW6dpU4F"
+  }
+  state.accounts.push({
+    name: `SC-${id.substring(0, 6)}`,
+    xrp: "0",
+    address: psuedoId,
+    secret: "none",
+    sequence: 1,
+    contract: id,
+    isLoading: false,
+    version: '0'
+  })
   return submitRes
 }
 
@@ -219,7 +213,7 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   let submitRes
   const toastId = toast.loading('Deleting hook...')
   try {
-    submitRes = await xrplSend({
+    submitRes = await rpc({
       command: 'submit',
       tx_blob: signedTransaction
     })

@@ -1,10 +1,9 @@
-import { derive, sign } from 'xrpl-accountlib'
-
 import state from '..'
 import type { IAccount } from '..'
 import ResultLink from '../../components/ResultLink'
 import { ref } from 'valtio'
-import { xrplSend } from './xrpl-client'
+import { rpc } from './xrpl-client'
+import { Transaction, Wallet } from '@transia/xrpl'
 
 interface TransactionOptions {
   TransactionType: string
@@ -26,7 +25,7 @@ export const sendTransaction = async (
     Account: account.address,
     Sequence: account.sequence,
     Fee,
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
+    NetworkID: Number(process.env.NEXT_PUBLIC_NETWORK_ID),
     ...opts
   }
   const { logPrefix = '' } = options || {}
@@ -35,24 +34,26 @@ export const sendTransaction = async (
     message: `${logPrefix}${JSON.stringify(tx, null, 2)}`
   })
   try {
-    const signedAccount = derive.familySeed(account.secret)
-    const { signedTransaction } = sign(tx, signedAccount)
-    const response = await xrplSend({
+    const wallet = Wallet.fromSeed(account.secret)
+    const { tx_blob } = wallet.sign(tx as Transaction)
+    const response = await rpc({
       command: 'submit',
-      tx_blob: signedTransaction
+      tx_blob: tx_blob
     })
+
+    const result = response?.result
 
     const resultMsg = ref(
       <>
-        {logPrefix}[<ResultLink result={response.engine_result} />] {response.engine_result_message}
+        {logPrefix}[<ResultLink result={result.engine_result} />] {result.engine_result_message}
       </>
     )
-    if (response.engine_result === 'tesSUCCESS') {
+    if (result.engine_result === 'tesSUCCESS') {
       state.transactionLogs.push({
         type: 'success',
         message: resultMsg
       })
-    } else if (response.engine_result) {
+    } else if (result.engine_result) {
       state.transactionLogs.push({
         type: 'error',
         message: resultMsg
@@ -60,12 +61,12 @@ export const sendTransaction = async (
     } else {
       state.transactionLogs.push({
         type: 'error',
-        message: `${logPrefix}[${response.error}] ${response.error_exception}`
+        message: `${logPrefix}[${result.error}] ${result.error_exception}`
       })
     }
     const currAcc = state.accounts.find(acc => acc.address === account.address)
-    if (currAcc && response.account_sequence_next) {
-      currAcc.sequence = response.account_sequence_next
+    if (currAcc && result.account_sequence_next) {
+      currAcc.sequence = result.account_sequence_next
     }
   } catch (err) {
     console.error(err)

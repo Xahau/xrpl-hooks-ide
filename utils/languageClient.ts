@@ -13,7 +13,7 @@ export function createLanguageClient(connection: MessageConnection): MonacoLangu
     name: 'Clangd Language Client',
     clientOptions: {
       // use a language id as a document selector
-      documentSelector: ['c', 'h'],
+      documentSelector: ['rs'],
       // disable the default error handler
       errorHandler: {
         error: () => ErrorAction.Continue,

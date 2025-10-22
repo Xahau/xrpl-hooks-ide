@@ -1,7 +1,7 @@
-import { XrplClient } from 'xrpl-client';
+import { Client } from '@transia/xrpl';
 import state from '..';
 
-export const xrplSend = async(...params: Parameters<XrplClient['send']>) => {
-    const client = await state.client.ready()
-    return client.send(...params);
+export const rpc = async(...params: Parameters<Client['request']>) => {
+    const client = await state.client.isConnected() ? state.client : null;
+    return client?.request(...params);
 }

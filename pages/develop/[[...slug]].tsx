@@ -1,7 +1,7 @@
 import { Label } from '@radix-ui/react-label'
 import type { NextPage } from 'next'
 import dynamic from 'next/dynamic'
-import { FileJs, Gear, Play } from 'phosphor-react'
+import { Gear, Play } from 'phosphor-react'
 import Hotkeys from 'react-hot-keys'
 import Split from 'react-split'
 import { useSnapshot } from 'valtio'
@@ -9,7 +9,6 @@ import { ButtonGroup, Flex } from '../../components'
 import Box from '../../components/Box'
 import Button from '../../components/Button'
 import Popover from '../../components/Popover'
-import RunScript from '../../components/RunScript'
 import state, { IFile } from '../../state'
 import { compileCode } from '../../state/actions'
 import { getSplit, saveSplit } from '../../state/actions/persistSplits'
@@ -150,7 +149,7 @@ const Home: NextPage = () => {
 
   const activeFile = snap.files[snap.active] as IFile | undefined
   const activeFileExt = getFileExtention(activeFile?.name)
-  const canCompile = activeFileExt === 'c' || activeFileExt === 'wat'
+  const canCompile = activeFileExt === 'rs'
   return (
     <Split
       direction="vertical"
@@ -197,26 +196,6 @@ const Home: NextPage = () => {
             </Flex>
           </Hotkeys>
         )}
-        {activeFileExt === 'js' && (
-          <Hotkeys
-            keyName="command+b,ctrl+b"
-            onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
-          >
-            <Flex
-              css={{
-                position: 'absolute',
-                bottom: '$4',
-                left: '$4',
-                alignItems: 'center',
-                display: 'flex',
-                cursor: 'pointer',
-                gap: '$2'
-              }}
-            >
-              <RunScript file={activeFile as IFile} />
-            </Flex>
-          </Hotkeys>
-        )}
       </main>
       <Flex css={{ width: '100%' }}>
         <Flex
@@ -229,20 +208,6 @@ const Home: NextPage = () => {
         >
           <LogBox title="Development Log" clearLog={() => (state.logs = [])} logs={snap.logs} />
         </Flex>
-        {activeFileExt === 'js' && (
-          <Flex
-            css={{
-              flex: 1
-            }}
-          >
-            <LogBox
-              Icon={FileJs}
-              title="Script Log"
-              logs={snap.scriptLogs}
-              clearLog={() => (state.scriptLogs = [])}
-            />
-          </Flex>
-        )}
       </Flex>
     </Split>
   )

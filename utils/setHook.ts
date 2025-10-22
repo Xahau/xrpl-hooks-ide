@@ -1,38 +1,17 @@
+import { Parameter, ParameterType, ParameterValue, Function as XRPLFunction } from '@transia/xrpl'
 import { getTags } from './comment-parser'
-import { tts, TTS } from './hookOnCalculator'
 
-export const transactionOptions = Object.keys(tts).map(key => ({
-  label: key,
-  value: key as keyof TTS
-}))
-
-export type SetHookData = {
-  Invoke: {
-    value: keyof TTS
-    label: string
-  }[]
+export type DeployContractData = {
   Fee: string
-  HookNamespace: string
-  HookParameters: {
-    HookParameter: {
-      HookParameterName: string
-      HookParameterValue: string
+  Functions: XRPLFunction[]
+  InstanceParameters: {
+    InstanceParameter: {
+      ParameterFlag?: number
+      ParameterName?: string
+      ParameterType?: ParameterType
     }
     $metaData?: any
   }[]
-  Memos?: {
-    Memo: {
-      MemoType: string,
-      MemoData: string
-      MemoFormat: string
-    }
-  }[]
-  // HookGrants: {
-  //   HookGrant: {
-  //     Authorize: string;
-  //     HookHash: string;
-  //   };
-  // }[];
 }
 
 export const getParameters = (content?: string) => {
@@ -41,10 +20,11 @@ export const getParameters = (content?: string) => {
     .filter(tag => fieldTags.includes(tag.tag))
     .filter(tag => !!tag.name)
 
-  const paramters: SetHookData['HookParameters'] = tags.map(tag => ({
-    HookParameter: {
-      HookParameterName: tag.name,
-      HookParameterValue: tag.default || ''
+  const parameters: DeployContractData['InstanceParameters'] = tags.map(tag => ({
+    InstanceParameter: {
+      ParameterFlag: tag.flag,
+      ParameterName: tag.name || '',
+      ParameterType: { type: tag.type || '' }
     },
     $metaData: {
       description: tag.description,
@@ -52,27 +32,7 @@ export const getParameters = (content?: string) => {
     }
   }))
 
-  return paramters
-}
-
-export const getInvokeOptions = (content?: string) => {
-  const invokeTags = ['invoke', 'invoke-on']
-
-  const options = getTags(content)
-    .filter(tag => invokeTags.includes(tag.tag))
-    .reduce((cumm, curr) => {
-      const combined = curr.type || `${curr.name} ${curr.description}`
-      const opts = combined.split(' ')
-
-      return cumm.concat(opts as any)
-    }, [] as (keyof TTS)[])
-    .filter(opt => Object.keys(tts).includes(opt))
-
-  const invokeOptions: SetHookData['Invoke'] = options.map(opt => ({
-    label: opt,
-    value: opt
-  }))
-  return invokeOptions
+  return parameters
 }
 
 export function toHex(str: string) {

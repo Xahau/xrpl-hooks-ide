@@ -21,6 +21,190 @@
     "MessageKey": "03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB"
   },
   {
+    "TransactionType": "AMMBid",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "XRP"
+      }
+    },
+    "Asset2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"
+      }
+    },
+    "BidMin": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+        "issuer": "rE54zDvgnghAoPopCgvtiqWNq3dU5y836S",
+        "value": "100"
+      }
+    },
+    "BidMax": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+        "issuer": "rE54zDvgnghAoPopCgvtiqWNq3dU5y836S",
+        "value": "200"
+      }
+    },
+    "AuthAccounts": [
+      {
+        "AuthAccount": {
+          "Account": "rMKXGCbJ5d8LbrqthdG46q3f969MVK2Qeg"
+        }
+      },
+      {
+        "AuthAccount": {
+          "Account": "rBepJuTLFJt3WmtLXYAxSjtBWAeQxVbncv"
+        }
+      }
+    ],
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "AMMCreate",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "1000000"
+    },
+    "Amount2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd",
+        "value": "100"
+      }
+    },
+    "TradingFee": 500,
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "AMMDelete",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "XRP"
+      }
+    },
+    "Asset2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "AMMDeposit",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "XRP"
+      }
+    },
+    "Asset2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"
+      }
+    },
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "1000000"
+    },
+    "Amount2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd",
+        "value": "100"
+      }
+    },
+    "LPTokenOut": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+        "issuer": "rE54zDvgnghAoPopCgvtiqWNq3dU5y836S",
+        "value": "1000"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "AMMVote",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "XRP"
+      }
+    },
+    "Asset2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"
+      }
+    },
+    "TradingFee": 600,
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "AMMWithdraw",
+    "Account": "rJVUeRqDFNs2xqA7ncVE6ZoAhPUoaJJSQm",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "XRP"
+      }
+    },
+    "Asset2": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rP9jPyP5kyvFRb6ZiRghAGw5u8SGAmU4bd"
+      }
+    },
+    "LPTokenIn": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+        "issuer": "rE54zDvgnghAoPopCgvtiqWNq3dU5y836S",
+        "value": "500"
+      }
+    },
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "500000"
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "Batch",
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "RawTransactions": [],
+    "BatchSigners": [
+      {
+        "BatchSigner": {
+          "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+          "SigningPubKey": "03AB40A0490F9B7ED8DF29D246BF2D6269820A0EE7742ACDD457BEA7C7D0931EDB",
+          "TxnSignature": "3045022100..."
+        }
+      }
+    ],
+    "Fee": "12"
+  },
+  {
     "Account": "rUn84CUYbNjRoTQ6mSW7BVJPSVJNLb1QLo",
     "TransactionType": "CheckCancel",
     "CheckID": "49647F0D748DC3FE26BDACBC57F251AADEFFF391403EC9BF87C97F67E9977FB0",
@@ -54,12 +238,168 @@
     "Fee": "12"
   },
   {
+    "TransactionType": "Clawback",
+    "Account": "rp6abvbTbjoce8ZDJkT6snvxTZSYMBCC9S",
+    "Amount": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+        "value": "100"
+      }
+    },
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractCall",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "FunctionName": "transfer",
+    "Parameters": [
+      {
+        "Parameter": {
+          "ParameterName": "to",
+          "ParameterValue": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck"
+        }
+      },
+      {
+        "Parameter": {
+          "ParameterName": "amount",
+          "ParameterValue": "1000000"
+        }
+      }
+    ],
+    "ComputationAllowance": "1000000",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractClawback",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "1000000"
+    },
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractCreate",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractCode": "608060405234801561001057600080fd5b50...",
+    "Functions": [
+      {
+        "Function": {
+          "FunctionName": "transfer",
+          "Parameters": [
+            {
+              "InstanceParameter": {
+                "ParameterFlag": 1,
+                "ParameterName": "to",
+                "ParameterType": "address"
+              }
+            },
+            {
+              "InstanceParameter": {
+                "ParameterFlag": 1,
+                "ParameterName": "amount",
+                "ParameterType": "uint256"
+              }
+            }
+          ]
+        }
+      }
+    ],
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractDelete",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractModify",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "ContractCode": "608060405234801561001057600080fd5b50...",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "ContractUserDelete",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "FunctionName": "deleteUser",
+    "Parameters": [
+      {
+        "Parameter": {
+          "ParameterName": "userId",
+          "ParameterValue": "12345"
+        }
+      }
+    ],
+    "ComputationAllowance": "500000",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "CredentialAccept",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Issuer": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "CredentialType": "6578616D706C652E636F6D",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "CredentialCreate",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Subject": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "CredentialType": "6578616D706C652E636F6D",
+    "URI": "68747470733A2F2F6578616D706C652E636F6D2F63726564656E7469616C",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "CredentialDelete",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Subject": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "CredentialType": "6578616D706C652E636F6D",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "DelegateSet",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Authorize": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Permissions": [
+      {
+        "Permission": {
+          "PermissionValue": 1
+        }
+      },
+      {
+        "Permission": {
+          "PermissionValue": 2
+        }
+      }
+    ],
+    "Fee": "12"
+  },
+  {
     "TransactionType": "DepositPreauth",
     "Account": "rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8",
     "Authorize": "rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de",
     "Fee": "10",
     "Flags": "2147483648",
     "Sequence": 2
+  },
+  {
+    "TransactionType": "DIDDelete",
+    "Account": "rp4pqYgrTAtdPHuZd1ZQWxrzx45jxYcZex",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "DIDSet",
+    "Account": "rp4pqYgrTAtdPHuZd1ZQWxrzx45jxYcZex",
+    "DIDDocument": "646F63",
+    "URI": "6469645F6578616D706C65",
+    "Data": "617474657374",
+    "Fee": "10"
   },
   {
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
@@ -102,6 +442,77 @@
     "Fee": "10"
   },
   {
+    "TransactionType": "MPTokenAuthorize",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "MPTokenIssuanceID": "000004C463C52827307480341125DA0577DEFC38405B0E3E",
+    "Holder": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "MPTokenIssuanceCreate",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "AssetScale": 2,
+    "MaximumAmount": "10000000000",
+    "TransferFee": 1000,
+    "MPTokenMetadata": "6578616D706C65",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "MPTokenIssuanceDestroy",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "MPTokenIssuanceID": "000004C463C52827307480341125DA0577DEFC38405B0E3E",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "MPTokenIssuanceSet",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "MPTokenIssuanceID": "000004C463C52827307480341125DA0577DEFC38405B0E3E",
+    "Holder": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "NFTokenAcceptOffer",
+    "Account": "rNCFjv8Ek5oDrNiMJ3pw6eLLFtMjZLJnf2",
+    "NFTokenSellOffer": "9C92E061381C1EF37A8CDE0E8FC35188BFC30B1883825042A64309AC09F4C36D",
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "NFTokenBurn",
+    "Account": "rNCFjv8Ek5oDrNiMJ3pw6eLLFtMjZLJnf2",
+    "NFTokenID": "000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65",
+    "Owner": "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "NFTokenCancelOffer",
+    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+    "NFTokenOffers": [
+      "9C92E061381C1EF37A8CDE0E8FC35188BFC30B1883825042A64309AC09F4C36D",
+      "2C92E061381C1EF37A8CDE0E8FC35188BFC30B1883825042A64309AC09F4C370"
+    ],
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "NFTokenCreateOffer",
+    "Account": "rs8VGKv1qT4R6mJvQV8oGmKKb8vKgfMg5F",
+    "NFTokenID": "000B013A95F14B0044F78A264E41713C64B5F89242540EE208C3098E00000D65",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "1000000"
+    },
+    "Destination": "rJkHU3pfHwxWWkUqGjKdahW1k5GVLvHYJd",
+    "Expiration": 570113521,
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "NFTokenMint",
+    "Account": "rvYAfWj5gh67oV6fW32ZzP3Aw4Eubs59B",
+    "NFTokenTaxon": 0,
+    "TransferFee": 1000,
+    "URI": "697066733A2F2F62616679626569676479727A74357366703775646D37687537367568377932366E6634646675796C71616266336F636C67747179353566627A6469",
+    "Fee": "10"
+  },
+  {
     "TransactionType": "OfferCancel",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "Fee": "12",
@@ -129,6 +540,31 @@
     }
   },
   {
+    "TransactionType": "OracleDelete",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "OracleDocumentID": 1,
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "OracleSet",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "OracleDocumentID": 1,
+    "Provider": "70726F7669646572",
+    "AssetClass": "63757272656E6379",
+    "LastUpdateTime": 1234567890,
+    "PriceDataSeries": [
+      {
+        "PriceData": {
+          "BaseAsset": "XRP",
+          "QuoteAsset": "USD",
+          "AssetPrice": "740",
+          "Scale": 3
+        }
+      }
+    ],
+    "Fee": "10"
+  },
+  {
     "TransactionType": "Payment",
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
     "Destination": {
@@ -142,6 +578,22 @@
     "Fee": "12",
     "Flags": "2147483648",
     "Sequence": 2
+  },
+  {
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "TransactionType": "PaymentChannelClaim",
+    "Channel": "C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198",
+    "Amount": {
+      "$value": "100",
+      "$type": "amount.xrp"
+    },
+    "Balance": {
+      "$value": "200",
+      "$type": "amount.xrp"
+    },
+    "Signature": "30440220...",
+    "PublicKey": "32D2471DB72B27E3310F355BB33E339BF26F8392D5A93D3BC0FC3B566612DA0F0A",
+    "Fee": "10"
   },
   {
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
@@ -173,6 +625,26 @@
     "Fee": "10"
   },
   {
+    "TransactionType": "PermissionedDomainDelete",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "DomainID": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "PermissionedDomainSet",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "DomainID": "039C99CD9AB0B70B32ECDA51EAAE471625608EA2",
+    "AcceptedCredentials": [
+      {
+        "Credential": {
+          "Issuer": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+          "CredentialType": "6578616D706C652E636F6D"
+        }
+      }
+    ],
+    "Fee": "10"
+  },
+  {
     "Flags": "0",
     "TransactionType": "SetRegularKey",
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
@@ -185,29 +657,26 @@
     "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
     "Fee": "12",
     "SignerQuorum": 3,
-    "SignerEntries": {
-      "$type": "json",
-      "$value": [
-        {
-          "SignerEntry": {
-            "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
-            "SignerWeight": 2
-          }
-        },
-        {
-          "SignerEntry": {
-            "Account": "rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v",
-            "SignerWeight": 1
-          }
-        },
-        {
-          "SignerEntry": {
-            "Account": "raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n",
-            "SignerWeight": 1
-          }
+    "SignerEntries": [
+      {
+        "SignerEntry": {
+          "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+          "SignerWeight": 2
         }
-      ]
-    }
+      },
+      {
+        "SignerEntry": {
+          "Account": "rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v",
+          "SignerWeight": 1
+        }
+      },
+      {
+        "SignerEntry": {
+          "Account": "raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n",
+          "SignerWeight": 1
+        }
+      }
+    ]
   },
   {
     "TransactionType": "TicketCreate",
@@ -232,55 +701,264 @@
     "Sequence": 12
   },
   {
-    "TransactionType": "Invoke",
-    "Destination": {
-      "$type": "account",
-      "$value": ""
-    },
-    "Fee": "12"
-  },
-  {
-    "TransactionType": "URITokenMint",
-    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "URI": "697066733A2F2F434944",
-    "Fee": "10",
-    "Sequence": 1
-  },
-  {
-    "TransactionType": "URITokenBurn",
-    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "URITokenID": "B792B56B558C89C4E942E41B5DB66074E005CB198DB70C26C707AAC2FF5F74CB",
-    "Fee": "10",
-    "Sequence": 1
-  },
-  {
-    "TransactionType": "URITokenCreateSellOffer",
-    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "URITokenID": "B792B56B558C89C4E942E41B5DB66074E005CB198DB70C26C707AAC2FF5F74CB",
-    "Destination": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "TransactionType": "VaultClawback",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "VaultID": "B7D526FDDF9E3B3F95C3DC97BE79A046578539E6632E9EF3A3DB95DE49C71A5F",
+    "Holder": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
     "Amount": {
-      "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.token",
+      "$value": {
+        "currency": "5653000000000000000000000000000000000000",
+        "issuer": "rB7D526FDDF9E3B3F95C3DC97BE79A0465785",
+        "value": "100"
+      }
     },
-    "Fee": "10",
-    "Sequence": 1
+    "Fee": "10"
   },
   {
-    "TransactionType": "URITokenCancelSellOffer",
-    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "URITokenID": "B792B56B558C89C4E942E41B5DB66074E005CB198DB70C26C707AAC2FF5F74CB",
-    "Fee": "10",
-    "Sequence": 1
+    "TransactionType": "VaultCreate",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Asset": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"
+      }
+    },
+    "AssetsMaximum": "1000000000000",
+    "MPTokenMetadata": "6578616D706C65",
+    "Fee": "10"
   },
   {
-    "TransactionType": "URITokenBuy",
-    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "URITokenID": "B792B56B558C89C4E942E41B5DB66074E005CB198DB70C26C707AAC2FF5F74CB",
+    "TransactionType": "VaultDelete",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "VaultID": "B7D526FDDF9E3B3F95C3DC97BE79A046578539E6632E9EF3A3DB95DE49C71A5F",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "VaultDeposit",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "VaultID": "B7D526FDDF9E3B3F95C3DC97BE79A046578539E6632E9EF3A3DB95DE49C71A5F",
     "Amount": {
-      "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.token",
+      "$value": {
+        "currency": "USD",
+        "issuer": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+        "value": "100"
+      }
     },
-    "Fee": "10",
-    "Sequence": 1
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "VaultSet",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "VaultID": "B7D526FDDF9E3B3F95C3DC97BE79A046578539E6632E9EF3A3DB95DE49C71A5F",
+    "AssetsMaximum": "2000000000000",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "VaultWithdraw",
+    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "VaultID": "B7D526FDDF9E3B3F95C3DC97BE79A046578539E6632E9EF3A3DB95DE49C71A5F",
+    "Amount": {
+      "$type": "amount.token",
+      "$value": {
+        "currency": "5653000000000000000000000000000000000000",
+        "issuer": "rB7D526FDDF9E3B3F95C3DC97BE79A0465785",
+        "value": "50"
+      }
+    },
+    "Destination": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainAccountCreate",
+    "Account": "rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo",
+    "Destination": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "20000000"
+    },
+    "SignatureReward": {
+      "$type": "amount.xrp",
+      "$value": "100"
+    },
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainAddAccountCreateAttestation",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "20000000"
+    },
+    "AttestationSignerAccount": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "AttestationRewardAccount": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Destination": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "OtherChainSource": "rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo",
+    "PublicKey": "ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A",
+    "Signature": "D3B6C2F4C8A4E3B2F5D6C7A8B9E0F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8",
+    "SignatureReward": {
+      "$type": "amount.xrp",
+      "$value": "100"
+    },
+    "WasLockingChainSend": 1,
+    "XChainAccountCreateCount": "1",
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainAddClaimAttestation",
+    "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "10000000"
+    },
+    "AttestationSignerAccount": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "AttestationRewardAccount": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+    "Destination": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "OtherChainSource": "rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo",
+    "PublicKey": "ED5F5AC8B98974A3CA843326D9B88CEBD0560177B973EE0B149F782CFAA06DC66A",
+    "Signature": "A3B6C2F4C8A4E3B2F5D6C7A8B9E0F1A2B3C4D5E6F7A8B9C0D1E2F3A4B5C6D7E8",
+    "WasLockingChainSend": 1,
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "XChainClaimID": "1",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainClaim",
+    "Account": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "10000000"
+    },
+    "Destination": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "XChainClaimID": "1",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainCommit",
+    "Account": "rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo",
+    "Amount": {
+      "$type": "amount.xrp",
+      "$value": "10000000"
+    },
+    "OtherChainDestination": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "XChainClaimID": "1",
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainCreateBridge",
+    "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+    "SignatureReward": {
+      "$type": "amount.xrp",
+      "$value": "200"
+    },
+    "MinAccountCreateAmount": {
+      "$type": "amount.xrp",
+      "$value": "1000000"
+    },
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainCreateClaimID",
+    "Account": "rJMfWNVbyjcCtds8kpoEjEbYQ41J5B6MUd",
+    "SignatureReward": {
+      "$type": "amount.xrp",
+      "$value": "100"
+    },
+    "OtherChainSource": "rMTi57fNy2UkUb4RcdoUeJm7gjxVQvxzUo",
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "Fee": "10"
+  },
+  {
+    "TransactionType": "XChainModifyBridge",
+    "Account": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+    "SignatureReward": {
+      "$type": "amount.xrp",
+      "$value": "300"
+    },
+    "MinAccountCreateAmount": {
+      "$type": "amount.xrp",
+      "$value": "2000000"
+    },
+    "XChainBridge": {
+      "LockingChainDoor": "rMAXACCrp3Y8PpswXcg3bKggHX76V3F8M4",
+      "LockingChainIssue": {
+        "currency": "XRP"
+      },
+      "IssuingChainDoor": "rHb9CJAWyB4rj91VRWn96DkukG4bwdtyTh",
+      "IssuingChainIssue": {
+        "currency": "XRP"
+      }
+    },
+    "Fee": "10"
   }
 ]

@@ -20,7 +20,6 @@ import { TxUI } from './ui'
 import { default as _estimateFee } from '../../utils/estimateFee'
 import toast from 'react-hot-toast'
 import { combineFlags, extractFlags, transactionFlags } from '../../state/constants/flags'
-import { SetHookData, toHex } from '../../utils/setHook'
 
 export interface TransactionProps {
   header: string
@@ -46,35 +45,25 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         selectedAccount,
         txFields,
         selectedFlags,
-        hookParameters,
-        memos
+        // hookParameters,
+        // memos
       } = state
 
       const TransactionType = selectedTransaction?.value || null
       const Account = selectedAccount?.value || null
       const Flags = combineFlags(selectedFlags?.map(flag => flag.value)) || txFields?.Flags
-      const HookParameters = Object.entries(hookParameters || {}).reduce<
-        SetHookData['HookParameters']
-      >((acc, [_, { label, value }]) => {
-        return acc.concat({
-          HookParameter: { HookParameterName: toHex(label), HookParameterValue: value }
-        })
-      }, [])
-      const Memos = memos
-        ? Object.entries(memos).reduce<SetHookData['Memos']>((acc, [_, { format, data, type }]) => {
-            return acc?.concat({
-              Memo: { MemoData: data, MemoFormat: toHex(format), MemoType: toHex(type) }
-            })
-          }, [])
-        : undefined
-
+      // const HookParameters = Object.entries(hookParameters || {}).reduce<
+      //   DeployContractData['HookParameters']
+      // >((acc, [_, { label, value }]) => {
+      //   return acc.concat({
+      //     HookParameter: { HookParameterName: toHex(label), HookParameterValue: value }
+      //   })
+      // }, [])
       return prepareTransaction({
         ...txFields,
-        HookParameters,
         Flags,
         TransactionType,
         Account,
-        Memos
       })
     },
     [txState]

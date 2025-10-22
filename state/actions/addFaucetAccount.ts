@@ -1,6 +1,7 @@
 import toast from 'react-hot-toast'
 import state, { FaucetAccountRes } from '../index'
 import fetchAccountInfo from '../../utils/accountInfo';
+import { Wallet } from '@transia/xrpl';
 
 export const names = [
   'Alice',
@@ -22,16 +23,15 @@ export const names = [
 ]
 
 /* This function adds faucet account to application global state.
- * It calls the /api/faucet endpoint which in send a HTTP POST to
- * https://hooks-testnet.xrpl-labs.com/newcreds and it returns
- * new account with 10 000 XRP. Hooks Testnet /newcreds endpoint
+ * It calls the /api/faucet endpoint which in send a HTTP POST and it returns
+ * new account with 10 000 XRP. Testnet endpoint
  * is protected with CORS so that's why we did our own endpoint
  */
 export const addFaucetAccount = async (name?: string, showToast: boolean = false) => {
   if (typeof window === undefined) return
-
+  const wallet: Wallet = Wallet.generate()
   const toastId = showToast ? toast.loading('Creating account') : ''
-  const res = await fetch(`${window.location.origin}/api/faucet`, {
+  const res = await fetch(`${window.location.origin}/api/faucet?account=${wallet.classicAddress}`, {
     method: 'POST'
   })
   const json: FaucetAccountRes | { error: string } = await res.json()
@@ -39,15 +39,16 @@ export const addFaucetAccount = async (name?: string, showToast: boolean = false
     if (!showToast) return;
     return toast.error(json.error, { id: toastId })
   }
+  
   const currNames = state.accounts.map(acc => acc.name)
-  const info = await fetchAccountInfo(json.address, { silent: true })
+  const info = await fetchAccountInfo(wallet.classicAddress, { silent: true })
   state.accounts.push({
     name: name || names.filter(name => !currNames.includes(name))[0],
-    xrp: (json.xrp || 0 * 1000000).toString(),
-    address: json.address,
-    secret: json.secret,
+    xrp: (0 * 1000000).toString(),
+    address: wallet.classicAddress,
+    secret: wallet.seed as string,
     sequence: info?.Sequence || 1,
-    hooks: [],
+    contract: null,
     isLoading: false,
     version: '2'
   })
@@ -77,7 +78,7 @@ export const addFunds = async (address: string) => {
   if ('error' in json) {
     return toast.error(json.error, { id: toastId })
   } else {
-    toast.success(`Funds added (${json.xrp} XAH)`, { id: toastId })
+    toast.success(`Funds added (${json.xrp} XRP)`, { id: toastId })
     const currAccount = state.accounts.find(acc => acc.address === address)
     if (currAccount) {
       currAccount.xrp = (Number(currAccount.xrp) + json.xrp * 1000000).toString()

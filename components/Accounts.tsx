@@ -8,7 +8,7 @@ import Button from './Button'
 import { addFaucetAccount, importAccount } from '../state/actions'
 import state from '../state'
 import Box from './Box'
-import { Container, Heading, Stack, Text, Flex } from '.'
+import { Container, Heading, Stack, Text, Flex, Link } from '.'
 import {
   Dialog,
   DialogContent,
@@ -33,7 +33,7 @@ import { addFunds } from '../state/actions/addFaucetAccount'
 import { deleteHook } from '../state/actions/deployHook'
 import { capitalize } from '../utils/helpers'
 import { deleteAccount } from '../state/actions/deleteAccount'
-import { xrplSend } from '../state/actions/xrpl-client'
+import { rpc } from '../state/actions/xrpl-client'
 
 export const AccountDialog = ({
   activeAccountAddress,
@@ -200,7 +200,7 @@ export const AccountDialog = ({
                     .toUnit()
                     .toLocaleString(undefined, {
                       style: 'currency',
-                      currency: 'XAH',
+                      currency: 'XRP',
                       currencyDisplay: 'name'
                     })}
                   <Button
@@ -238,30 +238,25 @@ export const AccountDialog = ({
             </Flex>
             <Flex css={{ alignItems: 'center' }}>
               <Flex css={{ flexDirection: 'column' }}>
-                <Text className={labelStyle()}>Installed Hooks</Text>
+                <Text className={labelStyle()}>Contract</Text>
                 <Text
                   css={{
                     fontFamily: '$monospace',
                     a: { '&:hover': { textDecoration: 'underline' } }
                   }}
                 >
-                  {activeAccount && activeAccount.hooks.length > 0
-                    ? activeAccount.hooks.map(i => {
-                        return (
-                          <a
-                            key={i}
-                            href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${i}`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {truncate(i, 12)}
-                          </a>
-                        )
-                      })
-                    : '–'}
+                  {activeAccount && activeAccount.contract !== null && (
+                    <a
+                      href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${activeAccount.contract}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {truncate(activeAccount.contract || '', 12)}
+                    </a>
+                  )}
                 </Text>
               </Flex>
-              {activeAccount && activeAccount?.hooks?.length > 0 && (
+              {activeAccount && activeAccount?.contract !== null && (
                 <Flex css={{ marginLeft: 'auto' }}>
                   <Button
                     size="xs"
@@ -272,7 +267,7 @@ export const AccountDialog = ({
                       deleteHook(activeAccount)
                     }}
                   >
-                    Delete Hook <Trash size="15px" />
+                    Delete Contract <Trash size="15px" />
                   </Button>
                 </Flex>
               )}
@@ -302,14 +297,15 @@ const Accounts: FC<AccountProps> = props => {
     const fetchAccInfo = async () => {
       if (snap.clientStatus === 'online') {
         const requests = snap.accounts.map(acc =>
-          xrplSend({
+          rpc({
             id: `hooks-builder-req-info-${acc.address}`,
             command: 'account_info',
             account: acc.address
           })
         )
         const responses = await Promise.all(requests)
-        responses.forEach((res: any) => {
+        responses.forEach((response: any) => {
+          const res = response.result;
           const address = res?.account_data?.Account as string
           const balance = res?.account_data?.Balance as string
           const sequence = res?.account_data?.Sequence as number
@@ -330,20 +326,22 @@ const Accounts: FC<AccountProps> = props => {
           }
         })
         const objectRequests = snap.accounts.map(acc => {
-          return xrplSend({
+          return rpc({
             id: `hooks-builder-req-objects-${acc.address}`,
             command: 'account_objects',
             account: acc.address
           })
         })
         const objectResponses = await Promise.all(objectRequests)
+        console.log(objectResponses);
+        
         objectResponses.forEach((res: any) => {
           const address = res?.account as string
           const accountToUpdate = state.accounts.find(acc => acc.address === address)
           if (accountToUpdate) {
-            accountToUpdate.hooks =
+            accountToUpdate.contract =
               res.account_objects
-                .find((ac: any) => ac?.LedgerEntryType === 'Hook')
+                .find((ac: any) => ac?.LedgerEntryType === 'Contract')
                 ?.Hooks?.map((oo: any) => oo.Hook.HookHash) || []
           }
         })
@@ -459,7 +457,7 @@ const Accounts: FC<AccountProps> = props => {
                         .toUnit()
                         .toLocaleString(undefined, {
                           style: 'currency',
-                          currency: 'XAH',
+                          currency: 'XRP',
                           currencyDisplay: 'name'
                         })})`
                     ) : (
@@ -482,8 +480,7 @@ const Accounts: FC<AccountProps> = props => {
               </Flex>
               {props.showHookStats && (
                 <Text muted small css={{ mt: '$2' }}>
-                  {account.hooks.length} hook
-                  {account.hooks.length === 1 ? '' : 's'} installed
+                  {account.contract ? `Contract ID: ${account.contract}` : ''}
                 </Text>
               )}
             </Flex>

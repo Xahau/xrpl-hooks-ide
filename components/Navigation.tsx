@@ -101,7 +101,7 @@ const Navigation = () => {
               <Spinner />
             ) : (
               <>
-                <Heading css={{ lineHeight: 1 }}>{snap.gistName || 'Xahau Hooks'}</Heading>
+                <Heading css={{ lineHeight: 1 }}>{snap.gistName || 'XRPL Smart Contracts'}</Heading>
                 <Text css={{ fontSize: '$xs', color: '$mauve10', lineHeight: 1 }}>
                   {snap.files.length > 0 ? 'Gist: ' : 'Builder'}
                   {snap.files.length > 0 && (
@@ -180,7 +180,7 @@ const Navigation = () => {
                           fontWeight: '$bold'
                         }}
                       >
-                        <Logo width="48px" height="48px" /> Xahau Hooks Builder
+                        <Logo width="48px" height="48px" /> XRPL Smart Contracts Builder
                       </DialogTitle>
                       <DialogDescription as="div">
                         <Text
@@ -191,7 +191,7 @@ const Navigation = () => {
                             mb: '$7'
                           }}
                         >
-                          Hooks add smart contract functionality to the Xahau Network.
+                          Smart contract functionality for the XRPL Network.
                         </Text>
                         <Flex css={{ flexDirection: 'column', gap: '$2', mt: '$2' }}>
                           <Text
@@ -212,7 +212,7 @@ const Navigation = () => {
                             target="_blank"
                             href="https://github.com/Xahau"
                           >
-                            <ArrowUpRight size="15px" /> Xahau Github
+                            <ArrowUpRight size="15px" /> XRPL Github
                           </Text>
 
                           <Text

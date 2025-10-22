@@ -164,6 +164,12 @@ const HooksEditor = () => {
       {isMdPreview ? 'Exit Preview' : 'View Preview'}
     </Link>
   )
+
+  console.log(snap);
+  
+
+  console.log(file?.language);
+  
   return (
     <Box
       css={{
@@ -213,10 +219,10 @@ const HooksEditor = () => {
               // create the web socket
               if (!subscriptionRef.current) {
                 monaco.languages.register({
-                  id: 'c',
-                  extensions: ['.c', '.h'],
-                  aliases: ['C', 'c', 'H', 'h'],
-                  mimetypes: ['text/plain']
+                  id: 'rust',
+                  extensions: ['.rs'],
+                  aliases: ['Rust', 'rust'],
+                  mimetypes: ['text/x-rust']
                 })
                 monaco.languages.register({
                   id: 'text',

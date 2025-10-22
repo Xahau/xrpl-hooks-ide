@@ -291,6 +291,18 @@
   resolved "https://registry.yarnpkg.com/@next/swc-win32-x64-msvc/-/swc-win32-x64-msvc-12.1.0.tgz#d27e7e76c87a460a4da99c5bfdb1618dcd6cd064"
   integrity sha512-aBvcbMwuanDH4EMrL2TthNJy+4nP59Bimn8egqv6GHMVj0a44cU6Au4PjOhLNqEh9l+IpRGBqMTzec94UdC5xg==
 
+"@noble/curves@^1.0.0", "@noble/curves@~1.9.0":
+  version "1.9.7"
+  resolved "https://registry.yarnpkg.com/@noble/curves/-/curves-1.9.7.tgz#79d04b4758a43e4bca2cbdc62e7771352fa6b951"
+  integrity sha512-gbKGcRUYIjA3/zCCNaWDciTMFI0dCkvou3TL8Zmy5Nc7sJ47a0jtOeZoTaMxkuqRo9cRhjOdZJXegxYE5FN/xw==
+  dependencies:
+    "@noble/hashes" "1.8.0"
+
+"@noble/hashes@1.8.0", "@noble/hashes@^1.0.0", "@noble/hashes@~1.8.0":
+  version "1.8.0"
+  resolved "https://registry.yarnpkg.com/@noble/hashes/-/hashes-1.8.0.tgz#cee43d801fcef9644b11b8194857695acd5f815a"
+  integrity sha512-jCs9ldd7NwzpgXDIf6P3+NrHh9/sD6CQdxHyjQI+h/6rDNo88ypBxxz45UDuZHz9r3tNz7N/VInSVoVdtXEI4A==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"
@@ -936,10 +948,90 @@
   resolved "https://registry.npmjs.org/@rushstack/eslint-patch/-/eslint-patch-1.1.0.tgz"
   integrity sha512-JLo+Y592QzIE+q7Dl2pMUtt4q8SKYI5jDrZxrozEQxnGVOyYE+GWK9eLkwTaeN9DDctlaRAQ3TBmzZ1qdLE30A==
 
+"@scure/base@^1.1.3", "@scure/base@~1.2.5":
+  version "1.2.6"
+  resolved "https://registry.yarnpkg.com/@scure/base/-/base-1.2.6.tgz#ca917184b8231394dd8847509c67a0be522e59f6"
+  integrity sha512-g/nm5FgUa//MCj1gV09zTJTaM6KBAHqLN907YVQqf7zC49+DcO4B1so4ZX07Ef10Twr6nuqYEH9GEggFXA4Fmg==
+
+"@scure/bip32@^1.3.1":
+  version "1.7.0"
+  resolved "https://registry.yarnpkg.com/@scure/bip32/-/bip32-1.7.0.tgz#b8683bab172369f988f1589640e53c4606984219"
+  integrity sha512-E4FFX/N3f4B80AKWp5dP6ow+flD1LQZo/w8UnLGYZO674jS6YnYeepycOOksv+vLPSpgN35wgKgy+ybfTb2SMw==
+  dependencies:
+    "@noble/curves" "~1.9.0"
+    "@noble/hashes" "~1.8.0"
+    "@scure/base" "~1.2.5"
+
+"@scure/bip39@^1.2.1":
+  version "1.6.0"
+  resolved "https://registry.yarnpkg.com/@scure/bip39/-/bip39-1.6.0.tgz#475970ace440d7be87a6086cbee77cb8f1a684f9"
+  integrity sha512-+lF0BbLiJNwVlev4eKelw1WWLaiKXw7sSl8T6FvBlWkdX+94aGJ4o8XjUdlyhTCjd8c+B3KT3JfS8P0bLRNU6A==
+  dependencies:
+    "@noble/hashes" "~1.8.0"
+    "@scure/base" "~1.2.5"
+
 "@stitches/react@^1.2.8":
   version "1.2.8"
   resolved "https://registry.yarnpkg.com/@stitches/react/-/react-1.2.8.tgz#954f8008be8d9c65c4e58efa0937f32388ce3a38"
   integrity sha512-9g9dWI4gsSVe8bNLlb+lMkBYsnIKCZTmvqvDG+Avnn69XfmHZKiaMrx7cgTaddq7aTPPmXiTsbFcUy0xgI4+wA==
+
+"@transia/isomorphic@^1.0.3-alpha.0":
+  version "1.0.3-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/isomorphic/-/isomorphic-1.0.3-alpha.0.tgz#c56064c491ae824efbdfea8dcb30113e238aae5f"
+  integrity sha512-nJTe3Icl5J5TdI/IiswDGmbpvXXkqDTBQPqaZnyPt4/euK70xKxSiUHJ51BUqLroHEVlvNSSgPfABwyuHElfow==
+  dependencies:
+    "@noble/hashes" "^1.0.0"
+    eventemitter3 "5.0.1"
+    ws "^8.17.1"
+
+"@transia/ripple-address-codec@^5.0.2-alpha.0":
+  version "5.0.2-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/ripple-address-codec/-/ripple-address-codec-5.0.2-alpha.0.tgz#9e8b81c43879be4bee655fda0a9491fcb81edbc3"
+  integrity sha512-A4cJiNIGeMlAkWElVQ9Aox3LL4VbtuI9GpfBhbgTB2ENt58JFOCFYuMmSqNhu1KKhiSCwdw3kIVLu5fSyn13Aw==
+  dependencies:
+    "@scure/base" "^1.1.3"
+    "@transia/isomorphic" "^1.0.3-alpha.0"
+
+"@transia/ripple-binary-codec@^2.5.3-alpha.0":
+  version "2.5.3-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/ripple-binary-codec/-/ripple-binary-codec-2.5.3-alpha.0.tgz#069ecc35ce25332921b903928381861489b5e809"
+  integrity sha512-vx21m6HgBYC0HeScSACR5wHHdStQzSsmeRnJs/oFJrXS325LQMCHXFfTha8D7r00o6TBFmax2Y/nniWZc53H4g==
+  dependencies:
+    "@transia/isomorphic" "^1.0.3-alpha.0"
+    "@transia/ripple-address-codec" "^5.0.2-alpha.0"
+    bignumber.js "^9.0.0"
+
+"@transia/ripple-keypairs@^2.0.2-alpha.0":
+  version "2.0.2-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/ripple-keypairs/-/ripple-keypairs-2.0.2-alpha.0.tgz#be4159dba797a75f3ed6c0b874e1e1cc48cb604c"
+  integrity sha512-+wG8IoBPb+Z4+ci8prA0xBiNC8PvtOQLQK1ruEn9t/zbh3FFrlCDjRWKPH0xer7QWxLDpKZ0xNSuxRBhAM+ZUA==
+  dependencies:
+    "@noble/curves" "^1.0.0"
+    "@transia/isomorphic" "^1.0.3-alpha.0"
+    "@transia/ripple-address-codec" "^5.0.2-alpha.0"
+
+"@transia/secret-numbers@^2.0.2-alpha.0":
+  version "2.0.2-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/secret-numbers/-/secret-numbers-2.0.2-alpha.0.tgz#8e4f1c8265164e8ae5220a582e1a84c71d3cd1c3"
+  integrity sha512-UTfa0zA0aj5rJiNLVp4f0ZgSsGS4gspA3MsV14rDdSHNdo+kVQPivoBEJdm1iWXnPmW4vIW4Z8NWvnzjhUZWYA==
+  dependencies:
+    "@transia/isomorphic" "^1.0.3-alpha.0"
+    "@transia/ripple-keypairs" "^2.0.2-alpha.0"
+
+"@transia/xrpl@^4.4.4-alpha.0":
+  version "4.4.4-alpha.0"
+  resolved "https://registry.yarnpkg.com/@transia/xrpl/-/xrpl-4.4.4-alpha.0.tgz#dec2fa631611d85de4a52a493901003ad29414b2"
+  integrity sha512-smHGmNk00DD2OFhQjlBNWdG2gDE7D1dU5SVzxHlVR88OjMQoyIQNUvvDMY/FCFRD8B+9xznNRmvctqeJX4U4Qw==
+  dependencies:
+    "@scure/bip32" "^1.3.1"
+    "@scure/bip39" "^1.2.1"
+    "@transia/isomorphic" "^1.0.3-alpha.0"
+    "@transia/ripple-address-codec" "^5.0.2-alpha.0"
+    "@transia/ripple-binary-codec" "^2.5.3-alpha.0"
+    "@transia/ripple-keypairs" "^2.0.2-alpha.0"
+    "@transia/secret-numbers" "^2.0.2-alpha.0"
+    bignumber.js "^9.0.0"
+    eventemitter3 "^5.0.1"
 
 "@types/aws-lambda@^8.10.83":
   version "8.10.93"
@@ -2457,6 +2549,11 @@ esutils@^2.0.2:
   version "2.0.3"
   resolved "https://registry.npmjs.org/esutils/-/esutils-2.0.3.tgz"
   integrity sha512-kVscqXk4OCp68SZ0dkgEKVi6/8ij300KBWTJq32P/dYeWTSwK41WyTxalN1eRmA5Z9UU/LX9D7FWSmV9SAYx6g==
+
+eventemitter3@5.0.1, eventemitter3@^5.0.1:
+  version "5.0.1"
+  resolved "https://registry.yarnpkg.com/eventemitter3/-/eventemitter3-5.0.1.tgz#53f5ffd0a492ac800721bb42c66b841de96423c4"
+  integrity sha512-GWkBvjiSZK87ELrYOSESUYeVIc9mvLLf/nXalMOS5dYrgZq9o5OVkbZAVM06CVxYsCwH9BDZFPlQTlPA1j4ahA==
 
 events@^3.0.0:
   version "3.3.0"
@@ -5547,6 +5644,11 @@ ws@^7.2.0:
   version "7.5.7"
   resolved "https://registry.npmjs.org/ws/-/ws-7.5.7.tgz"
   integrity sha512-KMvVuFzpKBuiIXW3E4u3mySRO2/mCHSyZDJQM5NQ9Q9KHWHWh0NHgfbRMLLrceUK5qAL4ytALJbpRMjixFZh8A==
+
+ws@^8.17.1:
+  version "8.18.3"
+  resolved "https://registry.yarnpkg.com/ws/-/ws-8.18.3.tgz#b56b88abffde62791c639170400c93dcb0c95472"
+  integrity sha512-PEIGCY5tSlUt50cqyMXfCzX+oOPqN0vuGqWzbcJ2xvnkzkq46oOpz7dQaTDBdfICb4N14+GARUDw2XV2N4tvzg==
 
 xrpl-accountlib@^1.6.1:
   version "1.6.1"

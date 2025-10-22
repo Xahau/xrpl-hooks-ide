@@ -46,7 +46,7 @@ export const compileCode = async (activeId: number) => {
           strip: state.compileOptions.strip,
           files: [
             {
-              type: 'c',
+              type: 'rust',
               options: state.compileOptions.optimizationLevel || '-O2',
               name: file.name,
               src: file.content

@@ -129,7 +129,7 @@ export const TxUI: FC<UIProps> = ({
 
   const otherFields = Object.keys(txFields).filter(k => !richFields.includes(k)) as [keyof TxFields]
   const amountOptions = [
-    { label: 'XAH', value: 'xah' },
+    { label: 'XRP', value: 'xrp' },
     { label: 'Token', value: 'token' }
   ] as const
 

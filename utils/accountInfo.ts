@@ -1,6 +1,6 @@
 import toast from 'react-hot-toast'
 
-import { xrplSend } from '../state/actions/xrpl-client'
+import { rpc } from '../state/actions/xrpl-client'
 
 interface AccountInfo {
     Account: string,
@@ -14,12 +14,12 @@ const fetchAccountInfo = async (
     opts: { silent?: boolean } = {}
 ): Promise<AccountInfo | undefined> => {
     try {
-        const res = await xrplSend({
+        const res = await rpc({
             id: `hooks-builder-req-info-${address}`,
             command: 'account_info',
             account: address
         })
-        return res.account_data;
+        return res.result.account_data;
     } catch (err) {
         if (!opts.silent) {
             console.error(err)

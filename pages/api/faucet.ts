@@ -24,17 +24,20 @@ export default async function handler(
   const ip = Array.isArray(req?.headers?.['x-real-ip'])
     ? req?.headers?.['x-real-ip'][0]
     : req?.headers?.['x-real-ip']
-  try {
+  try {    
     const response = await fetch(
-      `https://${process.env.NEXT_PUBLIC_TESTNET_URL}/newcreds?account=${account ? account : ''}`,
+      `https://batch.faucet.nerdnest.xyz/accounts`,
       {
         method: 'POST',
         headers: {
+          'Content-Type': 'application/json',
           'x-forwarded-for': ip || ''
-        }
+        },
+        body: JSON.stringify({ destination: account })
       }
     )
     const json: Faucet | ErrorResponse = await response.json()
+    
     if ('error' in json) {
       return res.status(429).json(json)
     }
