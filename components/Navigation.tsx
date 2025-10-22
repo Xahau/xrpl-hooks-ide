@@ -210,7 +210,7 @@ const Navigation = () => {
                             as="a"
                             rel="noreferrer noopener"
                             target="_blank"
-                            href="https://github.com/Xahau"
+                            href="https://github.com/XRPLF/rippled"
                           >
                             <ArrowUpRight size="15px" /> XRPL Github
                           </Text>
@@ -231,9 +231,9 @@ const Navigation = () => {
                             as="a"
                             rel="noreferrer noopener"
                             target="_blank"
-                            href="https://docs.xahau.network/readme-1"
+                            href="https://github.com/Transia-RnD/xrpl-wasm-std/blob/main/docs/comprehensive-guide.md"
                           >
-                            <ArrowUpRight size="15px" /> Hooks documentation
+                            <ArrowUpRight size="15px" /> Wasm documentation
                           </Text>
                           <Text
                             css={{
@@ -352,7 +352,7 @@ const Navigation = () => {
                 </Button>
               </Link>
             </ButtonGroup>
-            <Link href="https://xrpl-hooks.readme.io/" passHref>
+            <Link href="https://github.com/Transia-RnD/xrpl-wasm-std/blob/main/docs/comprehensive-guide.md" passHref>
               <a target="_blank" rel="noreferrer noopener">
                 <Button outline>
                   <BookOpen size="15px" />
