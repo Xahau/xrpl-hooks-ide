@@ -51,7 +51,7 @@ export const defaultTransaction: TransactionState = {
   selectedTransaction: null,
   selectedAccount: null,
   selectedFlags: null,
-  hookParameters: {},
+  functionName: null,
   memos: {},
   editorIsSaved: true,
   txIsLoading: false,

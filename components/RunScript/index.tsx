@@ -32,7 +32,6 @@ const generateHtmlTemplate = async (code: string, data?: Record<string, any>) =>
 
   processString = JSON.stringify(process)
 
-  const libs = (await import("xrpl-accountlib/dist/browser.hook-bundle.js")).default;
   return `
   <html>
   <head>
@@ -73,9 +72,6 @@ const generateHtmlTemplate = async (code: string, data?: Record<string, any>) =>
       }
 
       window.addEventListener('error', windowErrorHandler);
-    </script>
-    <script>
-      ${libs}
     </script>
     <script type="module">
       ${code}
