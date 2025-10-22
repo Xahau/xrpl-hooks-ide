@@ -7,9 +7,7 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write .",
-    "postinstall": "patch-package && yarn run postinstall-postinstall",
-    "postinstall-postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js"
+    "format": "prettier --write ."
   },
   "dependencies": {
     "@codingame/monaco-jsonrpc": "^0.3.1",
@@ -39,7 +37,7 @@
     "lodash.xor": "^4.5.0",
     "monaco-editor": "^0.33.0",
     "next": "^12.0.4",
-    "next-auth": "^4.24.11",
+    "next-auth": "^5.0.0-beta.29",
     "next-plausible": "^3.2.0",
     "next-themes": "^0.1.1",
     "normalize-url": "^7.0.2",
