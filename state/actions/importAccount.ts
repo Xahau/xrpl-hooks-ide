@@ -1,5 +1,5 @@
 import toast from 'react-hot-toast'
-import { derive, XRPL_Account } from 'xrpl-accountlib'
+import { Wallet } from '@transia/xrpl'
 
 import state from '../index'
 import { names } from './addFaucetAccount'
@@ -12,9 +12,9 @@ export const importAccount = (secret: string, name?: string) => {
   if (state.accounts.find(acc => acc.secret === secret)) {
     return toast.error('Account already added!')
   }
-  let account: XRPL_Account | null = null
+  let account: any | null = null
   try {
-    account = derive.familySeed(secret)
+    account = Wallet.fromSeed(secret)
   } catch (err: any) {
     if (err?.message) {
       toast.error(err.message)

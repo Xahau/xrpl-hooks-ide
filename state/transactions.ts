@@ -29,7 +29,6 @@ export interface TransactionState {
   selectedTransaction: SelectOption | null
   selectedAccount: SelectOption | null
   selectedFlags: SelectOption[] | null
-  functionName: string | null
   memos: Memos
   txIsLoading: boolean
   txIsDisabled: boolean
@@ -40,7 +39,7 @@ export interface TransactionState {
   estimatedFee?: string
 }
 
-const commonFields = ['TransactionType', 'Account', 'Sequence', "HookParameters"] as const;
+const commonFields = ['TransactionType', 'Account', 'Sequence'] as const;
 
 export type TxFields = Omit<
   Partial<typeof transactionsData[0]>,
@@ -51,7 +50,6 @@ export const defaultTransaction: TransactionState = {
   selectedTransaction: null,
   selectedAccount: null,
   selectedFlags: null,
-  functionName: null,
   memos: {},
   editorIsSaved: true,
   txIsLoading: false,
@@ -90,7 +88,6 @@ export const modifyTxState = (
   opts: { replaceState?: boolean } = {}
 ) => {
   const tx = transactionsState.transactions.find(tx => tx.header === header)
-
   if (partialTx === undefined) {
     transactionsState.transactions = transactionsState.transactions.filter(
       tx => tx.header !== header
@@ -131,16 +128,48 @@ export const modifyTxState = (
 
 export const prepareTransaction = (data: any) => {
   let options = { ...data }
-
   Object.keys(options).forEach(field => {
     let _value = options[field]
 
-    if (_value?.$type === 'hexable') {
-      // Only convert if $ishex is false (meaning it's plain text)
-      options[field] = _value.$ishex ? _value.$value : toHex(_value.$value)
-    } else if (_value?.$type === 'account') {
-      options[field] = _value.$value
+    if (field === "Parameters" && Array.isArray(_value)) {
+      options[field] = _value.map((param: any) => {
+      const p: any = {}
+      Object.keys(param).forEach(k => {
+        let v = param[k]
+        if (v && typeof v === "object" && !Array.isArray(v)) {
+        // Go one more level deeper
+        const inner: any = {}
+        Object.keys(v).forEach(innerKey => {
+          let innerVal = v[innerKey]
+          if (innerVal && typeof innerVal === "object" && innerVal.$type === "hexable") {
+          innerVal = innerVal.$ishex ? innerVal.$value : toHex(innerVal.$value)
+          }
+          if (typeof innerVal === "string" && isHex(innerVal)) {
+          innerVal = toHex(innerVal)
+          }
+          inner[innerKey] = innerVal
+        })
+        p[k] = inner
+        } else {
+        if (v && typeof v === "object" && v.$type === "hexable") {
+          v = v.$ishex ? v.$value : toHex(v.$value)
+        }
+        if (typeof v === "string" && isHex(v)) {
+          v = toHex(v)
+        }
+        p[k] = v
+        }
+      })
+      return p
+      })
+      return
     }
+    
+
+    if (_value?.$type === 'hexable') {
+      options[field] = _value.$ishex ? _value.$value : toHex(_value.$value)
+    }
+    
     
     if (!typeIs(_value, 'object')) return
     // amount.xrp
@@ -191,7 +220,7 @@ export const prepareState = (value: string, transactionType?: string) => {
     return
   }
 
-  const { Account, TransactionType, FunctionName, Memos, ...rest } = options
+  const { Account, TransactionType, Memos, ...rest } = options
   let tx: Partial<TransactionState> = {}
   const schema = getTxFields(transactionType)
 
@@ -221,9 +250,9 @@ export const prepareState = (value: string, transactionType?: string) => {
     tx.selectedTransaction = null
   }
 
-  if (FunctionName) {
-    tx.functionName = isHex(FunctionName) ? FunctionName : toHex(FunctionName)
-  }
+  // if (FunctionName) {
+  //   tx.functionName = isHex(FunctionName) ? FunctionName : toHex(FunctionName)
+  // }
   // if (HookParameters && HookParameters instanceof Array) {
   //   tx.hookParameters = HookParameters.reduce<TransactionState["hookParameters"]>((acc, cur, idx) => {
   //     const param = { label: fromHex(cur.HookParameter?.HookParameterName || ""), value: cur.HookParameter?.HookParameterValue || "" }
@@ -247,7 +276,7 @@ export const prepareState = (value: string, transactionType?: string) => {
     rest.Flags = undefined
     tx.selectedFlags = flags
   }
-
+  
   Object.keys(rest).forEach(field => {
     const value = rest[field]
     const schemaVal = schema[field as keyof TxFields]

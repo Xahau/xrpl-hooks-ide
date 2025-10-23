@@ -335,8 +335,6 @@ const Accounts: FC<AccountProps> = props => {
           })
         })
         const objectResponses = await Promise.all(objectRequests)
-        console.log(objectResponses);
-        
         objectResponses.forEach((res: any) => {
           const address = res?.account as string
           const accountToUpdate = state.accounts.find(acc => acc.address === address)
@@ -512,8 +510,6 @@ const ImportAccountDialog = ({ type = 'import' }: { type?: 'import' | 'create' }
   const handleSubmit = async () => {
     if (type === 'create') {
       const value = capitalize(name)
-      console.log('Creating account:', value);
-      
       await addFaucetAccount(value, true)
       setName('')
       setSecret('')

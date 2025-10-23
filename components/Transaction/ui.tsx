@@ -26,6 +26,7 @@ interface UIProps {
   resetState: (tt?: SelectOption) => TransactionState | undefined
   state: TransactionState
   estimateFee?: (...arg: any) => Promise<string | undefined>
+  estimateCallFee?: (...arg: any) => Promise<string | undefined>
   switchToJson: () => void
 }
 
@@ -34,6 +35,7 @@ export const TxUI: FC<UIProps> = ({
   setState,
   resetState,
   estimateFee,
+  estimateCallFee,
   switchToJson
 }) => {
   const { accounts } = useSnapshot(state)
@@ -57,6 +59,7 @@ export const TxUI: FC<UIProps> = ({
   const handleSetAccount = (acc: SelectOption) => {
     setState({ selectedAccount: acc })
     streamState.selectedAccount = acc
+    // streamState.txId = acc
   }
 
   const handleSetField = useCallback(
@@ -101,6 +104,18 @@ export const TxUI: FC<UIProps> = ({
     [estimateFee, handleSetField]
   )
 
+  const handleEstimateAllowance = useCallback(
+    async (state?: TransactionState, silent?: boolean) => {
+      setFeeLoading(true)
+
+      const fee = await estimateCallFee?.(state, { silent })
+      if (fee) handleSetField('ComputationAllowance', fee, state?.txFields)
+
+      setFeeLoading(false)
+    },
+    [estimateCallFee, handleSetField]
+  )
+
   const handleChangeTxType = useCallback(
     (tt: SelectOption) => {
       setState({ selectedTransaction: tt })
@@ -108,8 +123,9 @@ export const TxUI: FC<UIProps> = ({
       const newState = resetState(tt)
 
       handleEstimateFee(newState, true)
+      handleEstimateAllowance(newState, true)
     },
-    [handleEstimateFee, resetState, setState]
+    [handleEstimateFee, handleEstimateAllowance, resetState, setState]
   )
 
   // default tx
@@ -188,7 +204,6 @@ export const TxUI: FC<UIProps> = ({
         )}
         {otherFields.map(field => {
           let _value = txFields[field]
-
           let value: string | undefined
           if (typeIs(_value, 'object')) {
             // @ts-expect-error -- todo
@@ -212,6 +227,7 @@ export const TxUI: FC<UIProps> = ({
           // @ts-expect-error -- todo
           const isJson = typeof _value === 'object' && _value.$type === 'json'
           const isFee = field === 'Fee'
+          const isComputationAllowance = field === 'ComputationAllowance'
           let rows = isJson ? (value?.match(/\n/gm)?.length || 0) + 1 : undefined
           if (rows && rows > 5) rows = 5
           let tokenAmount = defaultTokenAmount
@@ -326,6 +342,7 @@ export const TxUI: FC<UIProps> = ({
               </TxField>
             )
           }
+          
           return (
             <TxField key={field} label={field}>
               {isJson ? (
@@ -374,7 +391,7 @@ export const TxUI: FC<UIProps> = ({
                   }}
                 />
               )}
-              {isFee && (
+              {/* {isFee && (
                 <Button
                   size="xs"
                   variant="primary"
@@ -391,6 +408,27 @@ export const TxUI: FC<UIProps> = ({
                     display: 'flex'
                   }}
                   onClick={() => handleEstimateFee()}
+                >
+                  Suggest
+                </Button>
+              )} */}
+              {isComputationAllowance && (
+                <Button
+                  size="xs"
+                  variant="primary"
+                  outline
+                  disabled={txState.txIsDisabled}
+                  isDisabled={txState.txIsDisabled}
+                  isLoading={feeLoading}
+                  css={{
+                    position: 'absolute',
+                    right: '$2',
+                    fontSize: '$xs',
+                    cursor: 'pointer',
+                    alignContent: 'center',
+                    display: 'flex'
+                  }}
+                  onClick={() => handleEstimateAllowance()}
                 >
                   Suggest
                 </Button>

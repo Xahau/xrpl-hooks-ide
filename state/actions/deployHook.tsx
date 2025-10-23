@@ -3,7 +3,7 @@ import toast from 'react-hot-toast'
 import state, { IAccount } from '../index'
 import { Link } from '../../components'
 import { ref } from 'valtio'
-import estimateFee from '../../utils/estimateFee'
+import { estimateDeployFee } from '../../utils/estimateFee'
 import { DeployContractData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { SubmitResponse, SubmittableTransaction, Transaction, TransactionMetadata, TxResponse, Wallet } from '@transia/xrpl'
@@ -134,8 +134,8 @@ export const deployHook = async (account: IAccount & { name?: string }, data: De
       </>
     )
     if (submitResponse.result.engine_result === 'tesSUCCESS') {
-      // wait 4 seconds for the transaction to be validated
-      await new Promise(resolve => setTimeout(resolve, 4000));
+      // wait 5 seconds for the transaction to be validated
+      await new Promise(resolve => setTimeout(resolve, 5000));
       // get the transaction result
       txResponse = await rpc({
         command: 'tx',
@@ -226,8 +226,8 @@ export const deleteContract = async (account: IAccount & { name?: string }) => {
   
   try {
     // Update tx Fee value with network estimation
-    const res = await estimateFee(tx, submitAccount)
-    tx['Fee'] = res?.base_fee || '1000'
+    const fee = await estimateDeployFee(tx)
+    tx['Fee'] = String(fee)
   } catch (err) {
     console.error(err)
   }

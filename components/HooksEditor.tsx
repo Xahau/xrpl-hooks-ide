@@ -59,7 +59,6 @@ const setMarkers = (monacoE: typeof monaco) => {
   // const model = monacoE.editor?.getModel(
   //   monacoE.Uri.parse(`file:///work/c/${state.files?.[state.active]?.name}`)
   // );
-  // console.log(state.active);
   // Add decoration (aka extra hoverMessages) to markers in the
   // exact same range (location) where the markers are
   const models = monacoE.editor.getModels()
@@ -164,11 +163,6 @@ const HooksEditor = () => {
       {isMdPreview ? 'Exit Preview' : 'View Preview'}
     </Link>
   )
-
-  console.log(snap);
-  
-
-  console.log(file?.language);
   
   return (
     <Box

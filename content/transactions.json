@@ -252,7 +252,7 @@
   },
   {
     "TransactionType": "ContractCall",
-    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
+    "Account": "rHdgnwhjuTu2nfJPmstsiZMwK5uSLrEhyU",
     "ContractAccount": {
       "$type": "account",
       "$value": ""
@@ -260,31 +260,33 @@
     "FunctionName": {
       "$type": "hexable",
       "$ishex": false,
-      "$value": "transfer"
+      "$value": "base"
     },
     "Parameters": [
       {
         "Parameter": {
-          "ParameterFlag": 0,
-          "ParameterName": "to",
-          "ParameterValue": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck"
+          "ParameterValue": {
+            "type": "ACCOUNT",
+            "value": "rHdgnwhjuTu2nfJPmstsiZMwK5uSLrEhyU"
+          }
         }
       },
       {
         "Parameter": {
-          "ParameterFlag": 0,
-          "ParameterName": "amount",
-          "ParameterValue": "1000000"
+          "ParameterValue": {
+            "type": "AMOUNT",
+            "value": "1000000"
+          }
         }
       }
     ],
-    "ComputationAllowance": "1000000",
+    "ComputationAllowance": 1000000,
     "Fee": "12"
   },
   {
     "TransactionType": "ContractClawback",
-    "Account": "rN7n7otQDd6FczFgLdlqtyMVrn3HVyBJck",
-    "ContractAccount": "rLHzPsX6oXkzU9tFYDKZgjcy81KRzfHmAJ",
+    "Account": "rHdgnwhjuTu2nfJPmstsiZMwK5uSLrEhyU",
+    "ContractAccount": "rHdgnwhjuTu2nfJPmstsiZMwK5uSLrEhyU",
     "Amount": {
       "$type": "amount.xrp",
       "$value": "1000000"
@@ -298,20 +300,20 @@
     "Functions": [
       {
         "Function": {
-          "FunctionName": "transfer",
+          "FunctionName": "DEADBEEF",
           "Parameters": [
             {
               "InstanceParameter": {
-                "ParameterFlag": 1,
-                "ParameterName": "to",
-                "ParameterType": "address"
+                "ParameterFlag": 0,
+                "ParameterName": "CAFE",
+                "ParameterType": "ACCOUNT"
               }
             },
             {
               "InstanceParameter": {
-                "ParameterFlag": 1,
-                "ParameterName": "amount",
-                "ParameterType": "uint256"
+                "ParameterFlag": 0,
+                "ParameterName": "CAFE",
+                "ParameterType": "ACCOUNT"
               }
             }
           ]

@@ -40,7 +40,6 @@ const EnrichLog: FC<EnrichLogProps> = ({ str }) => {
       if (match.startsWith('HookSet')) {
         const code = match.match(/^HookSet\((\d+)\)/)?.[1]
         const val = hookSetCodes.find(v => code && v.code === +code)
-        console.log({ code, val })
         if (!val) return match
 
         const content = capitalize(val.description) || 'No hint available!'

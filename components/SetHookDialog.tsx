@@ -17,7 +17,7 @@ import { useSnapshot } from 'valtio'
 import state, { IFile, SelectOption } from '../state'
 import toast from 'react-hot-toast'
 import { prepareDeployHookTx } from '../state/actions/deployHook'
-import estimateFee from '../utils/estimateFee'
+import { estimateDeployFee } from '../utils/estimateFee'
 import { getParameters, DeployContractData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
 import AccountSequence from './Sequence'
@@ -156,9 +156,9 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       if (!tx) {
         return
       }
-      const res = await estimateFee(tx, account)
-      if (res && res.base_fee) {
-        setValue('Fee', Math.round(Number(res.base_fee || '')).toString())
+      const fee = await estimateDeployFee(tx)
+      if (fee) {
+        setValue('Fee', Math.round(Number(fee || '')).toString())
       }
     }, [account, getValues, setValue])
 
@@ -177,9 +177,6 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
         delete param.$metaData
         return param
       })
-
-      console.log(data);
-      
 
       // Build InstanceParameterValues
       data.InstanceParameterValues = data.InstanceParameters.map(param => ({
@@ -229,7 +226,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
             variant={'secondary'}
             disabled={!account || account.isLoading || account.secret === "none" || !activeFile || tooLargeFile()}
           >
-            Create Contract
+            Deploy
           </Button>
         </DialogTrigger>
         <DialogContent>
@@ -558,10 +555,9 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                         try {
                           const tx = await prepareDeployHookTx(account, formValues as any)
                           if (tx) {
-                            const res = await estimateFee(tx, account)
-
-                            if (res && res.base_fee) {
-                              setValue('Fee', Math.round(Number(res.base_fee || '')).toString())
+                            const fee = await estimateDeployFee(tx)
+                            if (fee) {
+                              setValue('Fee', Math.round(Number(fee || '')).toString())
                             }
                           }
                         } catch (err) {}
@@ -590,7 +586,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                 <Button outline>Cancel</Button>
               </DialogClose>
               <Button variant="primary" type="submit" isLoading={account?.isLoading}>
-                Create Contract
+                Deploy
               </Button>
             </Flex>
             <DialogClose asChild>

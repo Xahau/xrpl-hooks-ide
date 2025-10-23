@@ -3,7 +3,9 @@ import type { IAccount } from '..'
 import ResultLink from '../../components/ResultLink'
 import { ref } from 'valtio'
 import { rpc } from './xrpl-client'
-import { Transaction, Wallet } from '@transia/xrpl'
+import { SubmittableTransaction, Wallet } from '@transia/xrpl'
+// import { hashes } from '@transia/xrpl'
+// import { streamState } from '../../components/DebugStream'
 
 interface TransactionOptions {
   TransactionType: string
@@ -28,6 +30,7 @@ export const sendTransaction = async (
     NetworkID: Number(process.env.NEXT_PUBLIC_NETWORK_ID),
     ...opts
   }
+  
   const { logPrefix = '' } = options || {}
   state.transactionLogs.push({
     type: 'log',
@@ -35,7 +38,13 @@ export const sendTransaction = async (
   })
   try {
     const wallet = Wallet.fromSeed(account.secret)
-    const { tx_blob } = wallet.sign(tx as Transaction)
+    const { tx_blob } = wallet.sign(tx as SubmittableTransaction)
+
+    // streamState.txId = {
+    //   label: 'sfParentBatchId',
+    //   value: hashes.hashSignedTx(tx_blob),
+    // }
+
     const response = await rpc({
       command: 'submit',
       tx_blob: tx_blob

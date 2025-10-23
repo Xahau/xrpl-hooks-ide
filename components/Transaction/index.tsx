@@ -17,7 +17,7 @@ import Button from '../Button'
 import Flex from '../Flex'
 import { TxJson } from './json'
 import { TxUI } from './ui'
-import { default as _estimateFee } from '../../utils/estimateFee'
+import { estimateFee, estimateCallFee } from '../../utils/estimateFee'
 import toast from 'react-hot-toast'
 import { combineFlags, extractFlags, transactionFlags } from '../../state/constants/flags'
 
@@ -114,13 +114,13 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         throw Error('Account must be selected from imported accounts!')
       }
       const options = prepareOptions(st)
+      
       // delete unnecessary fields
       Object.keys(options).forEach(field => {
         if (!options[field]) {
           delete options[field]
         }
       })
-
       await sendTransaction(account, options, { logPrefix })
     } catch (error) {
       console.error(error)
@@ -167,7 +167,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
     [getJsonString, header, setState, viewType]
   )
 
-  const estimateFee = useCallback(
+  const getTxFee = useCallback(
     async (st?: TransactionState, opts?: { silent?: boolean }) => {
       const state = st || txState
       const ptx = prepareOptions(state)
@@ -182,7 +182,32 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       ptx.Account = account.address
       ptx.Sequence = account.sequence
 
-      const res = await _estimateFee(ptx, account, opts)
+      const res = await estimateFee(ptx, account, opts)
+      const fee = res?.base_fee
+      setState({ estimatedFee: fee })
+      return fee
+    },
+    [accounts, prepareOptions, setState, txState]
+  )
+
+  const getCallFee = useCallback(
+    async (st?: TransactionState, opts?: { silent?: boolean }) => {
+      const state = st || txState
+      const ptx = prepareOptions(state)
+      const account = accounts.find(acc => acc.address === state.selectedAccount?.value)
+      if (!account) {
+        if (!opts?.silent) {
+          toast.error('Please select account from the list.')
+        }
+        console.log('Account not found:', state.selectedAccount?.value);
+        
+        return
+      }
+
+      ptx.Account = account.address
+      ptx.Sequence = account.sequence
+
+      const res = await estimateCallFee(ptx, account, opts)
       const fee = res?.base_fee
       setState({ estimatedFee: fee })
       return fee
@@ -208,7 +233,6 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
           header={header}
           state={txState}
           setState={setState}
-          estimateFee={estimateFee}
         />
       ) : (
         <TxUI
@@ -216,7 +240,8 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
           state={txState}
           resetState={resetState}
           setState={setState}
-          estimateFee={estimateFee}
+          estimateFee={getTxFee}
+          estimateCallFee={getCallFee}
         />
       )}
       <Flex

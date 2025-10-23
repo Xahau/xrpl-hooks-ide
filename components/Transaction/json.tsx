@@ -16,7 +16,6 @@ interface JsonProps {
   header?: string
   setState: (pTx?: Partial<TransactionState> | undefined) => void
   state: TransactionState
-  estimateFee?: () => Promise<string | undefined>
 }
 
 export const TxJson: FC<JsonProps> = ({

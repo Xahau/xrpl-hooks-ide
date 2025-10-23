@@ -15,6 +15,8 @@ interface ISelect<T = string> {
 
 export interface IStreamState {
   selectedAccount: ISelect | null
+  contractId: ISelect | null
+  txId: ISelect | null
   status: 'idle' | 'opened' | 'closed'
   statusChangeTimestamp?: number
   logs: ILog[]
@@ -23,6 +25,8 @@ export interface IStreamState {
 
 export const streamState = proxy<IStreamState>({
   selectedAccount: null as ISelect | null,
+  contractId: null as ISelect | null,
+  txId: null as ISelect | null,
   status: 'idle',
   logs: [] as ILog[]
 })
@@ -82,7 +86,7 @@ const addListeners = (account: ISelect | null) => {
 
     streamState.socket = ref(
       new ReconnectingWebSocket(
-        `wss://${process.env.NEXT_PUBLIC_DEBUG_STREAM_URL}/${account?.value}`
+        `ws://${process.env.NEXT_PUBLIC_DEBUG_STREAM_URL}/${account?.value}`
       )
     )
     if (streamState.socket) {
