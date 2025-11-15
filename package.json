@@ -67,7 +67,7 @@
     "vscode-languageserver": "^7.0.0",
     "vscode-uri": "^3.0.2",
     "wabt": "^1.0.30",
-    "xrpl-accountlib": "^1.6.1",
+    "xrpl-accountlib": "^9.1.0",
     "xrpl-client": "^2.0.2"
   },
   "devDependencies": {

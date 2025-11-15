@@ -9,6 +9,8 @@ import estimateFee from '../../utils/estimateFee'
 import { SetHookData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { xrplSend } from './xrpl-client'
+import { XrplDefinitions } from 'xrpl-accountlib'
+import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
 export const sha256 = async (string: string) => {
   const utf8 = new TextEncoder().encode(string)
@@ -118,7 +120,7 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
     return
   }
   const keypair = derive.familySeed(account.secret)
-  const { signedTransaction } = sign(tx, keypair)
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
 
   const currentAccount = state.accounts.find(acc => acc.address === account.address)
   if (currentAccount) {
@@ -212,7 +214,7 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   } catch (err) {
     console.error(err)
   }
-  const { signedTransaction } = sign(tx, keypair)
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
   if (currentAccount) {
     currentAccount.isLoading = true
   }
