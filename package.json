@@ -62,6 +62,7 @@
     "react-time-ago": "^7.1.9",
     "reconnecting-websocket": "^4.4.0",
     "regexify-string": "^1.0.17",
+    "ripple-binary-codec": "npm:xahau-binary-codec@^2.1.2",
     "valtio": "^1.2.5",
     "vscode-languageserver": "^7.0.0",
     "vscode-uri": "^3.0.2",
@@ -81,9 +82,6 @@
     "eslint-config-next": "11.1.2",
     "raw-loader": "^4.0.2",
     "typescript": "^4.9.5"
-  },
-  "resolutions": {
-    "ripple-binary-codec": "=1.6.0"
   },
   "engines": {
     "node": ">=22.0.0"

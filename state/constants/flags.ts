@@ -21,6 +21,9 @@ export const transactionFlags: { [key: /* TransactionType */ string]: Flags } = 
         tfDisallowXRP: '0x00100000',
         tfAllowXRP: '0x00200000',
     },
+    CronSet: {
+        tfCronUnset: '0x00000001',
+    },
     NFTokenCreateOffer: {
         tfSellNFToken: '0x00000001',
     },
