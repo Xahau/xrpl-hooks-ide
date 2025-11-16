@@ -20,13 +20,18 @@ export const tts = {
   ttTRUST_SET: 20,
   ttACCOUNT_DELETE: 21,
   ttSET_HOOK: 22,
+  ttCLAWBACK: 30,
   ttURI_TOKEN_MINT: 45,
   ttURI_TOKEN_BURN: 46,
   ttURI_TOKEN_BUY: 47,
   ttURI_TOKEN_CREATE_SELL_OFFER: 48,
   ttURI_TOKEN_CANCEL_SELL_OFFER: 49,
+  ttCRON: 92,
+  ttCRON_SET: 93,
+  ttREMARKS_SET: 94,
+  ttREMIT: 95,
   ttIMPORT: 97,
-  ttINVOKE: 99
+  ttINVOKE: 99,
 }
 
 export type TTS = typeof tts
