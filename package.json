@@ -8,8 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "postinstall": "patch-package && yarn run postinstall-postinstall",
-    "postinstall-postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js"
+    "postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js"
   },
   "dependencies": {
     "@codingame/monaco-jsonrpc": "^0.3.1",
@@ -44,7 +43,6 @@
     "normalize-url": "^7.0.2",
     "octokit": "^1.7.0",
     "pako": "^2.0.4",
-    "patch-package": "^6.4.7",
     "phosphor-react": "^1.3.1",
     "postinstall-postinstall": "^2.1.0",
     "prettier": "^2.7.1",
