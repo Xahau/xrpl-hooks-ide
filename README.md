@@ -96,10 +96,6 @@ If you want to extend hover messages provided by language-server you can add ext
 
 Global state management is handled with library called Valtio (https://github.com/pmndrs/valtio). Initial state can be found from `./state/index.ts` file. All the actions which updates the state is found under `./state/actions/` folder.
 
-## Special notes
-
-Since we are dealing with greenfield tech and one of the dependencies (ripple-binary-codec) doesn't yet support signing `SetHook` transactions we had to monkey patch the library with patch-package (https://www.npmjs.com/package/patch-package). We modified the definitions.json file of the ripple-binary-codec library and then ran `yarn patch-package ripple-binary-codec` which created `patches/ripple-binary-codec+1.2.0.patch` file to this project. This file contains the modifications to `ripple-binary-codec` library. package.json contains postinstall hook which runs patch-package, and it will add the patch on the file mentioned earlier. This happens automatically after running patch package.
-
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
