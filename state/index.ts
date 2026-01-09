@@ -164,7 +164,7 @@ client.on('offline', () => {
 })
 
 if (process.env.NODE_ENV !== 'production') {
-  devtools(state, 'Files State')
+  devtools(state, { name: 'Files State' })
 }
 
 if (typeof window !== 'undefined') {
