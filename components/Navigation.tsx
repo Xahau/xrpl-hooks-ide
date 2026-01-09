@@ -66,7 +66,8 @@ const Navigation = () => {
       <Container
         css={{
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          height: '100%'
         }}
       >
         <Flex
@@ -74,22 +75,21 @@ const Navigation = () => {
             flex: 1,
             alignItems: 'center',
             borderRight: '1px solid $colors$mauve6',
-            py: '$3',
-            pr: '$4'
+            pr: '$4',
+            height: '100%'
           }}
         >
-          <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref>
-            <Box
-              as="a"
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '$textColor'
-              }}
-            >
-              <Logo width="32px" height="32px" />
-            </Box>
-          </Link>
+          <Box
+            as={Link}
+            href={gistId ? `/develop/${gistId}` : '/develop'}
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+              color: '$textColor'
+            }}
+          >
+            <Logo width="32px" height="32px" />
+          </Box>
           <Flex
             css={{
               ml: '$5',
@@ -318,6 +318,8 @@ const Navigation = () => {
             flexWrap: 'nowrap',
             marginLeft: '$4',
             overflowX: 'scroll',
+            alignItems: 'center',
+            height: '100%',
             '&::-webkit-scrollbar': {
               height: 0,
               background: 'transparent'
@@ -336,28 +338,26 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/develop')} uppercase>
+              <Link href={gistId ? `/develop/${gistId}` : '/develop'} shallow>
+                <Button outline={!router.pathname.includes('/develop')} uppercase>
                   Develop
                 </Button>
               </Link>
-              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/deploy')} uppercase>
+              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} shallow>
+                <Button outline={!router.pathname.includes('/deploy')} uppercase>
                   Deploy
                 </Button>
               </Link>
-              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/test')} uppercase>
+              <Link href={gistId ? `/test/${gistId}` : '/test'} shallow>
+                <Button outline={!router.pathname.includes('/test')} uppercase>
                   Test
                 </Button>
               </Link>
             </ButtonGroup>
-            <Link href="https://xrpl-hooks.readme.io/" passHref>
-              <a target="_blank" rel="noreferrer noopener">
-                <Button outline>
-                  <BookOpen size="15px" />
-                </Button>
-              </a>
+            <Link href="https://xrpl-hooks.readme.io/" target="_blank" rel="noreferrer noopener">
+              <Button outline>
+                <BookOpen size="15px" />
+              </Button>
             </Link>
           </Stack>
         </Flex>

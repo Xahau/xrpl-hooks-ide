@@ -142,7 +142,7 @@ export const compileWat = async (activeId: number) => {
       write_debug_names: true,
     });
 
-    file.compiledContent = ref(buffer)
+    file.compiledContent = ref(buffer) as any
     file.lastCompiled = new Date()
     file.compiledValueSnapshot = file.content
     file.compiledWatContent = file.content

@@ -44,6 +44,7 @@ export type ContentMenuOption = (TextOption | SeparatorOption | CheckboxOption |
 export interface IContextMenu {
   options?: ContentMenuOption[]
   isNested?: boolean
+  children?: React.ReactNode
 }
 export const ContextMenu: FC<IContextMenu> = ({ children, options, isNested }) => {
   return (
@@ -54,7 +55,7 @@ export const ContextMenu: FC<IContextMenu> = ({ children, options, isNested }) =
         <ContextMenuTrigger>{children}</ContextMenuTrigger>
       )}
       {options && !!options.length && (
-        <ContextMenuContent sideOffset={isNested ? 2 : 5}>
+        <ContextMenuContent>
           {options.map(({ key, ...option }) => {
             if (option.type === 'text') {
               const { children, label, onSelect } = option

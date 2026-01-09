@@ -1,7 +1,5 @@
 import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document'
 
-import { globalStyles, getCssText } from '../stitches.config'
-
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
     const initialProps = await Document.getInitialProps(ctx)
@@ -9,12 +7,12 @@ class MyDocument extends Document {
     return initialProps
   }
   render() {
-    globalStyles()
+    // globalStyles() - Disabled: Moved to Vanilla Extract
 
     return (
       <Html>
         <Head>
-          <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} />
+          {/* <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} /> */}
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           <link

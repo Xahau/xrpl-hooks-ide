@@ -33,23 +33,23 @@ const getColors = (isDark: boolean) => {
 
 const getStyles = (isDark: boolean) => {
   const colors = getColors(isDark)
-  const styles: StylesConfig = {
-    container: provided => {
+  const styles = {
+    container: (provided: any) => {
       return {
         ...provided,
-        position: 'relative',
+        position: 'relative' as const,
         width: '100%'
       }
     },
-    singleValue: provided => ({
+    singleValue: (provided: any) => ({
       ...provided,
       color: colors.mauve12
     }),
-    menu: provided => ({
+    menu: (provided: any) => ({
       ...provided,
       backgroundColor: colors.dropDownBg
     }),
-    control: (provided, state) => {
+    control: (provided: any, state: any) => {
       return {
         ...provided,
         minHeight: 0,
@@ -58,25 +58,25 @@ const getStyles = (isDark: boolean) => {
         boxShadow: `0 0 0 1px ${state.isFocused ? colors.border : colors.secondary}`
       }
     },
-    input: provided => {
+    input: (provided: any) => {
       return {
         ...provided,
         color: '$text'
       }
     },
-    multiValue: provided => {
+    multiValue: (provided: any) => {
       return {
         ...provided,
         backgroundColor: colors.mauve8
       }
     },
-    multiValueLabel: provided => {
+    multiValueLabel: (provided: any) => {
       return {
         ...provided,
         color: colors.mauve12
       }
     },
-    multiValueRemove: provided => {
+    multiValueRemove: (provided: any) => {
       return {
         ...provided,
         ':hover': {
@@ -84,7 +84,7 @@ const getStyles = (isDark: boolean) => {
         }
       }
     },
-    option: (provided, state) => {
+    option: (provided: any, state: any) => {
       return {
         ...provided,
         color: colors.searchText,
@@ -98,13 +98,13 @@ const getStyles = (isDark: boolean) => {
         }
       }
     },
-    indicatorSeparator: provided => {
+    indicatorSeparator: (provided: any) => {
       return {
         ...provided,
         backgroundColor: colors.secondary
       }
     },
-    dropdownIndicator: (provided, state) => {
+    dropdownIndicator: (provided: any, state: any) => {
       return {
         ...provided,
         padding: 6,
@@ -114,7 +114,7 @@ const getStyles = (isDark: boolean) => {
         }
       }
     },
-    clearIndicator: provided => {
+    clearIndicator: (provided: any) => {
       return {
         ...provided,
         padding: 6,
@@ -124,7 +124,7 @@ const getStyles = (isDark: boolean) => {
         }
       }
     }
-  }
+  } as StylesConfig
   return styles
 }
 
