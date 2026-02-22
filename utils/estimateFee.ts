@@ -1,7 +1,8 @@
 import toast from 'react-hot-toast'
-import { derive, sign } from 'xrpl-accountlib'
+import { derive, sign, XrplDefinitions } from 'xrpl-accountlib'
 import { IAccount } from '../state'
 import { xrplSend } from '../state/actions/xrpl-client'
+import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
 const estimateFee = async (
   tx: Record<string, unknown>,
@@ -21,7 +22,7 @@ const estimateFee = async (
     }
 
     const keypair = derive.familySeed(account.secret)
-    const { signedTransaction } = sign(copyTx, keypair)
+    const { signedTransaction } = sign(copyTx, keypair, new XrplDefinitions(definitions))
 
     const res = await xrplSend({ command: 'fee', tx_blob: signedTransaction })
     if (res.error) {
