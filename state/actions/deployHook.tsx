@@ -60,6 +60,7 @@ export const prepareDeployHookTx = async (
   if (!activeFile?.compiledContent) {
     return
   }
+  const hookName = data.HookName && data.HookName.length > 0 ? data.HookName : undefined
   const HookNamespace = (await sha256(data.HookNamespace)).toUpperCase()
   const hookOnValues: (keyof TTS)[] = data.Invoke.map(tt => tt.value)
   // In this IDE, does't select any transactions (length == 0) for HookCanEmit means it's allowed to emit all transactions (omit HookCanEmit)
@@ -95,6 +96,7 @@ export const prepareDeployHookTx = async (
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
           HookOn: calculateHookOn(hookOnValues),
           ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
+          ...(hookName && { HookName: hookName }),
           HookNamespace,
           HookApiVersion: 0,
           Flags: 1,

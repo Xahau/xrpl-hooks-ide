@@ -102,6 +102,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
     //   control,
     //   name: "HookGrants", // unique name for your Field Array
     // });
+    const hookName = watch('HookName')
     const [hashedNamespace, setHashedNamespace] = useState('')
 
     const namespace = watch('HookNamespace', getHookNamespace())
@@ -226,6 +227,14 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                       />
                     )}
                   />
+                </Box>
+                <Box css={{ width: '100%' }}>
+                  <Label>Hook Name</Label>
+                  <Input {...register('HookName', { required: false })} autoComplete={'off'} />
+                  <Box css={{ mt: '$3' }}>
+                    <Label>Hook Name</Label>
+                    <Input readOnly value={hookName} />
+                  </Box>
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Namespace Seed</Label>

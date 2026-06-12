@@ -16,6 +16,7 @@ export type SetHookData = {
     label: string
   }[]
   Fee: string
+  HookName?: string
   HookNamespace: string
   HookParameters: {
     HookParameter: {
