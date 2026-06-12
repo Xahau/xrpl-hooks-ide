@@ -54,6 +54,14 @@
     "Fee": "12"
   },
   {
+    "TransactionType": "CronSet",
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "StartTime": 0,
+    "RepeatCount": 10,
+    "DelaySeconds": 86400,
+    "Fee": "12"
+  },
+  {
     "TransactionType": "DepositPreauth",
     "Account": "rsUiUMpnrgxQp24dJYZDhmV4bE3aBtQyt8",
     "Authorize": "rEhxGqkqPPSxQ3P25J66ft5TwpzV14k2de",

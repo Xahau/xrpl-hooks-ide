@@ -9,6 +9,8 @@ import estimateFee from '../../utils/estimateFee'
 import { SetHookData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { xrplSend } from './xrpl-client'
+import { XrplDefinitions } from 'xrpl-accountlib'
+import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
 export const sha256 = async (string: string) => {
   const utf8 = new TextEncoder().encode(string)
@@ -60,6 +62,8 @@ export const prepareDeployHookTx = async (
   }
   const HookNamespace = (await sha256(data.HookNamespace)).toUpperCase()
   const hookOnValues: (keyof TTS)[] = data.Invoke.map(tt => tt.value)
+  // In this IDE, does't select any transactions (length == 0) for HookCanEmit means it's allowed to emit all transactions (omit HookCanEmit)
+  const hookCanEmitValues: (keyof TTS)[] | undefined = data.HookCanEmit && data.HookCanEmit?.length > 0 ? data.HookCanEmit.map(tt => tt.value) : undefined
   const { HookParameters } = data
   const filteredHookParameters = HookParameters.filter(
     hp => hp.HookParameter.HookParameterName && hp.HookParameter.HookParameterValue
@@ -90,6 +94,7 @@ export const prepareDeployHookTx = async (
         Hook: {
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
           HookOn: calculateHookOn(hookOnValues),
+          ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
           HookNamespace,
           HookApiVersion: 0,
           Flags: 1,
@@ -118,7 +123,7 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
     return
   }
   const keypair = derive.familySeed(account.secret)
-  const { signedTransaction } = sign(tx, keypair)
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
 
   const currentAccount = state.accounts.find(acc => acc.address === account.address)
   if (currentAccount) {
@@ -212,7 +217,7 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   } catch (err) {
     console.error(err)
   }
-  const { signedTransaction } = sign(tx, keypair)
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
   if (currentAccount) {
     currentAccount.isLoading = true
   }
