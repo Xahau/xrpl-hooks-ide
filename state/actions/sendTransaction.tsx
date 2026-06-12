@@ -5,6 +5,8 @@ import type { IAccount } from '..'
 import ResultLink from '../../components/ResultLink'
 import { ref } from 'valtio'
 import { xrplSend } from './xrpl-client'
+import { XrplDefinitions } from 'xrpl-accountlib'
+import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
 interface TransactionOptions {
   TransactionType: string
@@ -36,7 +38,7 @@ export const sendTransaction = async (
   })
   try {
     const signedAccount = derive.familySeed(account.secret)
-    const { signedTransaction } = sign(tx, signedAccount)
+    const { signedTransaction } = sign(tx, signedAccount, new XrplDefinitions(definitions as any))
     const response = await xrplSend({
       command: 'submit',
       tx_blob: signedTransaction

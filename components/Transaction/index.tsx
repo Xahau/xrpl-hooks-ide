@@ -127,7 +127,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       const options = prepareOptions(st)
       // delete unnecessary fields
       Object.keys(options).forEach(field => {
-        if (!options[field]) {
+        if (!options[field] && field !== 'StartTime') { // StartTime Can be 0
           delete options[field]
         }
       })
