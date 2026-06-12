@@ -208,11 +208,12 @@ export const TxUI: FC<UIProps> = ({
           let rows = isJson ? (value?.match(/\n/gm)?.length || 0) + 1 : undefined
           if (rows && rows > 5) rows = 5
           let tokenAmount = defaultTokenAmount
-          if (isTokenAmount && typeIs(_value, 'object') && typeIs(_value.$value, 'object')) {
+          if (isTokenAmount && typeIs(_value, 'object') && typeIs(_value.$value, 'object') && _value.$type === 'amount.token') {
+            const $value = _value.$value as { value: string, currency: string, issuer: string } // amount.token schema
             tokenAmount = {
-              value: _value.$value.value,
-              currency: _value.$value.currency,
-              issuer: _value.$value.issuer
+              value: $value.value,
+              currency: $value.currency,
+              issuer: $value.issuer
             }
           }
 

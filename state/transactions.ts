@@ -43,7 +43,7 @@ export interface TransactionState {
 const commonFields = ['TransactionType', 'Account', 'Sequence', "HookParameters"] as const;
 
 export type TxFields = Omit<
-  Partial<typeof transactionsData[0]>,
+  Partial<(typeof transactionsData)[number]>,
   typeof commonFields[number]
 >
 
@@ -283,9 +283,9 @@ export const getTxFields = (tt?: string) => {
 
   if (!txFields) return {}
 
-  let _txFields = Object.keys(txFields)
+  let _txFields = (Object.keys(txFields) as (keyof typeof txFields)[])
     .filter(key => !commonFields.includes(key as any))
-    .reduce<TxFields>((tf, key) => ((tf[key as keyof TxFields] = (txFields as any)[key]), tf), {})
+    .reduce<TxFields>((tf, key) => (((tf as any)[key] = (txFields as any)[key]), tf), {})
   return _txFields
 }
 
