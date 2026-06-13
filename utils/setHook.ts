@@ -11,6 +11,10 @@ export type SetHookData = {
     value: keyof TTS
     label: string
   }[]
+  HookCanEmit?: {
+    value: keyof TTS
+    label: string
+  }[]
   Fee: string
   HookNamespace: string
   HookParameters: {
