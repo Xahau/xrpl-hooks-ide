@@ -29,8 +29,10 @@ const StyledOverlay = styled(AlertDialogPrimitive.Overlay, {
 const Root: React.FC<AlertDialogPrimitive.AlertDialogProps> = ({ children, ...rest }) => {
   return (
     <AlertDialogPrimitive.Root {...rest}>
-      <StyledOverlay />
-      {children}
+      <AlertDialogPrimitive.Portal>
+        <StyledOverlay />
+        {children}
+      </AlertDialogPrimitive.Portal>
     </AlertDialogPrimitive.Root>
   )
 }

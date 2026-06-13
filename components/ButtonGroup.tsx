@@ -1,29 +1,26 @@
+import React from 'react'
 import { styled } from '../stitches.config'
-import { StyledButton } from './Button'
+import * as styles from './ButtonGroup.css'
 
-const ButtonGroup = styled('div', {
-  display: 'flex',
-  marginLeft: '1px',
-  [`& ${StyledButton}`]: {
-    marginLeft: '-1px',
-    px: '$4',
-    zIndex: 2,
-    position: 'relative',
-    '&:hover, &:focus': {
-      zIndex: 200
-    }
-  },
-  [`& ${StyledButton}:not(:only-of-type):not(:first-child):not(:last-child)`]: {
-    borderRadius: 0
-  },
-  [`& ${StyledButton}:first-child:not(:only-of-type)`]: {
-    borderBottomRightRadius: 0,
-    borderTopRightRadius: 0
-  },
-  [`& ${StyledButton}:last-child:not(:only-of-type)`]: {
-    borderBottomLeftRadius: 0,
-    borderTopLeftRadius: 0
+interface ButtonGroupProps extends React.HTMLAttributes<HTMLDivElement> {
+  as?: React.ElementType
+}
+
+const ButtonGroupBase = React.forwardRef<HTMLDivElement, ButtonGroupProps>(
+  ({ as: Component = 'div', className, ...props }, ref) => {
+    return (
+      <Component
+        ref={ref}
+        className={`${styles.buttonGroup} ${className || ''}`}
+        {...props}
+      />
+    )
   }
-})
+)
+
+ButtonGroupBase.displayName = 'ButtonGroupBase'
+
+// Wrap with Stitches styled() for backward compatibility with css prop
+const ButtonGroup = styled(ButtonGroupBase, {})
 
 export default ButtonGroup

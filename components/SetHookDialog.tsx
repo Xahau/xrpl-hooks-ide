@@ -167,10 +167,9 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       <Dialog open={isSetHookDialogOpen} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
           <Button
-            ghost
             size="xs"
             uppercase
-            variant={'secondary'}
+            variant="primary"
             disabled={!account || account.isLoading || !activeFile || tooLargeFile()}
           >
             Set Hook

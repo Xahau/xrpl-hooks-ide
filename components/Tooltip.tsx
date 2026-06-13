@@ -57,10 +57,11 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
 })
 
 interface ITooltip {
-  content: string
+  content: string | React.ReactNode
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
+  children?: React.ReactNode
 }
 
 const Tooltip: React.FC<React.ComponentProps<typeof StyledContent> & ITooltip> = ({
@@ -79,10 +80,16 @@ const Tooltip: React.FC<React.ComponentProps<typeof StyledContent> & ITooltip> =
       delayDuration={100}
     >
       <TooltipPrimitive.Trigger asChild>{children}</TooltipPrimitive.Trigger>
-      <StyledContent side="bottom" align="center" {...rest}>
-        <div dangerouslySetInnerHTML={{ __html: content }} />
-        <StyledArrow offset={5} width={11} height={5} />
-      </StyledContent>
+      <TooltipPrimitive.Portal>
+        <StyledContent side="bottom" align="center" {...rest}>
+          {typeof content === 'string' ? (
+            <div dangerouslySetInnerHTML={{ __html: content }} />
+          ) : (
+            content
+          )}
+          <StyledArrow offset={5} width={11} height={5} />
+        </StyledContent>
+      </TooltipPrimitive.Portal>
     </TooltipPrimitive.Root>
   )
 }

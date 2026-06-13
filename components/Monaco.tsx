@@ -1,4 +1,5 @@
-import Editor, { loader, EditorProps, Monaco } from '@monaco-editor/react'
+import Editor, { loader, EditorProps } from '@monaco-editor/react'
+import type { Monaco } from '@monaco-editor/react'
 import { CSS } from '@stitches/react'
 import type monaco from 'monaco-editor'
 import { useTheme } from 'next-themes'

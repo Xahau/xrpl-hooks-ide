@@ -155,9 +155,9 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
                 >
                   <Image
                     src={session?.user?.image || ''}
-                    width="30px"
-                    height="30px"
-                    objectFit="cover"
+                    width={30}
+                    height={30}
+                    style={{ objectFit: 'cover' }}
                     alt="User avatar"
                   />
                 </Box>

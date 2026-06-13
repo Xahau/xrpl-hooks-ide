@@ -5,7 +5,7 @@ import { fromByteArray } from 'base64-js'
 export async function decodeBinary(input: string): Promise<ArrayBuffer> {
   let data = decodeRestrictedBase64ToBytes(input)
   if (isZlibData(data)) {
-    data = await decompressZlib(data)
+    data = await decompressZlib(data) as any
   }
   return data.buffer as ArrayBuffer
 }

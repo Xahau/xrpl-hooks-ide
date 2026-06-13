@@ -1,8 +1,16 @@
+const { createVanillaExtractPlugin } = require('@vanilla-extract/next-plugin')
+const withVanillaExtract = createVanillaExtractPlugin()
+
 /** @type {import('next').NextConfig} */
-module.exports = {
+const nextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['avatars.githubusercontent.com']
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+    ],
   },
   webpack(config, { isServer }) {
     config.resolve.alias['vscode'] = require.resolve(
@@ -18,3 +26,5 @@ module.exports = {
     return config
   }
 }
+
+module.exports = withVanillaExtract(nextConfig)

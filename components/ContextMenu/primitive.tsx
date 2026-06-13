@@ -1,3 +1,4 @@
+import React from 'react'
 import * as ContextMenuPrimitive from '@radix-ui/react-context-menu'
 import { styled } from '../../stitches.config'
 import {
@@ -64,7 +65,7 @@ const StyledCheckboxItem = styled(ContextMenuPrimitive.CheckboxItem, {
 const StyledRadioItem = styled(ContextMenuPrimitive.RadioItem, {
   ...itemStyles
 })
-const StyledTriggerItem = styled(ContextMenuPrimitive.TriggerItem, {
+const StyledTriggerItem = styled(ContextMenuPrimitive.SubTrigger, {
   '&[data-state="open"]': {
     backgroundColor: '$purple9',
     color: '$purple9'
@@ -94,9 +95,16 @@ const StyledItemIndicator = styled(ContextMenuPrimitive.ItemIndicator, {
   justifyContent: 'center'
 })
 
+// Wrap Content with Portal for Radix UI v2
+const ContentWithPortal: React.FC<React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }> = ({ children, ...props }) => (
+  <ContextMenuPrimitive.Portal>
+    <StyledContent {...props}>{children}</StyledContent>
+  </ContextMenuPrimitive.Portal>
+)
+
 export const ContextMenuRoot = ContextMenuPrimitive.Root
 export const ContextMenuTrigger = ContextMenuPrimitive.Trigger
-export const ContextMenuContent = StyledContent
+export const ContextMenuContent = ContentWithPortal
 export const ContextMenuItem = StyledItem
 export const ContextMenuCheckboxItem = StyledCheckboxItem
 export const ContextMenuRadioGroup = ContextMenuPrimitive.RadioGroup

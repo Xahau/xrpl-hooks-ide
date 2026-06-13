@@ -1,18 +1,8 @@
 // stitches.config.ts
-import type Stitches from '@stitches/react'
+import type * as Stitches from '@stitches/react'
 import { createStitches } from '@stitches/react'
 
 import {
-  gray,
-  blue,
-  crimson,
-  grass,
-  slate,
-  mauve,
-  mauveA,
-  amber,
-  purple,
-  green,
   grayDark,
   blueDark,
   crimsonDark,
@@ -23,29 +13,40 @@ import {
   amberDark,
   purpleDark,
   greenDark,
-  red,
-  redDark
+  redDark,
+  // Light theme colors (for future use)
+  gray,
+  blue,
+  crimson,
+  grass,
+  slate,
+  mauve,
+  mauveA,
+  amber,
+  purple,
+  green,
+  red
 } from '@radix-ui/colors'
 
 export const { styled, css, globalCss, keyframes, getCssText, theme, createTheme, config } =
   createStitches({
     theme: {
       colors: {
-        ...gray,
-        ...blue,
-        ...crimson,
-        ...grass,
-        ...slate,
-        ...mauve,
-        ...mauveA,
-        ...amber,
-        ...purple,
-        ...green,
-        ...red,
+        ...grayDark,
+        ...blueDark,
+        ...crimsonDark,
+        ...grassDark,
+        ...slateDark,
+        ...mauveDark,
+        ...mauveDarkA,
+        ...amberDark,
+        ...purpleDark,
+        ...greenDark,
+        ...redDark,
         accent: '#9D2DFF',
         background: '$gray1',
         backgroundAlt: '$gray4',
-        backgroundOverlay: '$mauve2',
+        backgroundOverlay: '$mauve5',
         text: '$gray12',
         textMuted: '$gray10',
         primary: '$plum',
@@ -54,7 +55,7 @@ export const { styled, css, globalCss, keyframes, getCssText, theme, createTheme
         success: '$grass11',
         white: 'white',
         black: 'black',
-        deep: 'rgb(244, 244, 244)'
+        deep: 'rgb(10, 10, 10)'
       },
       fonts: {
         body: 'Work Sans, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", sans-serif',
@@ -302,6 +303,26 @@ export const { styled, css, globalCss, keyframes, getCssText, theme, createTheme
     }
   })
 
+// Light theme for Stitches (when next-themes sets .light class)
+export const lightTheme = createTheme('light', {
+  colors: {
+    ...gray,
+    ...blue,
+    ...crimson,
+    ...grass,
+    ...slate,
+    ...mauve,
+    ...mauveA,
+    ...amber,
+    ...purple,
+    ...green,
+    ...red,
+    deep: 'rgb(244, 244, 244)',
+    backgroundOverlay: '$mauve2'
+  }
+})
+
+// Dark theme is already the default, but we create a class for explicit switching
 export const darkTheme = createTheme('dark', {
   colors: {
     ...grayDark,
@@ -321,18 +342,6 @@ export const darkTheme = createTheme('dark', {
   }
 })
 
-export const globalStyles = globalCss({
-  // body: { backgroundColor: '$background', color: '$text', fontFamily: 'Helvetica' },
-  'html, body': {
-    backgroundColor: '$mauve2',
-    color: '$mauve12',
-    fontFamily: '$body',
-    fontSize: '$md',
-    '-webkit-font-smoothing': 'antialiased',
-    '-moz-osx-font-smoothing': 'grayscale'
-  },
-  a: {
-    color: 'inherit',
-    textDecoration: 'none'
-  }
-})
+// Deprecated: globalStyles moved to Vanilla Extract (styles/global.css.ts)
+// Keeping this export for backward compatibility but it does nothing
+export const globalStyles = () => {}
