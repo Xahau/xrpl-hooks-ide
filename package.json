@@ -60,7 +60,7 @@
     "react-time-ago": "^7.1.9",
     "reconnecting-websocket": "^4.4.0",
     "regexify-string": "^1.0.17",
-    "ripple-binary-codec": "npm:xahau-binary-codec@^2.1.2",
+    "ripple-binary-codec": "npm:xahau-binary-codec@^2.2.0",
     "valtio": "^1.2.5",
     "vscode-languageserver": "^7.0.0",
     "vscode-uri": "^3.0.2",
