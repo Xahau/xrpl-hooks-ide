@@ -290,5 +290,50 @@
     },
     "Fee": "10",
     "Sequence": 1
+  },
+  {
+    "TransactionType": "ClaimReward",
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "Issuer": {
+      "$type": "account",
+      "$value": ""
+    },
+    "ClaimCurrency": {
+      "$type": "json",
+      "$value": {
+        "currency": "USD",
+        "issuer": ""
+      }
+    },
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "OracleSet",
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "OracleDocumentID": 1,
+    "LastUpdateTime": 1782466653,
+    "Provider": "4578616D706C65",
+    "URI": "687474703A2F2F6578616D706C652E636F6D",
+    "AssetClass": "63757272656E6379",
+    "PriceDataSeries": {
+      "$type": "json",
+      "$value": [
+        {
+          "PriceData": {
+            "BaseAsset": "XAH",
+            "QuoteAsset": "USD",
+            "AssetPrice": "1000",
+            "Scale": 3
+          }
+        }
+      ]
+    },
+    "Fee": "12"
+  },
+  {
+    "TransactionType": "OracleDelete",
+    "Account": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
+    "OracleDocumentID": 1,
+    "Fee": "12"
   }
 ]

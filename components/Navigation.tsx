@@ -336,23 +336,23 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref shallow>
+              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref>
                 <Button as="a" outline={!router.pathname.includes('/develop')} uppercase>
                   Develop
                 </Button>
               </Link>
-              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref shallow>
+              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref>
                 <Button as="a" outline={!router.pathname.includes('/deploy')} uppercase>
                   Deploy
                 </Button>
               </Link>
-              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref shallow>
+              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref>
                 <Button as="a" outline={!router.pathname.includes('/test')} uppercase>
                   Test
                 </Button>
               </Link>
             </ButtonGroup>
-            <Link href="https://xrpl-hooks.readme.io/" passHref>
+            <Link href="https://xahau.network/docs/hooks/" passHref>
               <a target="_blank" rel="noreferrer noopener">
                 <Button outline>
                   <BookOpen size="15px" />

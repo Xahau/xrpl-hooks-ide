@@ -68,7 +68,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
           }, [])
         : undefined
 
-      return prepareTransaction({
+      const result = prepareTransaction({
         ...txFields,
         HookParameters,
         Flags,
@@ -76,6 +76,11 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         Account,
         Memos
       })
+      if (result.ClaimCurrency && typeof result.ClaimCurrency === 'object') {
+        const { currency, issuer } = result.ClaimCurrency
+        if (!currency && !issuer) delete result.ClaimCurrency
+      }
+      return result
     },
     [txState]
   )
@@ -127,7 +132,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       const options = prepareOptions(st)
       // delete unnecessary fields
       Object.keys(options).forEach(field => {
-        if (!options[field] && field !== 'StartTime') { // StartTime Can be 0
+        if (!options[field] && field !== 'StartTime' && field !== 'LastUpdateTime') { // Can be 0
           delete options[field]
         }
       })
@@ -159,6 +164,10 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
   const resetState = useCallback(
     (transactionType: SelectOption | undefined = defaultTransactionType) => {
       const fields = getTxFields(transactionType?.value)
+
+      if ('LastUpdateTime' in fields) {
+        fields.LastUpdateTime = Math.floor(Date.now() / 1000)
+      }
 
       const nwState: Partial<TransactionState> = {
         viewType,

@@ -21,6 +21,15 @@ import { Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
 import { capitalize, typeIs } from '../../utils/helpers'
 
+interface PriceDataEntry {
+  PriceData: {
+    BaseAsset: string
+    QuoteAsset: string
+    AssetPrice: string
+    Scale: number
+  }
+}
+
 interface UIProps {
   setState: (pTx?: Partial<TransactionState> | undefined) => TransactionState | undefined
   resetState: (tt?: SelectOption) => TransactionState | undefined
@@ -53,6 +62,11 @@ export const TxUI: FC<UIProps> = ({
   }))
 
   const [feeLoading, setFeeLoading] = useState(false)
+  const [claimCurrencyVisible, setClaimCurrencyVisible] = useState(false)
+
+  useEffect(() => {
+    setClaimCurrencyVisible(false)
+  }, [selectedTransaction?.value])
 
   const handleSetAccount = (acc: SelectOption) => {
     setState({ selectedAccount: acc })
@@ -214,6 +228,142 @@ export const TxUI: FC<UIProps> = ({
               currency: _value.$value.currency,
               issuer: _value.$value.issuer
             }
+          }
+
+          if (field === 'ClaimCurrency') {
+            const cc = isJson && typeIs(_value.$value, 'object') ? _value.$value as { currency: string; issuer: string } : { currency: '', issuer: '' }
+            const hasData = !!(cc.currency || cc.issuer)
+            const visible = claimCurrencyVisible || hasData
+
+            if (!visible) {
+              return (
+                <TxField key={field} label="ClaimCurrency">
+                  <Button
+                    outline
+                    fullWidth
+                    type="button"
+                    onClick={() => setClaimCurrencyVisible(true)}
+                  >
+                    <Plus size="16px" />
+                    Add ClaimCurrency
+                  </Button>
+                </TxField>
+              )
+            }
+
+            return (
+              <TxField key={field} label="ClaimCurrency">
+                <Flex row fluid css={{ gap: '$1' }}>
+                  <Input
+                    placeholder="Currency (e.g. USD)"
+                    value={cc.currency}
+                    css={{ flex: '0 0 30%' }}
+                    onChange={e => setRawField(field, 'json', { ...cc, currency: e.target.value })}
+                  />
+                  <Box css={{ flex: 1 }}>
+                    <CreatableAccount
+                      value={cc.issuer}
+                      field={'Issuer' as any}
+                      placeholder="Issuer account"
+                      setField={(_, v = '') => setRawField(field, 'json', { ...cc, issuer: v })}
+                    />
+                  </Box>
+                  <Button
+                    variant="destroy"
+                    onClick={() => {
+                      setRawField(field, 'json', { currency: '', issuer: '' })
+                      setClaimCurrencyVisible(false)
+                    }}
+                  >
+                    <Trash weight="regular" size="16px" />
+                  </Button>
+                </Flex>
+              </TxField>
+            )
+          }
+
+          if (field === 'PriceDataSeries') {
+            const series: PriceDataEntry[] =
+              isJson && Array.isArray(_value.$value) ? _value.$value : []
+
+            const updateSeries = (next: PriceDataEntry[]) =>
+              setRawField(field, 'json', next)
+
+            return (
+              <TxField key={field} label="PriceDataSeries" multiLine>
+                <Flex column fluid>
+                  {series.map((item, idx) => (
+                    <Flex
+                      key={idx}
+                      column
+                      css={{ mb: '$2' }}
+                    >
+                      <Flex row css={{ gap: '$1', mb: '$1' }}>
+                        <Input
+                          placeholder="BaseAsset"
+                          value={item.PriceData.BaseAsset}
+                          onChange={e => {
+                            const next = [...series]
+                            next[idx] = { PriceData: { ...item.PriceData, BaseAsset: e.target.value } }
+                            updateSeries(next)
+                          }}
+                        />
+                        <Input
+                          placeholder="QuoteAsset"
+                          value={item.PriceData.QuoteAsset}
+                          onChange={e => {
+                            const next = [...series]
+                            next[idx] = { PriceData: { ...item.PriceData, QuoteAsset: e.target.value } }
+                            updateSeries(next)
+                          }}
+                        />
+                      </Flex>
+                      <Flex row css={{ gap: '$1' }}>
+                        <Input
+                          placeholder="AssetPrice"
+                          value={item.PriceData.AssetPrice}
+                          onChange={e => {
+                            const next = [...series]
+                            next[idx] = { PriceData: { ...item.PriceData, AssetPrice: e.target.value } }
+                            updateSeries(next)
+                          }}
+                        />
+                        <Input
+                          type="number"
+                          placeholder="Scale"
+                          value={item.PriceData.Scale}
+                          onChange={e => {
+                            const next = [...series]
+                            next[idx] = { PriceData: { ...item.PriceData, Scale: Number(e.target.value) } }
+                            updateSeries(next)
+                          }}
+                        />
+                        <Button
+                          variant="destroy"
+                          onClick={() => updateSeries(series.filter((_, i) => i !== idx))}
+                        >
+                          <Trash weight="regular" size="16px" />
+                        </Button>
+                      </Flex>
+                    </Flex>
+                  ))}
+                  <Button
+                    outline
+                    fullWidth
+                    type="button"
+                    onClick={() =>
+                      updateSeries([
+                        ...series,
+                        { PriceData: { BaseAsset: '', QuoteAsset: '', AssetPrice: '', Scale: 1 } }
+                      ])
+                    }
+                  >
+                    <Plus size="16px" />
+                    Add PriceData
+                  </Button>
+                </Flex>
+              </TxField>
+            )
           }
 
           if (isXrpAmount || isTokenAmount) {
