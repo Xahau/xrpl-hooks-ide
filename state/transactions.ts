@@ -29,18 +29,20 @@ export interface TransactionState {
   selectedTransaction: SelectOption | null
   selectedAccount: SelectOption | null
   selectedFlags: SelectOption[] | null
+  fee: string
   hookParameters: HookParameters
   memos: Memos
   txIsLoading: boolean
   txIsDisabled: boolean
   txFields: TxFields
+  optionalFields: TxFields
   viewType: 'json' | 'ui'
   editorValue?: string
   editorIsSaved: boolean
   estimatedFee?: string
 }
 
-const commonFields = ['TransactionType', 'Account', 'Sequence', "HookParameters"] as const;
+const commonFields = ['TransactionType', 'Account', "Flags", "Fee", 'Sequence', "HookParameters"] as const;
 
 export type TxFields = Omit<
   Partial<(typeof transactionsData)[number]>,
@@ -51,14 +53,20 @@ export const defaultTransaction: TransactionState = {
   selectedTransaction: null,
   selectedAccount: null,
   selectedFlags: null,
+  fee: "12",
   hookParameters: {},
   memos: {},
   editorIsSaved: true,
   txIsLoading: false,
   txIsDisabled: false,
   txFields: {},
+  optionalFields: {},
   viewType: 'ui'
 }
+
+const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
+
+const isOptionalFieldName = (field: string) => field.endsWith('?')
 
 export const transactionsState = proxy({
   transactions: [
@@ -133,6 +141,14 @@ export const prepareTransaction = (data: any) => {
   let options = { ...data }
 
   Object.keys(options).forEach(field => {
+    const normalizedField = normalizeFieldName(field)
+    if (normalizedField !== field) {
+      // replace optional field name with normalized field name
+      options[normalizedField] = options[field]
+      delete options[field]
+      field = normalizedField
+    }
+
     let _value = options[field]
     if (!typeIs(_value, 'object')) return
     // amount.xrp
@@ -186,6 +202,7 @@ export const prepareState = (value: string, transactionType?: string) => {
   const { Account, TransactionType, HookParameters, Memos, ...rest } = options
   let tx: Partial<TransactionState> = {}
   const schema = getTxFields(transactionType)
+  tx.optionalFields = getOptionalTxFields(transactionType)
 
   if (Account) {
     const acc = state.accounts.find(acc => acc.address === Account)
@@ -238,8 +255,16 @@ export const prepareState = (value: string, transactionType?: string) => {
   }
 
   Object.keys(rest).forEach(field => {
+    const normalizedField = normalizeFieldName(field)
+    if (normalizedField !== field) {
+      rest[normalizedField] = rest[field]
+      delete rest[field]
+      field = normalizedField
+    }
+
     const value = rest[field]
     const schemaVal = schema[field as keyof TxFields]
+      || tx.optionalFields?.[field as keyof TxFields]
 
     const isAmount = schemaVal &&
       typeIs(schemaVal, "object") &&
@@ -283,10 +308,26 @@ export const getTxFields = (tt?: string) => {
 
   if (!txFields) return {}
 
-  let _txFields = (Object.keys(txFields) as (keyof typeof txFields)[])
-    .filter(key => !commonFields.includes(key as any))
-    .reduce<TxFields>((tf, key) => (((tf as any)[key] = (txFields as any)[key]), tf), {})
+  let _txFields = (Object.keys(txFields) as (keyof TxFields)[])
+    .filter(key => !commonFields.includes(key as any) && !isOptionalFieldName(key))
+    .reduce<TxFields>(
+      (tf, key) => (((tf as any)[normalizeFieldName(key)] = (txFields as any)[key]), tf),
+      {}
+    )
   return _txFields
+}
+
+export const getOptionalTxFields = (tt?: string) => {
+  const txFields: TxFields | undefined = transactionsData.find(tx => tx.TransactionType === tt)
+
+  if (!txFields) return {}
+
+  return Object.keys(txFields)
+    .filter(key => !commonFields.includes(key as any) && isOptionalFieldName(key))
+    .reduce<TxFields>(
+      (tf, key) => (((tf as any)[normalizeFieldName(key)] = (txFields as any)[key]), tf),
+      {}
+    )
 }
 
 export { transactionsData, commonFields }
