@@ -404,18 +404,24 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
 
           if (childValue === undefined && isOptional) {
             return (
-              <Button
-                key={childField}
-                outline
-                fullWidth
-                type="button"
-                onClick={() =>
-                  setValue({ ...value, [childField]: getDefaultValue(value[optionalKey]) })
-                }
-              >
-                <Plus size="16px" />
-                Add {childField}
-              </Button>
+              <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+                <Text muted css={{ flex: '0 0 25%' }}>
+                  {childField}
+                </Text>
+                <Box css={{ flex: 1 }}>
+                  <Button
+                    outline
+                    fullWidth
+                    type="button"
+                    onClick={() =>
+                      setValue({ ...value, [childField]: getDefaultValue(value[optionalKey]) })
+                    }
+                  >
+                    <Plus size="16px" />
+                    Add {childField}
+                  </Button>
+                </Box>
+              </Flex>
             )
           }
 

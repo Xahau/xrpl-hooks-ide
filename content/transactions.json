@@ -241,9 +241,9 @@
     "MintURIToken?": {
       "$type": "object",
       "$value": {
-        "Digest": "6F11A4DF4EE794E2800BB361173D454BFBECB3D7506C4F4CB0EC5AE98BE43747",
-        "Flags": 1,
-        "URI": "697066733A2F2F"
+        "URI": "697066733A2F2F",
+        "Digest?": "6F11A4DF4EE794E2800BB361173D454BFBECB3D7506C4F4CB0EC5AE98BE43747",
+        "Flags?": 1
       }
     },
     "Fee": "10",
