@@ -212,6 +212,22 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                   />
                 </Box>
                 <Box css={{ width: '100%' }}>
+                  <Label>Transactions allowed to emit within the hook</Label>
+                  <Controller
+                    name="HookCanEmit"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        closeMenuOnSelect={false}
+                        isMulti
+                        menuPosition="fixed"
+                        options={transactionOptions}
+                      />
+                    )}
+                  />
+                </Box>
+                <Box css={{ width: '100%' }}>
                   <Label>Hook Namespace Seed</Label>
                   <Input {...register('HookNamespace', { required: true })} autoComplete={'off'} />
                   {errors.HookNamespace?.type === 'required' && (
