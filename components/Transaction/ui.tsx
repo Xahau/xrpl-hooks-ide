@@ -281,6 +281,100 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     />
   )
 
+  const renderAmountField = (
+    value: XrpAmountField | TokenAmountField,
+    setValue: (value: XrpAmountField | TokenAmountField) => void
+  ) => {
+    const tokenAmount = isTokenAmount(value)
+      ? {
+          value: value.$value.value,
+          currency: value.$value.currency,
+          issuer: value.$value.issuer
+        }
+      : defaultTokenAmount
+
+    return (
+      <Flex fluid css={{ alignItems: 'center' }}>
+        {isTokenAmount(value) ? (
+          <Flex fluid row align="center" justify="space-between" css={{ position: 'relative' }}>
+            <Input
+              type="text"
+              value={tokenAmount.currency}
+              placeholder="Currency"
+              onChange={e =>
+                setValue({
+                  ...value,
+                  $value: {
+                    ...tokenAmount,
+                    currency: e.target.value
+                  }
+                })
+              }
+            />
+            <Input
+              css={{ mx: '$1' }}
+              type="number"
+              value={tokenAmount.value}
+              placeholder="Value"
+              onChange={e =>
+                setValue({
+                  ...value,
+                  $value: {
+                    ...tokenAmount,
+                    value: e.target.value
+                  }
+                })
+              }
+            />
+            <Box css={{ width: '50%' }}>
+              <CreatableAccount
+                value={tokenAmount.issuer}
+                field={'Issuer' as any}
+                placeholder="Issuer"
+                setField={(_, issuer = '') =>
+                  setValue({
+                    ...value,
+                    $value: {
+                      ...tokenAmount,
+                      issuer
+                    }
+                  })
+                }
+              />
+            </Box>
+          </Flex>
+        ) : (
+          <Input
+            css={{ flex: 'inherit' }}
+            type="number"
+            value={value.$value?.toString()}
+            onChange={e => setValue({ ...value, $value: e.target.value })}
+          />
+        )}
+        <Box
+          css={{
+            ml: '$2',
+            width: '150px'
+          }}
+        >
+          <Select
+            instanceId="currency-type"
+            options={amountOptions}
+            value={isXrpAmount(value) ? amountOptions['0'] : amountOptions['1']}
+            onChange={(e: any) => {
+              const opt = e as typeof amountOptions[number]
+              if (opt.value === 'xah') {
+                setValue({ $type: 'amount.xrp', $value: '0' })
+              } else {
+                setValue({ $type: 'amount.token', $value: defaultTokenAmount })
+              }
+            }}
+          />
+        </Box>
+      </Flex>
+    )
+  }
+
   const renderObjectFields = (
     value: Record<string, any>,
     setValue: (value: Record<string, any>) => void
@@ -347,6 +441,20 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   }
 
   const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
+    if (isXrpAmount(value) || isTokenAmount(value)) {
+      return renderAmountField(value, nextValue => setValue(nextValue))
+    }
+
+    if (isAccount(value)) {
+      return (
+        <CreatableAccount
+          value={value.$value}
+          field={'Account' as any}
+          setField={(_, nextValue = '') => setValue({ ...value, $value: nextValue })}
+        />
+      )
+    }
+
     if (isObjectField(value)) {
       return renderObjectFields(value.$value, nextValue =>
         setValue({ ...value, $value: nextValue })

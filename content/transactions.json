@@ -151,19 +151,28 @@
       "$value": [
         {
           "SignerEntry": {
-            "Account": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW",
+            "Account": {
+              "$type": "account",
+              "$value": "rsA2LpzuawewSBQXkiju3YQTMzW13pAAdW"
+            },
             "SignerWeight": 2
           }
         },
         {
           "SignerEntry": {
-            "Account": "rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v",
+            "Account": {
+              "$type": "account",
+              "$value": "rUpy3eEg8rqjqfUoLeBnZkscbKbFsKXC3v"
+            },
             "SignerWeight": 1
           }
         },
         {
           "SignerEntry": {
-            "Account": "raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n",
+            "Account": {
+              "$type": "account",
+              "$value": "raKEEVSGnKSD9Zyvxu4z6Pqpm4ABH8FS6n"
+            },
             "SignerWeight": 1
           }
         }
@@ -201,15 +210,21 @@
       "$value": [
         {
           "AmountEntry": {
-            "Amount": "6000000"
+            "Amount": {
+              "$type": "amount.xrp",
+              "$value": "6"
+            }
           }
         },
         {
           "AmountEntry": {
             "Amount": {
-              "currency": "USD",
-              "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
-              "value": "2"
+              "$type": "amount.token",
+              "$value": {
+                "currency": "USD",
+                "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
+                "value": "2"
+              }
             }
           }
         }
