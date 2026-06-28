@@ -252,9 +252,9 @@ export const TxUI: FC<UIProps> = ({
           // Amount
           if (isTokenAmount(_value)) {
             tokenAmount = {
-              value: $value.value,
-              currency: $value.currency,
-              issuer: $value.issuer
+              value: _value.$value.value,
+              currency: _value.$value.currency,
+              issuer: _value.$value.issuer
             }
           }
 
