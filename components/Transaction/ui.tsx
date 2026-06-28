@@ -9,7 +9,7 @@ import {
   TransactionState,
   transactionsOptions,
   TxFields,
-  defaultTransactionType
+  defaultTransactionType,
 } from '../../state/transactions'
 import { useSnapshot } from 'valtio'
 import state from '../../state'
@@ -62,8 +62,16 @@ export const TxUI: FC<UIProps> = ({
   switchToJson
 }) => {
   const { accounts } = useSnapshot(state)
-  const { selectedAccount, selectedTransaction, txFields, selectedFlags, hookParameters, memos } =
-    txState
+  const {
+    selectedAccount,
+    selectedTransaction,
+    txFields,
+    optionalFields = {},
+    selectedFlags,
+    fee,
+    hookParameters,
+    memos
+  } = txState
 
   const accountOptions: SelectOption[] = accounts.map(acc => ({
     label: acc.name,
@@ -85,7 +93,7 @@ export const TxUI: FC<UIProps> = ({
   }
 
   const handleSetField = useCallback(
-    (field: keyof TxFields, value: string, opFields?: TxFields) => {
+    (field: keyof TxFields , value: string, opFields?: TxFields) => {
       const fields = opFields || txFields
       const obj = fields[field]
       setState({
@@ -114,16 +122,36 @@ export const TxUI: FC<UIProps> = ({
     [setState, txFields]
   )
 
+  const handleAddOptionalField = useCallback(
+    (field: keyof TxFields) => {
+      setState({
+        txFields: {
+          ...txFields,
+          [field]: optionalFields[field]
+        }
+      })
+    },
+    [optionalFields, setState, txFields]
+  )
+
+  const handleRemoveOptionalField = useCallback(
+    (field: keyof TxFields) => {
+      const { [field]: _, ...rest } = txFields
+      setState({ txFields: rest })
+    },
+    [setState, txFields]
+  )
+
   const handleEstimateFee = useCallback(
     async (state?: TransactionState, silent?: boolean) => {
       setFeeLoading(true)
 
       const fee = await estimateFee?.(state, { silent })
-      if (fee) handleSetField('Fee', fee, state?.txFields)
+      if (fee) setState({ fee })
 
       setFeeLoading(false)
     },
-    [estimateFee, handleSetField]
+    [estimateFee, setState]
   )
 
   const handleChangeTxType = useCallback(
@@ -153,6 +181,9 @@ export const TxUI: FC<UIProps> = ({
   }
 
   const otherFields = Object.keys(txFields).filter(k => !richFields.includes(k)) as [keyof TxFields]
+  const missingOptionalFields = Object.keys(optionalFields).filter(
+    field => txFields[field as keyof TxFields] === undefined
+  ) as [keyof TxFields]
   const amountOptions = [
     { label: 'XAH', value: 'xah' },
     { label: 'Token', value: 'token' }
@@ -213,13 +244,22 @@ export const TxUI: FC<UIProps> = ({
         )}
         {otherFields.map(field => {
           let _value = txFields[field]
+          const isOptionalField = optionalFields[field] !== undefined
+          const optionalFieldDeleteButton = isOptionalField ? (
+            <Button
+              css={{ ml: '$2' }}
+              onClick={() => handleRemoveOptionalField(field)}
+              variant="destroy"
+            >
+              <Trash weight="regular" size="16px" />
+            </Button>
+          ) : null
 
           const isAccount = (value: any): value is AccountField => typeIs(value, 'object') && value.$type === 'account'
           const isXrpAmount = (value: any): value is XrpAmountField => typeIs(value, 'object') && value.$type === 'amount.xrp'
           const isTokenAmount = (value: any): value is TokenAmountField => typeIs(value, 'object') && value.$type === 'amount.token'
           // const isIssue = (value: any): value is IssueField => typeIs(value, 'object') && value.$type === 'issue'
           const isJson = (value:any): value is JsonField => typeIs(value, 'object') && value.$type === 'json'
-          const isFee = field === 'Fee'
           let rows = isJson(_value) ? (JSON.stringify(_value.$value, null, 2).match(/\n/gm)?.length || 0) + 1 : undefined
           if (rows && rows > 5) rows = 5
           let tokenAmount = defaultTokenAmount
@@ -346,6 +386,7 @@ export const TxUI: FC<UIProps> = ({
                       }}
                     />
                   </Box>
+                  {optionalFieldDeleteButton}
                 </Flex>
               </TxField>
             )
@@ -354,6 +395,7 @@ export const TxUI: FC<UIProps> = ({
             return (
               <TxField key={field} label={field}>
                 <CreatableAccount value={_value.$value} field={field} setField={handleSetField} />
+                {optionalFieldDeleteButton}
               </TxField>
             )
           }
@@ -372,25 +414,11 @@ export const TxUI: FC<UIProps> = ({
                 />
               ) : (
                 <Input
-                  type={isFee ? 'number' : 'text'}
+                  type={'text'}
                   value={typeof _value === 'object' ? _value.$value?.toString() : _value?.toString()}
                   onChange={e => {
-                    if (isFee) {
-                      const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
-                      handleSetField(field, val)
-                    } else {
                       handleSetField(field, e.target.value)
-                    }
                   }}
-                  onKeyPress={
-                    isFee
-                      ? e => {
-                          if (e.key === '.' || e.key === ',') {
-                            e.preventDefault()
-                          }
-                        }
-                      : undefined
-                  }
                   css={{
                     flex: 'inherit',
                     '-moz-appearance': 'textfield',
@@ -405,30 +433,64 @@ export const TxUI: FC<UIProps> = ({
                   }}
                 />
               )}
-              {isFee && (
-                <Button
-                  size="xs"
-                  variant="primary"
-                  outline
-                  disabled={txState.txIsDisabled}
-                  isDisabled={txState.txIsDisabled}
-                  isLoading={feeLoading}
-                  css={{
-                    position: 'absolute',
-                    right: '$2',
-                    fontSize: '$xs',
-                    cursor: 'pointer',
-                    alignContent: 'center',
-                    display: 'flex'
-                  }}
-                  onClick={() => handleEstimateFee()}
-                >
-                  Suggest
-                </Button>
-              )}
+              {optionalFieldDeleteButton}
             </TxField>
           )
         })}
+        {missingOptionalFields.map(field => (
+          <TxField multiLine key={field} label={field}>
+            <Button outline fullWidth type="button" onClick={() => handleAddOptionalField(field)}>
+              <Plus size="16px" />
+              Add {field}
+            </Button>
+          </TxField>
+        ))}
+        <TxField key="Fee" label="Fee">
+          <Input
+              type={'number'}
+              value={fee}
+              onChange={e => {
+                const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
+                setState({ fee: val })
+              }}
+              onKeyPress={
+                  (e) => {
+                      if (e.key === '.' || e.key === ',') 
+                        e.preventDefault()
+                  }}
+              css={{
+                flex: 'inherit',
+                '-moz-appearance': 'textfield',
+                '&::-webkit-outer-spin-button': {
+                  '-webkit-appearance': 'none',
+                  margin: 0
+                },
+                '&::-webkit-inner-spin-button ': {
+                  '-webkit-appearance': 'none',
+                  margin: 0
+                }
+              }}
+            />
+            <Button
+              size="xs"
+              variant="primary"
+              outline
+              disabled={txState.txIsDisabled}
+              isDisabled={txState.txIsDisabled}
+              isLoading={feeLoading}
+              css={{
+                position: 'absolute',
+                right: '$2',
+                fontSize: '$xs',
+                cursor: 'pointer',
+                alignContent: 'center',
+                display: 'flex'
+              }}
+              onClick={() => handleEstimateFee()}
+            >
+              Suggest
+            </Button>
+        </TxField>
         <TxField multiLine label="Hook parameters">
           <Flex column fluid>
             {Object.entries(hookParameters).map(([id, { label, value }]) => (
