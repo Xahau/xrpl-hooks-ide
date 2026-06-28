@@ -8,8 +8,10 @@ import {
   SelectOption,
   TransactionState,
   transactionsOptions,
+  transactionsData,
   TxFields,
   defaultTransactionType,
+  commonFields
 } from '../../state/transactions'
 import { useSnapshot } from 'valtio'
 import state from '../../state'
@@ -53,6 +55,8 @@ interface JsonField {
   $type: 'json'
   $value: any
 }
+
+const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
 
 export const TxUI: FC<UIProps> = ({
   state: txState,
@@ -180,10 +184,15 @@ export const TxUI: FC<UIProps> = ({
     richFields.push('Flags')
   }
 
-  const otherFields = Object.keys(txFields).filter(k => !richFields.includes(k)) as [keyof TxFields]
-  const missingOptionalFields = Object.keys(optionalFields).filter(
-    field => txFields[field as keyof TxFields] === undefined
-  ) as [keyof TxFields]
+  const txSchema = transactionsData.find(tx => tx.TransactionType === selectedTransaction?.value)
+  const txSchemaFields = txSchema
+    ? Object.keys(txSchema)
+        .filter(field => !commonFields.includes(normalizeFieldName(field) as any))
+        .map(normalizeFieldName)
+    : []
+  const displayFields = [...txSchemaFields, ...Object.keys(txFields), ...Object.keys(optionalFields)]
+    .filter((field, index, fields) => fields.indexOf(field) === index)
+    .filter(field => !richFields.includes(field)) as (keyof TxFields)[]
   const amountOptions = [
     { label: 'XAH', value: 'xah' },
     { label: 'Token', value: 'token' }
@@ -242,7 +251,18 @@ export const TxUI: FC<UIProps> = ({
             />
           </TxField>
         )}
-        {otherFields.map(field => {
+        {displayFields.map(field => {
+          if (txFields[field] === undefined && optionalFields[field] !== undefined) {
+            return (
+              <TxField multiLine key={field} label={field}>
+                <Button outline fullWidth type="button" onClick={() => handleAddOptionalField(field)}>
+                  <Plus size="16px" />
+                  Add {field}
+                </Button>
+              </TxField>
+            )
+          }
+
           let _value = txFields[field]
           const isOptionalField = optionalFields[field] !== undefined
           const optionalFieldDeleteButton = isOptionalField ? (
@@ -437,14 +457,6 @@ export const TxUI: FC<UIProps> = ({
             </TxField>
           )
         })}
-        {missingOptionalFields.map(field => (
-          <TxField multiLine key={field} label={field}>
-            <Button outline fullWidth type="button" onClick={() => handleAddOptionalField(field)}>
-              <Plus size="16px" />
-              Add {field}
-            </Button>
-          </TxField>
-        ))}
         <TxField key="Fee" label="Fee">
           <Input
               type={'number'}
