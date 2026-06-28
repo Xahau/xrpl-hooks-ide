@@ -375,6 +375,18 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     )
   }
 
+  const renderAccountField = (
+    value: AccountField,
+    setValue: (value: AccountField) => void,
+    field: keyof TxFields = 'Account' as keyof TxFields
+  ) => (
+    <CreatableAccount
+      value={value.$value}
+      field={field}
+      setField={(_, nextValue = '') => setValue({ ...value, $value: nextValue })}
+    />
+  )
+
   const renderObjectFields = (
     value: Record<string, any>,
     setValue: (value: Record<string, any>) => void
@@ -446,13 +458,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     }
 
     if (isAccount(value)) {
-      return (
-        <CreatableAccount
-          value={value.$value}
-          field={'Account' as any}
-          setField={(_, nextValue = '') => setValue({ ...value, $value: nextValue })}
-        />
-      )
+      return renderAccountField(value, nextValue => setValue(nextValue))
     }
 
     if (isObjectField(value)) {
@@ -659,8 +665,6 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               </Button>
             ) : null
 
-          let tokenAmount = defaultTokenAmount
-
           // if (isIssue(_value)) {
           //   const value = _value.$value
 
@@ -686,112 +690,22 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           //   )
           // }
 
-          // Amount
-          if (isTokenAmount(_value)) {
-            tokenAmount = {
-              value: _value.$value.value,
-              currency: _value.$value.currency,
-              issuer: _value.$value.issuer
-            }
-          }
-
           if (isXrpAmount(_value) || isTokenAmount(_value)) {
             return (
               <TxField key={field} label={field}>
-                <Flex fluid css={{ alignItems: 'center' }}>
-                  {isTokenAmount(_value) ? (
-                    <Flex
-                      fluid
-                      row
-                      align="center"
-                      justify="space-between"
-                      css={{ position: 'relative' }}
-                    >
-                      {/*  <Input
-                        type="text"
-                        placeholder="Issuer"
-                        value={tokenAmount.issuer}
-                        onChange={e =>
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            issuer: e.target.value
-                          })
-                        }
-                      /> */}
-                      <Input
-                        type="text"
-                        value={tokenAmount.currency}
-                        placeholder="Currency"
-                        onChange={e => {
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            currency: e.target.value
-                          })
-                        }}
-                      />
-                      <Input
-                        css={{ mx: '$1' }}
-                        type="number"
-                        value={tokenAmount.value}
-                        placeholder="Value"
-                        onChange={e => {
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            value: e.target.value
-                          })
-                        }}
-                      />
-                      <Box css={{ width: '50%' }}>
-                        <CreatableAccount
-                          value={tokenAmount.issuer}
-                          field={'Issuer' as any}
-                          placeholder="Issuer"
-                          setField={(_, value = '') => {
-                            setRawField(field, 'amount.token', {
-                              ...tokenAmount,
-                              issuer: value
-                            })
-                          }}
-                        />
-                      </Box>
-                    </Flex>
-                  ) : (
-                    <Input
-                      css={{ flex: 'inherit' }}
-                      type="number"
-                      value={_value.$value?.toString()}
-                      onChange={e => handleSetField(field, e.target.value)}
-                    />
-                  )}
-                  <Box
-                    css={{
-                      ml: '$2',
-                      width: '150px'
-                    }}
-                  >
-                    <Select
-                      instanceId="currency-type"
-                      options={amountOptions}
-                      value={isXrpAmount(_value) ? amountOptions['0'] : amountOptions['1']}
-                      onChange={(e: any) => {
-                        const opt = e as typeof amountOptions[number]
-                        if (opt.value === 'xah') {
-                          setRawField(field, 'amount.xrp', '0')
-                        } else {
-                          setRawField(field, 'amount.token', defaultTokenAmount)
-                        }
-                      }}
-                    />
-                  </Box>
-                  {optionalFieldDeleteButton}
-                </Flex>
+                {renderAmountField(_value, nextValue =>
+                  setRawField(field, nextValue.$type, nextValue.$value)
+                )}
+                {optionalFieldDeleteButton}
               </TxField>
             )
           }
           if (isAccount(_value)) {
             return (
               <TxField key={field} label={field}>
-                <CreatableAccount value={_value.$value} field={field} setField={handleSetField} />
+                {renderAccountField(_value, nextValue =>
+                  setRawField(field, nextValue.$type, nextValue.$value)
+                )}
                 {optionalFieldDeleteButton}
               </TxField>
             )
