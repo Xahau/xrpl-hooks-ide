@@ -248,6 +248,67 @@
     "Fee": "12"
   },
   {
+    "TransactionType": "Remit",
+    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+    "Amounts": {
+      "$type": "json",
+      "$value": [
+        {
+          "AmountEntry": {
+            "Amount": "6000000"
+          }
+        },
+        {
+          "AmountEntry":  {
+            "Amount": {
+              "currency": "USD",
+              "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
+              "value": "2"
+            }
+          }
+        }
+      ]
+    },
+    "Destination": {
+      "$type": "account",
+      "$value": ""
+    },
+    "URITokenIDs": {
+      "$type": "json",
+      "$value": [
+        "714F206C865D334721B2F3388BEAF33AA91BC1D78C71941D10A2A653C873EDD3"
+      ]
+    },
+    "MintURIToken": {
+      "$type": "json",
+      "$value": {
+        "Digest": "6F11A4DF4EE794E2800BB361173D454BFBECB3D7506C4F4CB0EC5AE98BE43747",
+        "Flags": 1,
+        "URI": "697066733A2F2F"
+      }
+    },
+    "Fee": "10",
+    "Sequence": 1
+  },
+  {
+    "TransactionType": "SetRemarks",
+    "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
+    "ObjectID": "AABBCCDDEEFF00112233445566778899AABBCCDDEEFF00112233445566778899",
+    "Fee": "12",
+    "Sequence": 1,
+    "Remarks": {
+      "$type": "json",
+      "$value": [
+        {
+          "Remark": {
+            "RemarkName": "CAFE",
+            "RemarkValue": "DEADBEEF"
+          }
+        }
+     ]
+    }
+  },
+  {
     "TransactionType": "URITokenMint",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
     "URI": "697066733A2F2F434944",
