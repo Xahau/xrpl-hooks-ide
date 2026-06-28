@@ -406,7 +406,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
             return (
               <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
                 <Text muted css={{ flex: '0 0 25%' }}>
-                  {childField}
+                  {childField}:{' '}
                 </Text>
                 <Box css={{ flex: 1 }}>
                   <Button
@@ -428,7 +428,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           return (
             <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
               <Text muted css={{ flex: '0 0 25%' }}>
-                {childField}
+                {childField}:{' '}
               </Text>
               <Box css={{ flex: 1 }}>
                 {renderNestedValue(childValue, nextValue => {
