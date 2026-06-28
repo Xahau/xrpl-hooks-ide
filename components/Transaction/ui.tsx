@@ -29,6 +29,31 @@ interface UIProps {
   switchToJson: () => void
 }
 
+interface AccountField {
+  $type: 'account'
+  $value: string
+}
+
+interface XrpAmountField {
+  $type: 'amount.xrp'
+  $value: string
+}
+
+interface TokenAmountField {
+  $type: 'amount.token'
+  $value: { value: string, currency: string, issuer: string }
+}
+
+// interface IssueField {
+//   $type: 'issue'
+//   $value: { currency: string, issuer: string }
+// }
+
+interface JsonField {
+  $type: 'json'
+  $value: any
+}
+
 export const TxUI: FC<UIProps> = ({
   state: txState,
   setState,
@@ -189,26 +214,43 @@ export const TxUI: FC<UIProps> = ({
         {otherFields.map(field => {
           let _value = txFields[field]
 
-          let value: string | undefined
-          if (typeIs(_value, 'object')) {
-            if (_value.$type === 'json' && typeIs(_value.$value, ['object', 'array'])) {
-              value = JSON.stringify(_value.$value, null, 2)
-            } else {
-              value = _value.$value?.toString()
-            }
-          } else {
-            value = _value?.toString()
-          }
-
-          const isAccount = typeIs(_value, 'object') && _value.$type === 'account'
-          const isXrpAmount = typeIs(_value, 'object') && _value.$type === 'amount.xrp'
-          const isTokenAmount = typeIs(_value, 'object') && _value.$type === 'amount.token'
-          const isJson = typeof _value === 'object' && _value.$type === 'json'
+          const isAccount = (value: any): value is AccountField => typeIs(value, 'object') && value.$type === 'account'
+          const isXrpAmount = (value: any): value is XrpAmountField => typeIs(value, 'object') && value.$type === 'amount.xrp'
+          const isTokenAmount = (value: any): value is TokenAmountField => typeIs(value, 'object') && value.$type === 'amount.token'
+          // const isIssue = (value: any): value is IssueField => typeIs(value, 'object') && value.$type === 'issue'
+          const isJson = (value:any): value is JsonField => typeIs(value, 'object') && value.$type === 'json'
           const isFee = field === 'Fee'
-          let rows = isJson ? (value?.match(/\n/gm)?.length || 0) + 1 : undefined
+          let rows = isJson(_value) ? (JSON.stringify(_value.$value, null, 2).match(/\n/gm)?.length || 0) + 1 : undefined
           if (rows && rows > 5) rows = 5
           let tokenAmount = defaultTokenAmount
-          if (isTokenAmount && typeIs(_value, 'object') && typeIs(_value.$value, 'object')) {
+
+          // if (isIssue(_value)) {
+          //   const value = _value.$value
+
+          //   return (
+          //     <TxField key={field} label={field}>
+          //       <Flex row fluid css={{ gap: '$1' }}>
+          //         <Input
+          //           placeholder="Currency (e.g. USD)"
+          //           value={value.currency}
+          //           css={{ flex: '0 0 30%' }}
+          //           onChange={e => setRawField(field, 'issue', { ...value, currency: e.target.value })}
+          //         />
+          //         <Box css={{ flex: 1 }}>
+          //           <CreatableAccount
+          //             value={value.issuer}
+          //             field={'Issuer' as any}
+          //             placeholder="Issuer account"
+          //             setField={(_, v = '') => setRawField(field, 'issue', { ...value, issuer: v })}
+          //           />
+          //         </Box>
+          //       </Flex>
+          //     </TxField>
+          //   )
+          // }
+
+          // Amount
+          if (isTokenAmount(_value)) {
             tokenAmount = {
               value: _value.$value.value,
               currency: _value.$value.currency,
@@ -216,11 +258,11 @@ export const TxUI: FC<UIProps> = ({
             }
           }
 
-          if (isXrpAmount || isTokenAmount) {
+          if (isXrpAmount(_value) || isTokenAmount(_value)) {
             return (
               <TxField key={field} label={field}>
                 <Flex fluid css={{ alignItems: 'center' }}>
-                  {isTokenAmount ? (
+                  {isTokenAmount(_value) ? (
                     <Flex
                       fluid
                       row
@@ -280,7 +322,7 @@ export const TxUI: FC<UIProps> = ({
                     <Input
                       css={{ flex: 'inherit' }}
                       type="number"
-                      value={value}
+                      value={_value.$value?.toString()}
                       onChange={e => handleSetField(field, e.target.value)}
                     />
                   )}
@@ -293,7 +335,7 @@ export const TxUI: FC<UIProps> = ({
                     <Select
                       instanceId="currency-type"
                       options={amountOptions}
-                      value={isXrpAmount ? amountOptions['0'] : amountOptions['1']}
+                      value={isXrpAmount(_value) ? amountOptions['0'] : amountOptions['1']}
                       onChange={(e: any) => {
                         const opt = e as typeof amountOptions[number]
                         if (opt.value === 'xah') {
@@ -308,19 +350,19 @@ export const TxUI: FC<UIProps> = ({
               </TxField>
             )
           }
-          if (isAccount) {
+          if (isAccount(_value)) {
             return (
               <TxField key={field} label={field}>
-                <CreatableAccount value={value} field={field} setField={handleSetField} />
+                <CreatableAccount value={_value.$value} field={field} setField={handleSetField} />
               </TxField>
             )
           }
           return (
             <TxField key={field} label={field}>
-              {isJson ? (
+              {isJson(_value) ? (
                 <Textarea
                   rows={rows}
-                  value={value}
+                  value={JSON.stringify(_value.$value, null, 2)}
                   spellCheck={false}
                   onChange={switchToJson}
                   css={{
@@ -331,7 +373,7 @@ export const TxUI: FC<UIProps> = ({
               ) : (
                 <Input
                   type={isFee ? 'number' : 'text'}
-                  value={value}
+                  value={typeof _value === 'object' ? _value.$value?.toString() : _value?.toString()}
                   onChange={e => {
                     if (isFee) {
                       const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
