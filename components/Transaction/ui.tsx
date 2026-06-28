@@ -17,7 +17,6 @@ import { useSnapshot } from 'valtio'
 import state from '../../state'
 import { streamState } from '../DebugStream'
 import { Box, Button } from '..'
-import Textarea from '../Textarea'
 import { getFlags } from '../../state/constants/flags'
 import { Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
@@ -43,7 +42,7 @@ interface XrpAmountField {
 
 interface TokenAmountField {
   $type: 'amount.token'
-  $value: { value: string, currency: string, issuer: string }
+  $value: { value: string; currency: string; issuer: string }
 }
 
 // interface IssueField {
@@ -51,20 +50,26 @@ interface TokenAmountField {
 //   $value: { currency: string, issuer: string }
 // }
 
-interface JsonField {
-  $type: 'json'
-  $value: any
+interface ObjectField {
+  $type: 'object'
+  $value: Record<string, any>
 }
+
+interface ArrayField {
+  $type: 'array'
+  $value: Record<string, any>[]
+}
+
+interface Vec256Field {
+  $type: 'vec256'
+  $value: string[]
+}
+
+type StructuredField = ObjectField | ArrayField | Vec256Field
 
 const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
 
-export const TxUI: FC<UIProps> = ({
-  state: txState,
-  setState,
-  resetState,
-  estimateFee,
-  switchToJson
-}) => {
+export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estimateFee }) => {
   const { accounts } = useSnapshot(state)
   const {
     selectedAccount,
@@ -97,7 +102,7 @@ export const TxUI: FC<UIProps> = ({
   }
 
   const handleSetField = useCallback(
-    (field: keyof TxFields , value: string, opFields?: TxFields) => {
+    (field: keyof TxFields, value: string, opFields?: TxFields) => {
       const fields = opFields || txFields
       const obj = fields[field]
       setState({
@@ -190,7 +195,11 @@ export const TxUI: FC<UIProps> = ({
         .filter(field => !commonFields.includes(normalizeFieldName(field) as any))
         .map(normalizeFieldName)
     : []
-  const displayFields = [...txSchemaFields, ...Object.keys(txFields), ...Object.keys(optionalFields)]
+  const displayFields = [
+    ...txSchemaFields,
+    ...Object.keys(txFields),
+    ...Object.keys(optionalFields)
+  ]
     .filter((field, index, fields) => fields.indexOf(field) === index)
     .filter(field => !richFields.includes(field)) as (keyof TxFields)[]
   const amountOptions = [
@@ -203,6 +212,265 @@ export const TxUI: FC<UIProps> = ({
     currency: '',
     issuer: ''
   }
+
+  const isAccount = (value: any): value is AccountField =>
+    typeIs(value, 'object') && value.$type === 'account'
+  const isXrpAmount = (value: any): value is XrpAmountField =>
+    typeIs(value, 'object') && value.$type === 'amount.xrp'
+  const isTokenAmount = (value: any): value is TokenAmountField =>
+    typeIs(value, 'object') && value.$type === 'amount.token'
+  // const isIssue = (value: any): value is IssueField =>
+  //   typeIs(value, 'object') && value.$type === 'issue'
+  const isObjectField = (value: any): value is ObjectField =>
+    typeIs(value, 'object') && value.$type === 'object'
+  const isArrayField = (value: any): value is ArrayField =>
+    typeIs(value, 'object') && value.$type === 'array'
+  const isVec256Field = (value: any): value is Vec256Field =>
+    typeIs(value, 'object') && value.$type === 'vec256'
+  const isStructuredField = (value: any): value is StructuredField =>
+    isObjectField(value) || isArrayField(value) || isVec256Field(value)
+
+  const getDefaultValue = (value: any) => {
+    if (isObjectField(value)) return { ...value, $value: { ...value.$value } }
+    if (isArrayField(value)) return { ...value, $value: [cloneValue(value.$value[0] || {})] }
+    if (isVec256Field(value)) return { ...value, $value: [value.$value[0] || ''] }
+    return cloneValue(value)
+  }
+
+  const cloneValue = (value: any): any => {
+    if (Array.isArray(value)) return value.map(cloneValue)
+    if (typeIs(value, 'object'))
+      return Object.entries(value).reduce((acc, [key, val]) => {
+        acc[key] = cloneValue(val)
+        return acc
+      }, {} as Record<string, any>)
+    return value
+  }
+
+  const setNestedField = (field: keyof TxFields, updater: (value: any) => any) => {
+    const current = txFields[field]
+    const nextValue = updater(cloneValue(current))
+    const { [field]: _, ...rest } = txFields
+
+    setState({
+      txFields: {
+        ...(nextValue === undefined ? rest : txFields),
+        ...(nextValue === undefined ? {} : { [field]: nextValue })
+      }
+    })
+  }
+
+  const renderPrimitiveField = (value: any, setValue: (value: any) => void, key?: string) => (
+    <Input
+      key={key}
+      type="text"
+      value={typeIs(value, 'object') ? value.$value?.toString() : value?.toString()}
+      onChange={e => setValue(e.target.value)}
+      css={{
+        flex: 'inherit',
+        '-moz-appearance': 'textfield',
+        '&::-webkit-outer-spin-button': {
+          '-webkit-appearance': 'none',
+          margin: 0
+        },
+        '&::-webkit-inner-spin-button ': {
+          '-webkit-appearance': 'none',
+          margin: 0
+        }
+      }}
+    />
+  )
+
+  const renderObjectFields = (
+    value: Record<string, any>,
+    setValue: (value: Record<string, any>) => void
+  ) => {
+    const fields = Object.keys(value)
+      .map(normalizeFieldName)
+      .filter((field, index, fields) => fields.indexOf(field) === index)
+
+    return (
+      <Flex column fluid css={{ gap: '$2' }}>
+        {fields.map(childField => {
+          const optionalKey = `${childField}?`
+          const isOptional = value[optionalKey] !== undefined
+          const childValue = value[childField]
+
+          if (childValue === undefined && isOptional) {
+            return (
+              <Button
+                key={childField}
+                outline
+                fullWidth
+                type="button"
+                onClick={() =>
+                  setValue({ ...value, [childField]: getDefaultValue(value[optionalKey]) })
+                }
+              >
+                <Plus size="16px" />
+                Add {childField}
+              </Button>
+            )
+          }
+
+          return (
+            <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+              <Text muted css={{ flex: '0 0 25%' }}>
+                {childField}
+              </Text>
+              <Box css={{ flex: 1 }}>
+                {renderNestedValue(childValue, nextValue => {
+                  if (nextValue === undefined) {
+                    const { [childField]: _, ...rest } = value
+                    setValue(rest)
+                    return
+                  }
+                  setValue({ ...value, [childField]: nextValue })
+                })}
+              </Box>
+              {isOptional && !isArrayField(childValue) && !isVec256Field(childValue) && (
+                <Button
+                  onClick={() => {
+                    const { [childField]: _, ...rest } = value
+                    setValue(rest)
+                  }}
+                  variant="destroy"
+                >
+                  <Trash weight="regular" size="16px" />
+                </Button>
+              )}
+            </Flex>
+          )
+        })}
+      </Flex>
+    )
+  }
+
+  const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
+    if (isObjectField(value)) {
+      return renderObjectFields(value.$value, nextValue =>
+        setValue({ ...value, $value: nextValue })
+      )
+    }
+
+    if (isArrayField(value)) {
+      const items = value.$value
+      return (
+        <Flex column fluid css={{ gap: '$2' }}>
+          {items.map((item, index) => {
+            const itemKeys = typeIs(item, 'object') ? Object.keys(item) : []
+            const itemKey = itemKeys.length === 1 ? itemKeys[0] : undefined
+            const itemValue = itemKey ? item[itemKey] : item
+            const itemLabel = itemKey || 'Item'
+
+            return (
+              <Flex
+                key={index}
+                column
+                fluid
+                css={{ gap: '$2', p: '$2', backgroundColor: '$mauve2', borderRadius: '$sm' }}
+              >
+                <Flex row fluid css={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text muted>
+                    {itemLabel} {index + 1}
+                  </Text>
+                  <Button
+                    onClick={() =>
+                      items.length <= 1
+                        ? setValue(undefined)
+                        : setValue({
+                            ...value,
+                            $value: items.filter((_, itemIndex) => itemIndex !== index)
+                          })
+                    }
+                    variant="destroy"
+                  >
+                    <Trash weight="regular" size="16px" />
+                  </Button>
+                </Flex>
+                {renderNestedValue(itemValue, nextItemValue =>
+                  setValue({
+                    ...value,
+                    $value: items.map((currentItem, itemIndex) => {
+                      if (itemIndex !== index) return currentItem
+                      return itemKey ? { ...item, [itemKey]: nextItemValue } : nextItemValue
+                    })
+                  })
+                )}
+              </Flex>
+            )
+          })}
+          <Button
+            outline
+            fullWidth
+            type="button"
+            onClick={() =>
+              setValue({
+                ...value,
+                $value: [...items, cloneValue(items[0] || {})]
+              })
+            }
+          >
+            <Plus size="16px" />
+            Add Item
+          </Button>
+        </Flex>
+      )
+    }
+
+    if (isVec256Field(value)) {
+      const items = value.$value
+      return (
+        <Flex column fluid css={{ gap: '$2' }}>
+          {items.map((item, index) => (
+            <Flex key={index} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+              <Input
+                type="text"
+                value={item}
+                onChange={e =>
+                  setValue({
+                    ...value,
+                    $value: items.map((currentItem, itemIndex) =>
+                      itemIndex === index ? e.target.value : currentItem
+                    )
+                  })
+                }
+              />
+              <Button
+                onClick={() =>
+                  items.length <= 1
+                    ? setValue(undefined)
+                    : setValue({
+                        ...value,
+                        $value: items.filter((_, itemIndex) => itemIndex !== index)
+                      })
+                }
+                variant="destroy"
+              >
+                <Trash weight="regular" size="16px" />
+              </Button>
+            </Flex>
+          ))}
+          <Button
+            outline
+            fullWidth
+            type="button"
+            onClick={() => setValue({ ...value, $value: [...items, ''] })}
+          >
+            <Plus size="16px" />
+            Add Value
+          </Button>
+        </Flex>
+      )
+    }
+
+    if (typeIs(value, 'object')) {
+      return renderObjectFields(value, nextValue => setValue(nextValue))
+    }
+
+    return renderPrimitiveField(value, setValue)
+  }
+
   return (
     <Container
       css={{
@@ -244,7 +512,7 @@ export const TxUI: FC<UIProps> = ({
               value={selectedFlags}
               isMulti
               options={flagsOptions}
-              onChange={flags => setState({ selectedFlags: flags as any })}
+              onChange={(flags: any) => setState({ selectedFlags: flags as any })}
               closeMenuOnSelect={
                 selectedFlags ? selectedFlags.length >= flagsOptions.length - 1 : false
               }
@@ -255,7 +523,12 @@ export const TxUI: FC<UIProps> = ({
           if (txFields[field] === undefined && optionalFields[field] !== undefined) {
             return (
               <TxField multiLine key={field} label={field}>
-                <Button outline fullWidth type="button" onClick={() => handleAddOptionalField(field)}>
+                <Button
+                  outline
+                  fullWidth
+                  type="button"
+                  onClick={() => handleAddOptionalField(field)}
+                >
                   <Plus size="16px" />
                   Add {field}
                 </Button>
@@ -265,23 +538,19 @@ export const TxUI: FC<UIProps> = ({
 
           let _value = txFields[field]
           const isOptionalField = optionalFields[field] !== undefined
-          const optionalFieldDeleteButton = isOptionalField ? (
-            <Button
-              css={{ ml: '$2' }}
-              onClick={() => handleRemoveOptionalField(field)}
-              variant="destroy"
-            >
-              <Trash weight="regular" size="16px" />
-            </Button>
-          ) : null
+          if (_value === undefined) return null
 
-          const isAccount = (value: any): value is AccountField => typeIs(value, 'object') && value.$type === 'account'
-          const isXrpAmount = (value: any): value is XrpAmountField => typeIs(value, 'object') && value.$type === 'amount.xrp'
-          const isTokenAmount = (value: any): value is TokenAmountField => typeIs(value, 'object') && value.$type === 'amount.token'
-          // const isIssue = (value: any): value is IssueField => typeIs(value, 'object') && value.$type === 'issue'
-          const isJson = (value:any): value is JsonField => typeIs(value, 'object') && value.$type === 'json'
-          let rows = isJson(_value) ? (JSON.stringify(_value.$value, null, 2).match(/\n/gm)?.length || 0) + 1 : undefined
-          if (rows && rows > 5) rows = 5
+          const optionalFieldDeleteButton =
+            isOptionalField && !isArrayField(_value) && !isVec256Field(_value) ? (
+              <Button
+                css={{ ml: '$2' }}
+                onClick={() => handleRemoveOptionalField(field)}
+                variant="destroy"
+              >
+                <Trash weight="regular" size="16px" />
+              </Button>
+            ) : null
+
           let tokenAmount = defaultTokenAmount
 
           // if (isIssue(_value)) {
@@ -419,89 +688,64 @@ export const TxUI: FC<UIProps> = ({
               </TxField>
             )
           }
+          if (isStructuredField(_value)) {
+            return (
+              <TxField multiLine key={field} label={field}>
+                {renderNestedValue(_value, value => setNestedField(field, () => value))}
+                {optionalFieldDeleteButton}
+              </TxField>
+            )
+          }
           return (
             <TxField key={field} label={field}>
-              {isJson(_value) ? (
-                <Textarea
-                  rows={rows}
-                  value={JSON.stringify(_value.$value, null, 2)}
-                  spellCheck={false}
-                  onChange={switchToJson}
-                  css={{
-                    flex: 'inherit',
-                    resize: 'vertical'
-                  }}
-                />
-              ) : (
-                <Input
-                  type={'text'}
-                  value={typeof _value === 'object' ? _value.$value?.toString() : _value?.toString()}
-                  onChange={e => {
-                      handleSetField(field, e.target.value)
-                  }}
-                  css={{
-                    flex: 'inherit',
-                    '-moz-appearance': 'textfield',
-                    '&::-webkit-outer-spin-button': {
-                      '-webkit-appearance': 'none',
-                      margin: 0
-                    },
-                    '&::-webkit-inner-spin-button ': {
-                      '-webkit-appearance': 'none',
-                      margin: 0
-                    }
-                  }}
-                />
-              )}
+              {renderPrimitiveField(_value, value => handleSetField(field, value))}
               {optionalFieldDeleteButton}
             </TxField>
           )
         })}
         <TxField key="Fee" label="Fee">
           <Input
-              type={'number'}
-              value={fee}
-              onChange={e => {
-                const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
-                setState({ fee: val })
-              }}
-              onKeyPress={
-                  (e) => {
-                      if (e.key === '.' || e.key === ',') 
-                        e.preventDefault()
-                  }}
-              css={{
-                flex: 'inherit',
-                '-moz-appearance': 'textfield',
-                '&::-webkit-outer-spin-button': {
-                  '-webkit-appearance': 'none',
-                  margin: 0
-                },
-                '&::-webkit-inner-spin-button ': {
-                  '-webkit-appearance': 'none',
-                  margin: 0
-                }
-              }}
-            />
-            <Button
-              size="xs"
-              variant="primary"
-              outline
-              disabled={txState.txIsDisabled}
-              isDisabled={txState.txIsDisabled}
-              isLoading={feeLoading}
-              css={{
-                position: 'absolute',
-                right: '$2',
-                fontSize: '$xs',
-                cursor: 'pointer',
-                alignContent: 'center',
-                display: 'flex'
-              }}
-              onClick={() => handleEstimateFee()}
-            >
-              Suggest
-            </Button>
+            type={'number'}
+            value={fee}
+            onChange={e => {
+              const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
+              setState({ fee: val })
+            }}
+            onKeyPress={e => {
+              if (e.key === '.' || e.key === ',') e.preventDefault()
+            }}
+            css={{
+              flex: 'inherit',
+              '-moz-appearance': 'textfield',
+              '&::-webkit-outer-spin-button': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              },
+              '&::-webkit-inner-spin-button ': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              }
+            }}
+          />
+          <Button
+            size="xs"
+            variant="primary"
+            outline
+            disabled={txState.txIsDisabled}
+            isDisabled={txState.txIsDisabled}
+            isLoading={feeLoading}
+            css={{
+              position: 'absolute',
+              right: '$2',
+              fontSize: '$xs',
+              cursor: 'pointer',
+              alignContent: 'center',
+              display: 'flex'
+            }}
+            onClick={() => handleEstimateFee()}
+          >
+            Suggest
+          </Button>
         </TxField>
         <TxField multiLine label="Hook parameters">
           <Flex column fluid>

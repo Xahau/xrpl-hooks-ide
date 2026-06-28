@@ -42,18 +42,25 @@ export interface TransactionState {
   estimatedFee?: string
 }
 
-const commonFields = ['TransactionType', 'Account', "Flags", "Fee", 'Sequence', "HookParameters"] as const;
+const commonFields = [
+  'TransactionType',
+  'Account',
+  'Flags',
+  'Fee',
+  'Sequence',
+  'HookParameters'
+] as const
 
 export type TxFields = Omit<
   Partial<(typeof transactionsData)[number]>,
-  typeof commonFields[number]
+  (typeof commonFields)[number]
 >
 
 export const defaultTransaction: TransactionState = {
   selectedTransaction: null,
   selectedAccount: null,
   selectedFlags: null,
-  fee: "12",
+  fee: '12',
   hookParameters: {},
   memos: {},
   editorIsSaved: true,
@@ -67,6 +74,68 @@ export const defaultTransaction: TransactionState = {
 const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
 
 const isOptionalFieldName = (field: string) => field.endsWith('?')
+
+const unwrapTypedValue = (value: any): any => {
+  if (!typeIs(value, 'object')) return value
+
+  if (value.$type === 'amount.xrp') {
+    if (value.$value) return +value.$value * 1000000 + ''
+    return ''
+  }
+
+  if (value.$type === 'amount.token') {
+    if (typeIs(value.$value, 'string')) return parseJSON(value.$value)
+    if (typeIs(value.$value, 'object')) return value.$value
+    return undefined
+  }
+
+  if (value.$type === 'account') {
+    return value.$value?.toString() || ''
+  }
+
+  if (value.$type === 'object') {
+    return normalizeObjectValue(value.$value)
+  }
+
+  if (value.$type === 'array') {
+    return Array.isArray(value.$value) ? value.$value.map(normalizeObjectValue) : []
+  }
+
+  if (value.$type === 'vec256') {
+    return Array.isArray(value.$value) ? value.$value.map(v => v?.toString() || '') : []
+  }
+
+  // Backward compatibility for locally saved transaction state created before
+  // json fields were split into object, array, and vec256.
+  if (value.$type === 'json') {
+    const val = value.$value
+    const parsed = typeIs(val, 'string') ? parseJSON(val) : undefined
+    return parsed || val
+  }
+
+  if (!('$type' in value)) return normalizeObjectValue(value)
+
+  return value
+}
+
+const normalizeObjectValue = (obj: any): any => {
+  if (!typeIs(obj, 'object')) return unwrapTypedValue(obj)
+
+  return Object.keys(obj).reduce((acc, field) => {
+    if (isOptionalFieldName(field)) return acc
+
+    const normalizedField = normalizeFieldName(field)
+    acc[normalizedField] = unwrapTypedValue(obj[field])
+    return acc
+  }, {} as Record<string, any>)
+}
+
+const getStructuredType = (value: any): 'object' | 'array' | 'vec256' | undefined => {
+  if (Array.isArray(value)) {
+    return value.every(item => typeof item === 'string') ? 'vec256' : 'array'
+  }
+  if (typeIs(value, 'object')) return 'object'
+}
 
 export const transactionsState = proxy({
   transactions: [
@@ -149,42 +218,7 @@ export const prepareTransaction = (data: any) => {
       field = normalizedField
     }
 
-    let _value = options[field]
-    if (!typeIs(_value, 'object')) return
-    // amount.xrp
-    if (_value.$type === 'amount.xrp') {
-      if (_value.$value) {
-        options[field] = (+(_value as any).$value * 1000000 + '')
-      } else {
-        options[field] = ""
-      }
-    }
-    // amount.token
-    if (_value.$type === 'amount.token') {
-      if (typeIs(_value.$value, 'string')) {
-        options[field] = parseJSON(_value.$value)
-      } else if (typeIs(_value.$value, 'object')) {
-        options[field] = _value.$value
-      } else {
-        options[field] = undefined
-      }
-    }
-    // account
-    if (_value.$type === 'account') {
-      options[field] = (_value.$value as any)?.toString() || ""
-    }
-    // json
-    if (_value.$type === 'json') {
-      const val = _value.$value;
-      let res: any = val;
-      if (typeIs(val, ["object", "array"])) {
-        options[field] = res
-      } else if (typeIs(val, "string") && (res = parseJSON(val))) {
-        options[field] = res;
-      } else {
-        options[field] = res;
-      }
-    }
+    options[field] = unwrapTypedValue(options[field])
   })
 
   return options
@@ -231,21 +265,30 @@ export const prepareState = (value: string, transactionType?: string) => {
   }
 
   if (HookParameters && HookParameters instanceof Array) {
-    tx.hookParameters = HookParameters.reduce<TransactionState["hookParameters"]>((acc, cur, idx) => {
-      const param = { label: fromHex(cur.HookParameter?.HookParameterName || ""), value: cur.HookParameter?.HookParameterValue || "" }
-      acc[idx] = param;
-      return acc;
-    }, {})
+    tx.hookParameters = HookParameters.reduce<TransactionState['hookParameters']>(
+      (acc, cur, idx) => {
+        const param = {
+          label: fromHex(cur.HookParameter?.HookParameterName || ''),
+          value: cur.HookParameter?.HookParameterValue || ''
+        }
+        acc[idx] = param
+        return acc
+      },
+      {}
+    )
   }
 
   if (Memos && Memos instanceof Array) {
-    tx.memos = Memos.reduce<TransactionState["memos"]>((acc, cur, idx) => {
-      const memo = { data: cur.Memo?.MemoData || "", type: fromHex(cur.Memo?.MemoType || ""), format: fromHex(cur.Memo?.MemoFormat || "") }
-      acc[idx] = memo;
-      return acc;
+    tx.memos = Memos.reduce<TransactionState['memos']>((acc, cur, idx) => {
+      const memo = {
+        data: cur.Memo?.MemoData || '',
+        type: fromHex(cur.Memo?.MemoType || ''),
+        format: fromHex(cur.Memo?.MemoFormat || '')
+      }
+      acc[idx] = memo
+      return acc
     }, {})
   }
-
 
   if (getFlags(TransactionType) && rest.Flags) {
     const flags = extractFlags(TransactionType, rest.Flags)
@@ -263,17 +306,15 @@ export const prepareState = (value: string, transactionType?: string) => {
     }
 
     const value = rest[field]
-    const schemaVal = schema[field as keyof TxFields]
-      || tx.optionalFields?.[field as keyof TxFields]
+    const schemaVal =
+      schema[field as keyof TxFields] || tx.optionalFields?.[field as keyof TxFields]
 
-    const isAmount = schemaVal &&
-      typeIs(schemaVal, "object") &&
-      schemaVal.$type.startsWith('amount.');
-    const isAccount = schemaVal &&
-      typeIs(schemaVal, "object") &&
-      schemaVal.$type.startsWith("account");
+    const isAmount =
+      schemaVal && typeIs(schemaVal, 'object') && schemaVal.$type.startsWith('amount.')
+    const isAccount =
+      schemaVal && typeIs(schemaVal, 'object') && schemaVal.$type.startsWith('account')
 
-    if (isAmount && ["number", "string"].includes(typeof value)) {
+    if (isAmount && ['number', 'string'].includes(typeof value)) {
       rest[field] = {
         $type: 'amount.xrp', // TODO narrow typed $type.
         $value: +value / 1000000 // ! maybe use bigint?
@@ -285,20 +326,19 @@ export const prepareState = (value: string, transactionType?: string) => {
       }
     } else if (isAccount) {
       rest[field] = {
-        $type: "account",
-        $value: value?.toString() || ""
+        $type: 'account',
+        $value: value?.toString() || ''
       }
-    }
-    else if (typeof value === 'object') {
+    } else if (typeof value === 'object') {
       rest[field] = {
-        $type: 'json',
+        $type: getStructuredType(value),
         $value: value
       }
     }
   })
 
   tx.txFields = rest
-  tx.editorIsSaved = true;
+  tx.editorIsSaved = true
 
   return tx
 }

@@ -147,7 +147,7 @@
     "TransactionType": "SignerListSet",
     "SignerQuorum": 3,
     "SignerEntries": {
-      "$type": "json",
+      "$type": "array",
       "$value": [
         {
           "SignerEntry": {
@@ -196,8 +196,8 @@
   {
     "TransactionType": "Remit",
     "Account": "ra5nK24KXen9AHvsdFTKHSANinZseWnPcX",
-    "Amounts": {
-      "$type": "json",
+    "Amounts?": {
+      "$type": "array",
       "$value": [
         {
           "AmountEntry": {
@@ -205,7 +205,7 @@
           }
         },
         {
-          "AmountEntry":  {
+          "AmountEntry": {
             "Amount": {
               "currency": "USD",
               "issuer": "rhQEswwTsjMXk75QL9Dd9RWZAokNHTzJpr",
@@ -219,14 +219,12 @@
       "$type": "account",
       "$value": ""
     },
-    "URITokenIDs": {
-      "$type": "json",
-      "$value": [
-        "714F206C865D334721B2F3388BEAF33AA91BC1D78C71941D10A2A653C873EDD3"
-      ]
+    "URITokenIDs?": {
+      "$type": "vec256",
+      "$value": ["714F206C865D334721B2F3388BEAF33AA91BC1D78C71941D10A2A653C873EDD3"]
     },
-    "MintURIToken": {
-      "$type": "json",
+    "MintURIToken?": {
+      "$type": "object",
       "$value": {
         "Digest": "6F11A4DF4EE794E2800BB361173D454BFBECB3D7506C4F4CB0EC5AE98BE43747",
         "Flags": 1,
@@ -243,7 +241,7 @@
     "Fee": "12",
     "Sequence": 1,
     "Remarks": {
-      "$type": "json",
+      "$type": "array",
       "$value": [
         {
           "Remark": {
@@ -251,7 +249,7 @@
             "RemarkValue": "DEADBEEF"
           }
         }
-     ]
+      ]
     }
   },
   {
