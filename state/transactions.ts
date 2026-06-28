@@ -310,9 +310,8 @@ export const getTxFields = (tt?: string) => {
 
   let _txFields = (Object.keys(txFields) as (keyof TxFields)[])
     .filter(key => !commonFields.includes(key as any) && !isOptionalFieldName(key))
-    .map(key => normalizeFieldName(key) as keyof TxFields)
     .reduce<TxFields>(
-      (tf, key) => (((tf as any)[key] = (txFields as any)[key]), tf),
+      (tf, key) => (((tf as any)[normalizeFieldName(key)] = (txFields as any)[key]), tf),
       {}
     )
   return _txFields
@@ -325,9 +324,8 @@ export const getOptionalTxFields = (tt?: string) => {
 
   return Object.keys(txFields)
     .filter(key => !commonFields.includes(key as any) && isOptionalFieldName(key))
-    .map(key => normalizeFieldName(key) as keyof TxFields)
     .reduce<TxFields>(
-      (tf, key) => (((tf as any)[key] = (txFields as any)[key]), tf),
+      (tf, key) => (((tf as any)[normalizeFieldName(key)] = (txFields as any)[key]), tf),
       {}
     )
 }
