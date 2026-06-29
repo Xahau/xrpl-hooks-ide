@@ -69,7 +69,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
           }, [])
         : undefined
 
-      const result = prepareTransaction({
+      return prepareTransaction({
         ...txFields,
         HookParameters,
         Flags,
@@ -77,11 +77,6 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         Account,
         Memos
       })
-      if (result.ClaimCurrency && typeof result.ClaimCurrency === 'object') {
-        const { currency, issuer } = result.ClaimCurrency
-        if (!currency && !issuer) delete result.ClaimCurrency
-      }
-      return result
     },
     [txState]
   )
@@ -133,7 +128,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       const options = prepareOptions(st)
       // delete unnecessary fields
       Object.keys(options).forEach(field => {
-        if (!options[field] && field !== 'StartTime' && field !== 'LastUpdateTime') { // Can be 0
+        if (!options[field] && field !== 'StartTime') { // StartTime Can be 0
           delete options[field]
         }
       })

@@ -22,15 +22,6 @@ import { Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
 import { capitalize, typeIs } from '../../utils/helpers'
 
-interface PriceDataEntry {
-  PriceData: {
-    BaseAsset: string
-    QuoteAsset: string
-    AssetPrice: string
-    Scale: number
-  }
-}
-
 interface UIProps {
   setState: (pTx?: Partial<TransactionState> | undefined) => TransactionState | undefined
   resetState: (tt?: SelectOption) => TransactionState | undefined
@@ -104,11 +95,6 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   }))
 
   const [feeLoading, setFeeLoading] = useState(false)
-  const [claimCurrencyVisible, setClaimCurrencyVisible] = useState(false)
-
-  useEffect(() => {
-    setClaimCurrencyVisible(false)
-  }, [selectedTransaction?.value])
 
   const handleSetAccount = (acc: SelectOption) => {
     setState({ selectedAccount: acc })

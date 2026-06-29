@@ -2,7 +2,6 @@ import type { NextRequest, NextFetchEvent } from 'next/server'
 import { NextResponse as Response } from 'next/server'
 
 export default function middleware(req: NextRequest, ev: NextFetchEvent) {
-  console.log('middleware', req.nextUrl.pathname)
   if (req.nextUrl.pathname === '/') {
     const url = req.nextUrl.clone()
     url.pathname = '/develop'
