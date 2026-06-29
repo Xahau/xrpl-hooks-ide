@@ -137,6 +137,121 @@ const getStructuredType = (value: any): 'object' | 'array' | 'vec256' | undefine
   if (typeIs(value, 'object')) return 'object'
 }
 
+const cloneValue = (value: any): any => {
+  if (Array.isArray(value)) return value.map(cloneValue)
+  if (typeIs(value, 'object')) {
+    return Object.entries(value).reduce((acc, [key, val]) => {
+      acc[key] = cloneValue(val)
+      return acc
+    }, {} as Record<string, any>)
+  }
+  return value
+}
+
+const isTypedSchemaValue = (value: any, typePrefix?: string) =>
+  typeIs(value, 'object') &&
+  typeIs(value.$type, 'string') &&
+  (!typePrefix || value.$type.startsWith(typePrefix))
+
+const scoreSchemaMatch = (value: any, schemaValue: any): number => {
+  if (!isTypedSchemaValue(schemaValue)) {
+    if (!typeIs(schemaValue, 'object') || !typeIs(value, 'object')) return 0
+
+    return Object.keys(value).reduce((score, key) => {
+      const schemaKey = schemaValue[key] !== undefined ? key : `${key}?`
+      return score + scoreSchemaMatch(value[key], schemaValue[schemaKey])
+    }, 1)
+  }
+
+  if (schemaValue.$type === 'amount.token') return typeIs(value, 'object') ? 3 : 0
+  if (schemaValue.$type === 'amount.xrp') return typeIs(value, ['string', 'number']) ? 3 : 0
+  if (schemaValue.$type === 'account') return typeIs(value, 'string') ? 2 : 0
+  if (schemaValue.$type === 'object') return typeIs(value, 'object') ? 2 : 0
+  if (schemaValue.$type === 'array') return Array.isArray(value) ? 2 : 0
+  if (schemaValue.$type === 'vec256') return Array.isArray(value) ? 2 : 0
+  return 0
+}
+
+const applySchemaValue = (value: any, schemaValue: any): any => {
+  if (!isTypedSchemaValue(schemaValue)) {
+    if (typeIs(value, 'object') && typeIs(schemaValue, 'object')) {
+      return applyObjectSchema(value, schemaValue)
+    }
+    return value
+  }
+
+  if (isTypedSchemaValue(schemaValue, 'amount.')) {
+    return {
+      $type: typeIs(value, 'object') ? 'amount.token' : 'amount.xrp',
+      $value: typeIs(value, 'object') ? value : +value / 1000000
+    }
+  }
+
+  if (schemaValue.$type === 'account') {
+    return {
+      $type: 'account',
+      $value: value?.toString() || ''
+    }
+  }
+
+  if (schemaValue.$type === 'object') {
+    return {
+      $type: 'object',
+      $value: applyObjectSchema(value, schemaValue.$value)
+    }
+  }
+
+  if (schemaValue.$type === 'array') {
+    const schemaItems: any[] = Array.isArray(schemaValue.$value) ? schemaValue.$value : []
+    return {
+      $type: 'array',
+      $value: Array.isArray(value)
+        ? value.map(item => {
+            const itemSchema = schemaItems.reduce<{ score: number; value: any }>(
+              (best: { score: number; value: any }, schemaItem: any) => {
+                const score = scoreSchemaMatch(item, schemaItem)
+                return score > best.score ? { score, value: schemaItem } : best
+              },
+              { score: -1, value: schemaItems[0] }
+            ).value
+
+            return itemSchema ? applySchemaValue(item, itemSchema) : item
+          })
+        : []
+    }
+  }
+
+  if (schemaValue.$type === 'vec256') {
+    return {
+      $type: 'vec256',
+      $value: Array.isArray(value) ? value.map(v => v?.toString() || '') : []
+    }
+  }
+
+  return value
+}
+
+const applyObjectSchema = (value: any, schemaValue: any): any => {
+  if (!typeIs(value, 'object') || !typeIs(schemaValue, 'object')) return value
+
+  const nextValue = Object.keys(value).reduce((acc, key) => {
+    const schemaKey = schemaValue[key] !== undefined ? key : `${key}?`
+    acc[key] = applySchemaValue(value[key], schemaValue[schemaKey])
+    return acc
+  }, {} as Record<string, any>)
+
+  Object.keys(schemaValue).forEach(key => {
+    if (!isOptionalFieldName(key)) return
+
+    const normalizedKey = normalizeFieldName(key)
+    if (nextValue[normalizedKey] === undefined) {
+      nextValue[key] = cloneValue(schemaValue[key])
+    }
+  })
+
+  return nextValue
+}
+
 export const transactionsState = proxy({
   transactions: [
     {
@@ -309,26 +424,8 @@ export const prepareState = (value: string, transactionType?: string) => {
     const schemaVal =
       schema[field as keyof TxFields] || tx.optionalFields?.[field as keyof TxFields]
 
-    const isAmount =
-      schemaVal && typeIs(schemaVal, 'object') && schemaVal.$type.startsWith('amount.')
-    const isAccount =
-      schemaVal && typeIs(schemaVal, 'object') && schemaVal.$type.startsWith('account')
-
-    if (isAmount && ['number', 'string'].includes(typeof value)) {
-      rest[field] = {
-        $type: 'amount.xrp', // TODO narrow typed $type.
-        $value: +value / 1000000 // ! maybe use bigint?
-      }
-    } else if (isAmount && typeof value === 'object') {
-      rest[field] = {
-        $type: 'amount.token',
-        $value: value
-      }
-    } else if (isAccount) {
-      rest[field] = {
-        $type: 'account',
-        $value: value?.toString() || ''
-      }
+    if (schemaVal) {
+      rest[field] = applySchemaValue(value, schemaVal)
     } else if (typeof value === 'object') {
       rest[field] = {
         $type: getStructuredType(value),
