@@ -2,11 +2,12 @@ import { typeIs, typeOf } from './helpers'
 
 export const extractSchemaProps = <O extends object>(obj: O) =>
   Object.entries(obj).reduce((prev, [key, val]) => {
+    const normalizedKey = key.replace(/\?$/, '')
     const value = typeIs(val, "object") && '$type' in val && '$value' in val ? val?.$value : val
     const type = typeOf(value)
 
     let schema: any = {
-      title: key,
+      title: normalizedKey,
       type,
       default: value
     }
@@ -28,6 +29,6 @@ export const extractSchemaProps = <O extends object>(obj: O) =>
     }
     return {
       ...prev,
-      [key]: schema
+      [normalizedKey]: schema
     }
   }, {} as any)
