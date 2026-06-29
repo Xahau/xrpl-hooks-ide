@@ -47,6 +47,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         selectedAccount,
         txFields,
         selectedFlags,
+        fee,
         hookParameters,
         memos
       } = state
@@ -54,6 +55,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       const TransactionType = selectedTransaction?.value || null
       const Account = selectedAccount?.value || null
       const Flags = combineFlags(selectedFlags?.map(flag => flag.value))
+      const Fee = fee || '1000'
       const HookParameters = Object.entries(hookParameters || {}).reduce<
         SetHookData['HookParameters']
       >((acc, [_, { label, value }]) => {
@@ -71,6 +73,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
 
       return prepareTransaction({
         ...txFields,
+        Fee,
         HookParameters,
         Flags,
         TransactionType,

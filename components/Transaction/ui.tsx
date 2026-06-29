@@ -156,6 +156,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
       setFeeLoading(true)
 
       const fee = await estimateFee?.(state, { silent })
+      console.log('fee', fee)
       if (fee) setState({ fee })
 
       setFeeLoading(false)
