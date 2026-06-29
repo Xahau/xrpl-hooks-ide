@@ -336,17 +336,17 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref>
+              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref shallow>
                 <Button as="a" outline={!router.pathname.includes('/develop')} uppercase>
                   Develop
                 </Button>
               </Link>
-              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref>
+              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref shallow>
                 <Button as="a" outline={!router.pathname.includes('/deploy')} uppercase>
                   Deploy
                 </Button>
               </Link>
-              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref>
+              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref shallow>
                 <Button as="a" outline={!router.pathname.includes('/test')} uppercase>
                   Test
                 </Button>
