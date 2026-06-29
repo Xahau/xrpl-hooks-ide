@@ -8,14 +8,15 @@ import {
   SelectOption,
   TransactionState,
   transactionsOptions,
+  transactionsData,
   TxFields,
-  defaultTransactionType
+  defaultTransactionType,
+  commonFields
 } from '../../state/transactions'
 import { useSnapshot } from 'valtio'
 import state from '../../state'
 import { streamState } from '../DebugStream'
 import { Box, Button } from '..'
-import Textarea from '../Textarea'
 import { getFlags } from '../../state/constants/flags'
 import { Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
@@ -38,16 +39,57 @@ interface UIProps {
   switchToJson: () => void
 }
 
-export const TxUI: FC<UIProps> = ({
-  state: txState,
-  setState,
-  resetState,
-  estimateFee,
-  switchToJson
-}) => {
+interface AccountField {
+  $type: 'account'
+  $value: string
+}
+
+interface XrpAmountField {
+  $type: 'amount.xrp'
+  $value: string
+}
+
+interface TokenAmountField {
+  $type: 'amount.token'
+  $value: { value: string; currency: string; issuer: string }
+}
+
+interface IssueField {
+  $type: 'issue'
+  $value: { currency: string, issuer: string }
+}
+
+interface ObjectField {
+  $type: 'object'
+  $value: Record<string, any>
+}
+
+interface ArrayField {
+  $type: 'array'
+  $value: Record<string, any>[]
+}
+
+interface Vec256Field {
+  $type: 'vec256'
+  $value: string[]
+}
+
+type StructuredField = ObjectField | ArrayField | Vec256Field
+
+const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
+
+export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estimateFee }) => {
   const { accounts } = useSnapshot(state)
-  const { selectedAccount, selectedTransaction, txFields, selectedFlags, hookParameters, memos } =
-    txState
+  const {
+    selectedAccount,
+    selectedTransaction,
+    txFields,
+    optionalFields = {},
+    selectedFlags,
+    fee,
+    hookParameters,
+    memos
+  } = txState
 
   const accountOptions: SelectOption[] = accounts.map(acc => ({
     label: acc.name,
@@ -103,16 +145,36 @@ export const TxUI: FC<UIProps> = ({
     [setState, txFields]
   )
 
+  const handleAddOptionalField = useCallback(
+    (field: keyof TxFields) => {
+      setState({
+        txFields: {
+          ...txFields,
+          [field]: optionalFields[field]
+        }
+      })
+    },
+    [optionalFields, setState, txFields]
+  )
+
+  const handleRemoveOptionalField = useCallback(
+    (field: keyof TxFields) => {
+      const { [field]: _, ...rest } = txFields
+      setState({ txFields: rest })
+    },
+    [setState, txFields]
+  )
+
   const handleEstimateFee = useCallback(
     async (state?: TransactionState, silent?: boolean) => {
       setFeeLoading(true)
 
       const fee = await estimateFee?.(state, { silent })
-      if (fee) handleSetField('Fee', fee, state?.txFields)
+      if (fee) setState({ fee })
 
       setFeeLoading(false)
     },
-    [estimateFee, handleSetField]
+    [estimateFee, setState]
   )
 
   const handleChangeTxType = useCallback(
@@ -141,7 +203,19 @@ export const TxUI: FC<UIProps> = ({
     richFields.push('Flags')
   }
 
-  const otherFields = Object.keys(txFields).filter(k => !richFields.includes(k)) as [keyof TxFields]
+  const txSchema = transactionsData.find(tx => tx.TransactionType === selectedTransaction?.value)
+  const txSchemaFields = txSchema
+    ? Object.keys(txSchema)
+        .filter(field => !commonFields.includes(normalizeFieldName(field) as any))
+        .map(normalizeFieldName)
+    : []
+  const displayFields = [
+    ...txSchemaFields,
+    ...Object.keys(txFields),
+    ...Object.keys(optionalFields)
+  ]
+    .filter((field, index, fields) => fields.indexOf(field) === index)
+    .filter(field => !richFields.includes(field)) as (keyof TxFields)[]
   const amountOptions = [
     { label: 'XAH', value: 'xah' },
     { label: 'Token', value: 'token' }
@@ -152,6 +226,385 @@ export const TxUI: FC<UIProps> = ({
     currency: '',
     issuer: ''
   }
+
+  const isAccount = (value: any): value is AccountField =>
+    typeIs(value, 'object') && value.$type === 'account'
+  const isXrpAmount = (value: any): value is XrpAmountField =>
+    typeIs(value, 'object') && value.$type === 'amount.xrp'
+  const isTokenAmount = (value: any): value is TokenAmountField =>
+    typeIs(value, 'object') && value.$type === 'amount.token'
+  const isIssue = (value: any): value is IssueField =>
+    typeIs(value, 'object') && value.$type === 'issue'
+  const isObjectField = (value: any): value is ObjectField =>
+    typeIs(value, 'object') && value.$type === 'object'
+  const isArrayField = (value: any): value is ArrayField =>
+    typeIs(value, 'object') && value.$type === 'array'
+  const isVec256Field = (value: any): value is Vec256Field =>
+    typeIs(value, 'object') && value.$type === 'vec256'
+  const isStructuredField = (value: any): value is StructuredField =>
+    isObjectField(value) || isArrayField(value) || isVec256Field(value)
+
+  const getDefaultValue = (value: any) => {
+    if (isObjectField(value)) return { ...value, $value: { ...value.$value } }
+    if (isArrayField(value)) return { ...value, $value: [cloneValue(value.$value[0] || {})] }
+    if (isVec256Field(value)) return { ...value, $value: [value.$value[0] || ''] }
+    return cloneValue(value)
+  }
+
+  const cloneValue = (value: any): any => {
+    if (Array.isArray(value)) return value.map(cloneValue)
+    if (typeIs(value, 'object'))
+      return Object.entries(value).reduce((acc, [key, val]) => {
+        acc[key] = cloneValue(val)
+        return acc
+      }, {} as Record<string, any>)
+    return value
+  }
+
+  const setNestedField = (field: keyof TxFields, updater: (value: any) => any) => {
+    const current = txFields[field]
+    const nextValue = updater(cloneValue(current))
+    const { [field]: _, ...rest } = txFields
+
+    setState({
+      txFields: {
+        ...(nextValue === undefined ? rest : txFields),
+        ...(nextValue === undefined ? {} : { [field]: nextValue })
+      }
+    })
+  }
+
+  const renderPrimitiveField = (value: any, setValue: (value: any) => void, key?: string) => (
+    <Input
+      key={key}
+      type="text"
+      value={typeIs(value, 'object') ? value.$value?.toString() : value?.toString()}
+      onChange={e => setValue(e.target.value)}
+      css={{
+        flex: 'inherit',
+        '-moz-appearance': 'textfield',
+        '&::-webkit-outer-spin-button': {
+          '-webkit-appearance': 'none',
+          margin: 0
+        },
+        '&::-webkit-inner-spin-button ': {
+          '-webkit-appearance': 'none',
+          margin: 0
+        }
+      }}
+    />
+  )
+
+  const renderAmountField = (
+    value: XrpAmountField | TokenAmountField,
+    setValue: (value: XrpAmountField | TokenAmountField) => void
+  ) => {
+    const tokenAmount = isTokenAmount(value)
+      ? {
+          value: value.$value.value,
+          currency: value.$value.currency,
+          issuer: value.$value.issuer
+        }
+      : defaultTokenAmount
+
+    return (
+      <Flex fluid css={{ alignItems: 'center' }}>
+        {isTokenAmount(value) ? (
+          <Flex fluid row align="center" justify="space-between" css={{ position: 'relative' }}>
+            <Input
+              type="text"
+              value={tokenAmount.currency}
+              placeholder="Currency"
+              onChange={e =>
+                setValue({
+                  ...value,
+                  $value: {
+                    ...tokenAmount,
+                    currency: e.target.value
+                  }
+                })
+              }
+            />
+            <Input
+              css={{ mx: '$1' }}
+              type="number"
+              value={tokenAmount.value}
+              placeholder="Value"
+              onChange={e =>
+                setValue({
+                  ...value,
+                  $value: {
+                    ...tokenAmount,
+                    value: e.target.value
+                  }
+                })
+              }
+            />
+            <Box css={{ width: '50%' }}>
+              <CreatableAccount
+                value={tokenAmount.issuer}
+                field={'Issuer' as any}
+                placeholder="Issuer"
+                setField={(_, issuer = '') =>
+                  setValue({
+                    ...value,
+                    $value: {
+                      ...tokenAmount,
+                      issuer
+                    }
+                  })
+                }
+              />
+            </Box>
+          </Flex>
+        ) : (
+          <Input
+            css={{ flex: 'inherit' }}
+            type="number"
+            value={value.$value?.toString()}
+            onChange={e => setValue({ ...value, $value: e.target.value })}
+          />
+        )}
+        <Box
+          css={{
+            ml: '$2',
+            width: '150px'
+          }}
+        >
+          <Select
+            instanceId="currency-type"
+            options={amountOptions}
+            value={isXrpAmount(value) ? amountOptions['0'] : amountOptions['1']}
+            onChange={(e: any) => {
+              const opt = e as typeof amountOptions[number]
+              if (opt.value === 'xah') {
+                setValue({ $type: 'amount.xrp', $value: '0' })
+              } else {
+                setValue({ $type: 'amount.token', $value: defaultTokenAmount })
+              }
+            }}
+          />
+        </Box>
+      </Flex>
+    )
+  }
+
+  const renderAccountField = (
+    value: AccountField,
+    setValue: (value: AccountField) => void,
+    field: keyof TxFields = 'Account' as keyof TxFields
+  ) => (
+    <CreatableAccount
+      value={value.$value}
+      field={field}
+      setField={(_, nextValue = '') => setValue({ ...value, $value: nextValue })}
+    />
+  )
+
+  const renderObjectFields = (
+    value: Record<string, any>,
+    setValue: (value: Record<string, any>) => void
+  ) => {
+    const fields = Object.keys(value)
+      .map(normalizeFieldName)
+      .filter((field, index, fields) => fields.indexOf(field) === index)
+
+    return (
+      <Flex column fluid css={{ gap: '$2' }}>
+        {fields.map(childField => {
+          const optionalKey = `${childField}?`
+          const isOptional = value[optionalKey] !== undefined
+          const childValue = value[childField]
+
+          if (childValue === undefined && isOptional) {
+            return (
+              <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+                <Text muted css={{ flex: '0 0 25%' }}>
+                  {childField}:{' '}
+                </Text>
+                <Box css={{ flex: 1 }}>
+                  <Button
+                    outline
+                    fullWidth
+                    type="button"
+                    onClick={() =>
+                      setValue({ ...value, [childField]: getDefaultValue(value[optionalKey]) })
+                    }
+                  >
+                    <Plus size="16px" />
+                    Add {childField}
+                  </Button>
+                </Box>
+              </Flex>
+            )
+          }
+
+          return (
+            <Flex key={childField} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+              <Text muted css={{ flex: '0 0 25%' }}>
+                {childField}:{' '}
+              </Text>
+              <Box css={{ flex: 1 }}>
+                {renderNestedValue(childValue, nextValue => {
+                  if (nextValue === undefined) {
+                    const { [childField]: _, ...rest } = value
+                    setValue(rest)
+                    return
+                  }
+                  setValue({ ...value, [childField]: nextValue })
+                })}
+              </Box>
+              {isOptional && !isArrayField(childValue) && !isVec256Field(childValue) && (
+                <Button
+                  onClick={() => {
+                    const { [childField]: _, ...rest } = value
+                    setValue(rest)
+                  }}
+                  variant="destroy"
+                >
+                  <Trash weight="regular" size="16px" />
+                </Button>
+              )}
+            </Flex>
+          )
+        })}
+      </Flex>
+    )
+  }
+
+  const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
+    if (isXrpAmount(value) || isTokenAmount(value)) {
+      return renderAmountField(value, nextValue => setValue(nextValue))
+    }
+
+    if (isAccount(value)) {
+      return renderAccountField(value, nextValue => setValue(nextValue))
+    }
+
+    if (isObjectField(value)) {
+      return renderObjectFields(value.$value, nextValue =>
+        setValue({ ...value, $value: nextValue })
+      )
+    }
+
+    if (isArrayField(value)) {
+      const items = value.$value
+      return (
+        <Flex column fluid css={{ gap: '$2' }}>
+          {items.map((item, index) => {
+            const itemKeys = typeIs(item, 'object') ? Object.keys(item) : []
+            const itemKey = itemKeys.length === 1 ? itemKeys[0] : undefined
+            const itemValue = itemKey ? item[itemKey] : item
+            const itemLabel = itemKey || 'Item'
+
+            return (
+              <Flex
+                key={index}
+                column
+                fluid
+                css={{ gap: '$2', p: '$2', backgroundColor: '$mauve2', borderRadius: '$sm' }}
+              >
+                <Flex row fluid css={{ justifyContent: 'space-between', alignItems: 'center' }}>
+                  <Text muted>
+                    {itemLabel} {index + 1}
+                  </Text>
+                  <Button
+                    onClick={() =>
+                      items.length <= 1
+                        ? setValue(undefined)
+                        : setValue({
+                            ...value,
+                            $value: items.filter((_, itemIndex) => itemIndex !== index)
+                          })
+                    }
+                    variant="destroy"
+                  >
+                    <Trash weight="regular" size="16px" />
+                  </Button>
+                </Flex>
+                {renderNestedValue(itemValue, nextItemValue =>
+                  setValue({
+                    ...value,
+                    $value: items.map((currentItem, itemIndex) => {
+                      if (itemIndex !== index) return currentItem
+                      return itemKey ? { ...item, [itemKey]: nextItemValue } : nextItemValue
+                    })
+                  })
+                )}
+              </Flex>
+            )
+          })}
+          <Button
+            outline
+            fullWidth
+            type="button"
+            onClick={() =>
+              setValue({
+                ...value,
+                $value: [...items, cloneValue(items[0] || {})]
+              })
+            }
+          >
+            <Plus size="16px" />
+            Add Item
+          </Button>
+        </Flex>
+      )
+    }
+
+    if (isVec256Field(value)) {
+      const items = value.$value
+      return (
+        <Flex column fluid css={{ gap: '$2' }}>
+          {items.map((item, index) => (
+            <Flex key={index} row fluid css={{ alignItems: 'center', gap: '$2' }}>
+              <Input
+                type="text"
+                value={item}
+                onChange={e =>
+                  setValue({
+                    ...value,
+                    $value: items.map((currentItem, itemIndex) =>
+                      itemIndex === index ? e.target.value : currentItem
+                    )
+                  })
+                }
+              />
+              <Button
+                onClick={() =>
+                  items.length <= 1
+                    ? setValue(undefined)
+                    : setValue({
+                        ...value,
+                        $value: items.filter((_, itemIndex) => itemIndex !== index)
+                      })
+                }
+                variant="destroy"
+              >
+                <Trash weight="regular" size="16px" />
+              </Button>
+            </Flex>
+          ))}
+          <Button
+            outline
+            fullWidth
+            type="button"
+            onClick={() => setValue({ ...value, $value: [...items, ''] })}
+          >
+            <Plus size="16px" />
+            Add Value
+          </Button>
+        </Flex>
+      )
+    }
+
+    if (typeIs(value, 'object')) {
+      return renderObjectFields(value, nextValue => setValue(nextValue))
+    }
+
+    return renderPrimitiveField(value, setValue)
+  }
+
   return (
     <Container
       css={{
@@ -193,350 +646,150 @@ export const TxUI: FC<UIProps> = ({
               value={selectedFlags}
               isMulti
               options={flagsOptions}
-              onChange={flags => setState({ selectedFlags: flags as any })}
+              onChange={(flags: any) => setState({ selectedFlags: flags as any })}
               closeMenuOnSelect={
                 selectedFlags ? selectedFlags.length >= flagsOptions.length - 1 : false
               }
             />
           </TxField>
         )}
-        {otherFields.map(field => {
+        {displayFields.map(field => {
+          if (txFields[field] === undefined && optionalFields[field] !== undefined) {
+            return (
+              <TxField multiLine key={field} label={field}>
+                <Button
+                  outline
+                  fullWidth
+                  type="button"
+                  onClick={() => handleAddOptionalField(field)}
+                >
+                  <Plus size="16px" />
+                  Add {field}
+                </Button>
+              </TxField>
+            )
+          }
+
           let _value = txFields[field]
+          const isOptionalField = optionalFields[field] !== undefined
+          if (_value === undefined) return null
 
-          let value: string | undefined
-          if (typeIs(_value, 'object')) {
-            if (_value.$type === 'json' && typeIs(_value.$value, ['object', 'array'])) {
-              value = JSON.stringify(_value.$value, null, 2)
-            } else {
-              value = _value.$value?.toString()
-            }
-          } else {
-            value = _value?.toString()
-          }
+          const optionalFieldDeleteButton =
+            isOptionalField && !isArrayField(_value) && !isVec256Field(_value) ? (
+              <Button
+                css={{ ml: '$2' }}
+                onClick={() => handleRemoveOptionalField(field)}
+                variant="destroy"
+              >
+                <Trash weight="regular" size="16px" />
+              </Button>
+            ) : null
 
-          const isAccount = typeIs(_value, 'object') && _value.$type === 'account'
-          const isXrpAmount = typeIs(_value, 'object') && _value.$type === 'amount.xrp'
-          const isTokenAmount = typeIs(_value, 'object') && _value.$type === 'amount.token'
-          const isJson = typeof _value === 'object' && _value.$type === 'json'
-          const isFee = field === 'Fee'
-          let rows = isJson ? (value?.match(/\n/gm)?.length || 0) + 1 : undefined
-          if (rows && rows > 5) rows = 5
-          let tokenAmount = defaultTokenAmount
-          if (isTokenAmount && typeIs(_value, 'object') && typeIs(_value.$value, 'object')) {
-            tokenAmount = {
-              value: _value.$value.value,
-              currency: _value.$value.currency,
-              issuer: _value.$value.issuer
-            }
-          }
-
-          if (field === 'ClaimCurrency') {
-            const cc = isJson && typeIs(_value.$value, 'object') ? _value.$value as { currency: string; issuer: string } : { currency: '', issuer: '' }
-            const hasData = !!(cc.currency || cc.issuer)
-            const visible = claimCurrencyVisible || hasData
-
-            if (!visible) {
-              return (
-                <TxField key={field} label="ClaimCurrency">
-                  <Button
-                    outline
-                    fullWidth
-                    type="button"
-                    onClick={() => setClaimCurrencyVisible(true)}
-                  >
-                    <Plus size="16px" />
-                    Add ClaimCurrency
-                  </Button>
-                </TxField>
-              )
-            }
+          if (isIssue(_value)) {
+            const value = _value.$value
 
             return (
-              <TxField key={field} label="ClaimCurrency">
+              <TxField key={field} label={field}>
                 <Flex row fluid css={{ gap: '$1' }}>
                   <Input
                     placeholder="Currency (e.g. USD)"
-                    value={cc.currency}
+                    value={value.currency}
                     css={{ flex: '0 0 30%' }}
-                    onChange={e => setRawField(field, 'json', { ...cc, currency: e.target.value })}
+                    onChange={e => setRawField(field, 'issue', { ...value, currency: e.target.value })}
                   />
                   <Box css={{ flex: 1 }}>
                     <CreatableAccount
-                      value={cc.issuer}
+                      value={value.issuer}
                       field={'Issuer' as any}
                       placeholder="Issuer account"
-                      setField={(_, v = '') => setRawField(field, 'json', { ...cc, issuer: v })}
-                    />
-                  </Box>
-                  <Button
-                    variant="destroy"
-                    onClick={() => {
-                      setRawField(field, 'json', { currency: '', issuer: '' })
-                      setClaimCurrencyVisible(false)
-                    }}
-                  >
-                    <Trash weight="regular" size="16px" />
-                  </Button>
-                </Flex>
-              </TxField>
-            )
-          }
-
-          if (field === 'PriceDataSeries') {
-            const series: PriceDataEntry[] =
-              isJson && Array.isArray(_value.$value) ? _value.$value : []
-
-            const updateSeries = (next: PriceDataEntry[]) =>
-              setRawField(field, 'json', next)
-
-            return (
-              <TxField key={field} label="PriceDataSeries" multiLine>
-                <Flex column fluid>
-                  {series.map((item, idx) => (
-                    <Flex
-                      key={idx}
-                      column
-                      css={{ mb: '$2' }}
-                    >
-                      <Flex row css={{ gap: '$1', mb: '$1' }}>
-                        <Input
-                          placeholder="BaseAsset"
-                          value={item.PriceData.BaseAsset}
-                          onChange={e => {
-                            const next = [...series]
-                            next[idx] = { PriceData: { ...item.PriceData, BaseAsset: e.target.value } }
-                            updateSeries(next)
-                          }}
-                        />
-                        <Input
-                          placeholder="QuoteAsset"
-                          value={item.PriceData.QuoteAsset}
-                          onChange={e => {
-                            const next = [...series]
-                            next[idx] = { PriceData: { ...item.PriceData, QuoteAsset: e.target.value } }
-                            updateSeries(next)
-                          }}
-                        />
-                      </Flex>
-                      <Flex row css={{ gap: '$1' }}>
-                        <Input
-                          placeholder="AssetPrice"
-                          value={item.PriceData.AssetPrice}
-                          onChange={e => {
-                            const next = [...series]
-                            next[idx] = { PriceData: { ...item.PriceData, AssetPrice: e.target.value } }
-                            updateSeries(next)
-                          }}
-                        />
-                        <Input
-                          type="number"
-                          placeholder="Scale"
-                          value={item.PriceData.Scale}
-                          onChange={e => {
-                            const next = [...series]
-                            next[idx] = { PriceData: { ...item.PriceData, Scale: Number(e.target.value) } }
-                            updateSeries(next)
-                          }}
-                        />
-                        <Button
-                          variant="destroy"
-                          onClick={() => updateSeries(series.filter((_, i) => i !== idx))}
-                        >
-                          <Trash weight="regular" size="16px" />
-                        </Button>
-                      </Flex>
-                    </Flex>
-                  ))}
-                  <Button
-                    outline
-                    fullWidth
-                    type="button"
-                    onClick={() =>
-                      updateSeries([
-                        ...series,
-                        { PriceData: { BaseAsset: '', QuoteAsset: '', AssetPrice: '', Scale: 1 } }
-                      ])
-                    }
-                  >
-                    <Plus size="16px" />
-                    Add PriceData
-                  </Button>
-                </Flex>
-              </TxField>
-            )
-          }
-
-          if (isXrpAmount || isTokenAmount) {
-            return (
-              <TxField key={field} label={field}>
-                <Flex fluid css={{ alignItems: 'center' }}>
-                  {isTokenAmount ? (
-                    <Flex
-                      fluid
-                      row
-                      align="center"
-                      justify="space-between"
-                      css={{ position: 'relative' }}
-                    >
-                      {/*  <Input
-                        type="text"
-                        placeholder="Issuer"
-                        value={tokenAmount.issuer}
-                        onChange={e =>
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            issuer: e.target.value
-                          })
-                        }
-                      /> */}
-                      <Input
-                        type="text"
-                        value={tokenAmount.currency}
-                        placeholder="Currency"
-                        onChange={e => {
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            currency: e.target.value
-                          })
-                        }}
-                      />
-                      <Input
-                        css={{ mx: '$1' }}
-                        type="number"
-                        value={tokenAmount.value}
-                        placeholder="Value"
-                        onChange={e => {
-                          setRawField(field, 'amount.token', {
-                            ...tokenAmount,
-                            value: e.target.value
-                          })
-                        }}
-                      />
-                      <Box css={{ width: '50%' }}>
-                        <CreatableAccount
-                          value={tokenAmount.issuer}
-                          field={'Issuer' as any}
-                          placeholder="Issuer"
-                          setField={(_, value = '') => {
-                            setRawField(field, 'amount.token', {
-                              ...tokenAmount,
-                              issuer: value
-                            })
-                          }}
-                        />
-                      </Box>
-                    </Flex>
-                  ) : (
-                    <Input
-                      css={{ flex: 'inherit' }}
-                      type="number"
-                      value={value}
-                      onChange={e => handleSetField(field, e.target.value)}
-                    />
-                  )}
-                  <Box
-                    css={{
-                      ml: '$2',
-                      width: '150px'
-                    }}
-                  >
-                    <Select
-                      instanceId="currency-type"
-                      options={amountOptions}
-                      value={isXrpAmount ? amountOptions['0'] : amountOptions['1']}
-                      onChange={(e: any) => {
-                        const opt = e as typeof amountOptions[number]
-                        if (opt.value === 'xah') {
-                          setRawField(field, 'amount.xrp', '0')
-                        } else {
-                          setRawField(field, 'amount.token', defaultTokenAmount)
-                        }
-                      }}
+                      setField={(_, v = '') => setRawField(field, 'issue', { ...value, issuer: v })}
                     />
                   </Box>
                 </Flex>
+                {optionalFieldDeleteButton}
               </TxField>
             )
           }
-          if (isAccount) {
+
+          if (isXrpAmount(_value) || isTokenAmount(_value)) {
             return (
               <TxField key={field} label={field}>
-                <CreatableAccount value={value} field={field} setField={handleSetField} />
+                {renderAmountField(_value, nextValue =>
+                  setRawField(field, nextValue.$type, nextValue.$value)
+                )}
+                {optionalFieldDeleteButton}
+              </TxField>
+            )
+          }
+          if (isAccount(_value)) {
+            return (
+              <TxField key={field} label={field}>
+                {renderAccountField(_value, nextValue =>
+                  setRawField(field, nextValue.$type, nextValue.$value)
+                )}
+                {optionalFieldDeleteButton}
+              </TxField>
+            )
+          }
+          if (isStructuredField(_value)) {
+            return (
+              <TxField multiLine key={field} label={field}>
+                {renderNestedValue(_value, value => setNestedField(field, () => value))}
+                {optionalFieldDeleteButton}
               </TxField>
             )
           }
           return (
             <TxField key={field} label={field}>
-              {isJson ? (
-                <Textarea
-                  rows={rows}
-                  value={value}
-                  spellCheck={false}
-                  onChange={switchToJson}
-                  css={{
-                    flex: 'inherit',
-                    resize: 'vertical'
-                  }}
-                />
-              ) : (
-                <Input
-                  type={isFee ? 'number' : 'text'}
-                  value={value}
-                  onChange={e => {
-                    if (isFee) {
-                      const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
-                      handleSetField(field, val)
-                    } else {
-                      handleSetField(field, e.target.value)
-                    }
-                  }}
-                  onKeyPress={
-                    isFee
-                      ? e => {
-                          if (e.key === '.' || e.key === ',') {
-                            e.preventDefault()
-                          }
-                        }
-                      : undefined
-                  }
-                  css={{
-                    flex: 'inherit',
-                    '-moz-appearance': 'textfield',
-                    '&::-webkit-outer-spin-button': {
-                      '-webkit-appearance': 'none',
-                      margin: 0
-                    },
-                    '&::-webkit-inner-spin-button ': {
-                      '-webkit-appearance': 'none',
-                      margin: 0
-                    }
-                  }}
-                />
-              )}
-              {isFee && (
-                <Button
-                  size="xs"
-                  variant="primary"
-                  outline
-                  disabled={txState.txIsDisabled}
-                  isDisabled={txState.txIsDisabled}
-                  isLoading={feeLoading}
-                  css={{
-                    position: 'absolute',
-                    right: '$2',
-                    fontSize: '$xs',
-                    cursor: 'pointer',
-                    alignContent: 'center',
-                    display: 'flex'
-                  }}
-                  onClick={() => handleEstimateFee()}
-                >
-                  Suggest
-                </Button>
-              )}
+              {renderPrimitiveField(_value, value => handleSetField(field, value))}
+              {optionalFieldDeleteButton}
             </TxField>
           )
         })}
+        <TxField key="Fee" label="Fee">
+          <Input
+            type={'number'}
+            value={fee}
+            onChange={e => {
+              const val = e.target.value.replaceAll('.', '').replaceAll(',', '')
+              setState({ fee: val })
+            }}
+            onKeyPress={e => {
+              if (e.key === '.' || e.key === ',') e.preventDefault()
+            }}
+            css={{
+              flex: 'inherit',
+              '-moz-appearance': 'textfield',
+              '&::-webkit-outer-spin-button': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              },
+              '&::-webkit-inner-spin-button ': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              }
+            }}
+          />
+          <Button
+            size="xs"
+            variant="primary"
+            outline
+            disabled={txState.txIsDisabled}
+            isDisabled={txState.txIsDisabled}
+            isLoading={feeLoading}
+            css={{
+              position: 'absolute',
+              right: '$2',
+              fontSize: '$xs',
+              cursor: 'pointer',
+              alignContent: 'center',
+              display: 'flex'
+            }}
+            onClick={() => handleEstimateFee()}
+          >
+            Suggest
+          </Button>
+        </TxField>
         <TxField multiLine label="Hook parameters">
           <Flex column fluid>
             {Object.entries(hookParameters).map(([id, { label, value }]) => (
