@@ -228,6 +228,10 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                   />
                 </Box>
                 <Box css={{ width: '100%' }}>
+                  <Label>Hook Name</Label>
+                  <Input {...register('HookName', { required: false })} autoComplete={'off'} />
+                </Box>
+                <Box css={{ width: '100%' }}>
                   <Label>Hook Namespace Seed</Label>
                   <Input {...register('HookNamespace', { required: true })} autoComplete={'off'} />
                   {errors.HookNamespace?.type === 'required' && (
