@@ -4,6 +4,7 @@ import { useSnapshot } from 'valtio'
 import state from '../../state'
 import {
   defaultTransactionType,
+  getOptionalTxFields,
   getTxFields,
   modifyTxState,
   prepareState,
@@ -46,13 +47,15 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
         selectedAccount,
         txFields,
         selectedFlags,
+        fee,
         hookParameters,
         memos
       } = state
 
       const TransactionType = selectedTransaction?.value || null
       const Account = selectedAccount?.value || null
-      const Flags = combineFlags(selectedFlags?.map(flag => flag.value)) || txFields?.Flags
+      const Flags = combineFlags(selectedFlags?.map(flag => flag.value))
+      const Fee = fee || '1000'
       const HookParameters = Object.entries(hookParameters || {}).reduce<
         SetHookData['HookParameters']
       >((acc, [_, { label, value }]) => {
@@ -70,6 +73,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
 
       return prepareTransaction({
         ...txFields,
+        Fee,
         HookParameters,
         Flags,
         TransactionType,
@@ -159,18 +163,23 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
   const resetState = useCallback(
     (transactionType: SelectOption | undefined = defaultTransactionType) => {
       const fields = getTxFields(transactionType?.value)
+      const optionalFields = getOptionalTxFields(transactionType?.value)
+
+      if ('LastUpdateTime' in fields) {
+        fields.LastUpdateTime = Math.floor(Date.now() / 1000)
+      }
 
       const nwState: Partial<TransactionState> = {
         viewType,
         selectedTransaction: transactionType
       }
 
-      if (transactionType?.value && transactionFlags[transactionType?.value] && fields.Flags) {
-        nwState.selectedFlags = extractFlags(transactionType.value, fields.Flags)
-        fields.Flags = undefined
+      if (transactionType?.value && transactionFlags[transactionType?.value]) {
+        nwState.selectedFlags = extractFlags(transactionType.value)
       }
 
       nwState.txFields = fields
+      nwState.optionalFields = optionalFields
       const state = modifyTxState(header, nwState, { replaceState: true })
       const editorValue = getJsonString(state)
       return setState({ editorValue })

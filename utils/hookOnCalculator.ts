@@ -26,11 +26,14 @@ export const tts = {
   ttURI_TOKEN_BUY: 47,
   ttURI_TOKEN_CREATE_SELL_OFFER: 48,
   ttURI_TOKEN_CANCEL_SELL_OFFER: 49,
+  ttORACLE_SET: 60,
+  ttORACLE_DELETE: 61,
   ttCRON: 92,
   ttCRON_SET: 93,
   ttREMARKS_SET: 94,
   ttREMIT: 95,
   ttIMPORT: 97,
+  ttCLAIM_REWARD: 98,
   ttINVOKE: 99,
 }
 
