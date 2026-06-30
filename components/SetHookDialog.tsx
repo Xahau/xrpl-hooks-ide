@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Plus, Trash, X } from 'phosphor-react'
-import { Button, Box, Text } from '.'
+import { Button, Box, Text, Switch, SwitchThumb } from '.'
 import { Stack, Flex, Select } from '.'
 import {
   Dialog,
@@ -29,6 +29,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
 
     const [estimateLoading, setEstimateLoading] = useState(false)
     const [isSetHookDialogOpen, setIsSetHookDialogOpen] = useState(false)
+    const [incomingOutgoingMode, setIncomingOutgoingMode] = useState(false)
 
     const compiledFiles = snap.files.filter(file => file.compiledContent)
     const activeFile = compiledFiles[snap.activeWat] as IFile | undefined
@@ -53,13 +54,14 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
 
     const getDefaultValues = useCallback((): Partial<SetHookData> => {
       const content = activeFile?.compiledValueSnapshot
-      return (
-        (activeFile && snap.deployValues[activeFile.name]) || {
-          HookNamespace: getHookNamespace(),
-          Invoke: getInvokeOptions(content),
-          HookParameters: getParameters(content)
-        }
-      )
+      return {
+        HookNamespace: getHookNamespace(),
+        Invoke: getInvokeOptions(content),
+        InvokeIncoming: [],
+        InvokeOutgoing: [],
+        HookParameters: getParameters(content),
+        ...(activeFile && snap.deployValues[activeFile.name])
+      }
     }, [activeFile, getHookNamespace, snap.deployValues])
 
     const {
@@ -87,6 +89,9 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       const defaultValues = getDefaultValues()
 
       reset(defaultValues)
+      setIncomingOutgoingMode(
+        Boolean(defaultValues.InvokeIncoming?.length || defaultValues.InvokeOutgoing?.length)
+      )
     }, [activeFile, getDefaultValues, reset])
 
     useEffect(() => {
@@ -140,6 +145,13 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       if (!account) return
       if (currAccount) currAccount.isLoading = true
 
+      if (incomingOutgoingMode) {
+        data.Invoke = []
+      } else {
+        data.InvokeIncoming = []
+        data.InvokeOutgoing = []
+      }
+
       data.HookParameters.forEach(param => {
         delete param.$metaData
         return param
@@ -163,6 +175,48 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       },
       [calculateFee]
     )
+
+    const InvokeModeSwitch = () => {
+      return (
+        <Flex
+          row
+          align="center"
+          justify="end"
+          css={{ gap: '$2', mt: '$2', color: '$mauve11' }}
+        >
+          <Label
+            htmlFor="invoke-mode-switch"
+            css={{ fontSize: '$xs', lineHeight: 1, mb: 0, cursor: 'pointer' }}
+          >
+            Incoming / Outgoing
+          </Label>
+          <Switch
+            id="invoke-mode-switch"
+            checked={incomingOutgoingMode}
+            onCheckedChange={checked => {
+              setIncomingOutgoingMode(checked)
+              if (checked) {
+                setValue('Invoke', [])
+              } else {
+                setValue('InvokeIncoming', [])
+                setValue('InvokeOutgoing', [])
+              }
+            }}
+            css={{ width: 32, height: 18 }}
+          >
+            <SwitchThumb
+              css={{
+                width: 14,
+                height: 14,
+                transform: 'translateX(2px)',
+                '&[data-state="checked"]': { transform: 'translateX(16px)' }
+              }}
+            />
+          </Switch>
+        </Flex>
+      )
+    }
+
     return (
       <Dialog open={isSetHookDialogOpen} onOpenChange={onOpenChange}>
         <DialogTrigger asChild>
@@ -195,22 +249,63 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                   <Label>Sequence</Label>
                   <AccountSequence address={selectedAccount?.value} />
                 </Box>
-                <Box css={{ width: '100%' }}>
-                  <Label>Invoke on transactions</Label>
-                  <Controller
-                    name="Invoke"
-                    control={control}
-                    render={({ field }) => (
-                      <Select
-                        {...field}
-                        closeMenuOnSelect={false}
-                        isMulti
-                        menuPosition="fixed"
-                        options={transactionOptions}
+                {!incomingOutgoingMode && (
+                  <Box css={{ width: '100%' }}>
+                    <Label>Invoke on transactions</Label>
+                    <Controller
+                      name="Invoke"
+                      control={control}
+                      render={({ field }) => (
+                        <Select
+                          {...field}
+                          closeMenuOnSelect={false}
+                          isMulti
+                          menuPosition="fixed"
+                          options={transactionOptions}
+                          isDisabled={incomingOutgoingMode}
+                        />
+                      )}
+                    />
+                    <InvokeModeSwitch />
+                  </Box>
+                )}
+                {incomingOutgoingMode && (
+                  <>
+                    <Box css={{ width: '100%' }}>
+                      <Label>Invoke on incoming transactions</Label>
+                      <Controller
+                        name="InvokeIncoming"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            closeMenuOnSelect={false}
+                            isMulti
+                            menuPosition="fixed"
+                            options={transactionOptions}
+                          />
+                        )}
                       />
-                    )}
-                  />
-                </Box>
+                    </Box>
+                    <Box css={{ width: '100%' }}>
+                      <Label>Invoke on outgoing transactions</Label>
+                      <Controller
+                        name="InvokeOutgoing"
+                        control={control}
+                        render={({ field }) => (
+                          <Select
+                            {...field}
+                            closeMenuOnSelect={false}
+                            isMulti
+                            menuPosition="fixed"
+                            options={transactionOptions}
+                          />
+                        )}
+                      />
+                      <InvokeModeSwitch />
+                    </Box>
+                  </>
+                )}
                 <Box css={{ width: '100%' }}>
                   <Label>Transactions allowed to emit within the hook</Label>
                   <Controller
@@ -345,7 +440,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                               setValue('Fee', Math.round(Number(res.base_fee || '')).toString())
                             }
                           }
-                        } catch (err) {}
+                        } catch (err) { }
 
                         setEstimateLoading(false)
                       }}
