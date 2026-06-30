@@ -45,10 +45,10 @@ interface TokenAmountField {
   $value: { value: string; currency: string; issuer: string }
 }
 
-// interface IssueField {
-//   $type: 'issue'
-//   $value: { currency: string, issuer: string }
-// }
+interface IssueField {
+  $type: 'issue'
+  $value: { currency: string, issuer: string }
+}
 
 interface ObjectField {
   $type: 'object'
@@ -156,6 +156,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
       setFeeLoading(true)
 
       const fee = await estimateFee?.(state, { silent })
+      console.log('fee', fee)
       if (fee) setState({ fee })
 
       setFeeLoading(false)
@@ -219,8 +220,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     typeIs(value, 'object') && value.$type === 'amount.xrp'
   const isTokenAmount = (value: any): value is TokenAmountField =>
     typeIs(value, 'object') && value.$type === 'amount.token'
-  // const isIssue = (value: any): value is IssueField =>
-  //   typeIs(value, 'object') && value.$type === 'issue'
+  const isIssue = (value: any): value is IssueField =>
+    typeIs(value, 'object') && value.$type === 'issue'
   const isObjectField = (value: any): value is ObjectField =>
     typeIs(value, 'object') && value.$type === 'object'
   const isArrayField = (value: any): value is ArrayField =>
@@ -671,30 +672,31 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               </Button>
             ) : null
 
-          // if (isIssue(_value)) {
-          //   const value = _value.$value
+          if (isIssue(_value)) {
+            const value = _value.$value
 
-          //   return (
-          //     <TxField key={field} label={field}>
-          //       <Flex row fluid css={{ gap: '$1' }}>
-          //         <Input
-          //           placeholder="Currency (e.g. USD)"
-          //           value={value.currency}
-          //           css={{ flex: '0 0 30%' }}
-          //           onChange={e => setRawField(field, 'issue', { ...value, currency: e.target.value })}
-          //         />
-          //         <Box css={{ flex: 1 }}>
-          //           <CreatableAccount
-          //             value={value.issuer}
-          //             field={'Issuer' as any}
-          //             placeholder="Issuer account"
-          //             setField={(_, v = '') => setRawField(field, 'issue', { ...value, issuer: v })}
-          //           />
-          //         </Box>
-          //       </Flex>
-          //     </TxField>
-          //   )
-          // }
+            return (
+              <TxField key={field} label={field}>
+                <Flex row fluid css={{ gap: '$1' }}>
+                  <Input
+                    placeholder="Currency (e.g. USD)"
+                    value={value.currency}
+                    css={{ flex: '0 0 30%' }}
+                    onChange={e => setRawField(field, 'issue', { ...value, currency: e.target.value })}
+                  />
+                  <Box css={{ flex: 1 }}>
+                    <CreatableAccount
+                      value={value.issuer}
+                      field={'Issuer' as any}
+                      placeholder="Issuer account"
+                      setField={(_, v = '') => setRawField(field, 'issue', { ...value, issuer: v })}
+                    />
+                  </Box>
+                </Flex>
+                {optionalFieldDeleteButton}
+              </TxField>
+            )
+          }
 
           if (isXrpAmount(_value) || isTokenAmount(_value)) {
             return (
