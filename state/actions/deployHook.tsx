@@ -84,12 +84,13 @@ export const prepareDeployHookTx = async (
   //   }
   // });
   if (typeof window === 'undefined') return
+  const networkID = process.env.NEXT_PUBLIC_NETWORK_ID ? Number(process.env.NEXT_PUBLIC_NETWORK_ID) : undefined
   const tx = {
     Account: account.address,
     TransactionType: 'SetHook',
     Sequence: account.sequence,
     Fee: data.Fee,
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
+    NetworkID: networkID,
     Hooks: [
       {
         Hook: {
@@ -196,12 +197,13 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   if (currentAccount?.isLoading || !currentAccount?.hooks.length) {
     return
   }
+  const networkID = process.env.NEXT_PUBLIC_NETWORK_ID ? Number(process.env.NEXT_PUBLIC_NETWORK_ID) : undefined
   const tx = {
     Account: account.address,
     TransactionType: 'SetHook',
     Sequence: account.sequence,
     Fee: '100000',
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
+    NetworkID: networkID,
     Hooks: [
       {
         Hook: {

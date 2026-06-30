@@ -352,7 +352,7 @@ const Navigation = () => {
                 </Button>
               </Link>
             </ButtonGroup>
-            <Link href="https://xrpl-hooks.readme.io/" passHref>
+            <Link href="https://xahau.network/docs/hooks/" passHref>
               <a target="_blank" rel="noreferrer noopener">
                 <Button outline>
                   <BookOpen size="15px" />

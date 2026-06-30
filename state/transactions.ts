@@ -93,6 +93,10 @@ const unwrapTypedValue = (value: any): any => {
     return value.$value?.toString() || ''
   }
 
+  if (value.$type === 'issue') {
+    return value.$value
+  }
+
   if (value.$type === 'object') {
     return normalizeObjectValue(value.$value)
   }
@@ -166,6 +170,7 @@ const scoreSchemaMatch = (value: any, schemaValue: any): number => {
   if (schemaValue.$type === 'amount.token') return typeIs(value, 'object') ? 3 : 0
   if (schemaValue.$type === 'amount.xrp') return typeIs(value, ['string', 'number']) ? 3 : 0
   if (schemaValue.$type === 'account') return typeIs(value, 'string') ? 2 : 0
+  if (schemaValue.$type === 'issue') return typeIs(value, 'object') ? 2 : 0
   if (schemaValue.$type === 'object') return typeIs(value, 'object') ? 2 : 0
   if (schemaValue.$type === 'array') return Array.isArray(value) ? 2 : 0
   if (schemaValue.$type === 'vec256') return Array.isArray(value) ? 2 : 0
@@ -191,6 +196,13 @@ const applySchemaValue = (value: any, schemaValue: any): any => {
     return {
       $type: 'account',
       $value: value?.toString() || ''
+    }
+  }
+
+  if (schemaValue.$type === 'issue') {
+    return {
+      $type: 'issue',
+      $value: value
     }
   }
 
