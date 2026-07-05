@@ -26,7 +26,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { useSnapshot } from 'valtio'
 import toast from 'react-hot-toast'
 
-import { syncToGist, updateEditorSettings, downloadAsZip } from '../state/actions'
+import { syncToGist, updateEditorSettings, downloadAsZip, fetchHeaderFiles } from '../state/actions'
 import state from '../state'
 import Box from './Box'
 import Button from './Button'
@@ -51,6 +51,8 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
   const { data: session, status } = useSession()
   const [popup, setPopUp] = useState(false)
   const [editorSettings, setEditorSettings] = useState(snap.editorSettings)
+  const [headerFilesLoading, setHeaderFilesLoading] = useState(false)
+  const hasHeaderFiles = snap.files.some(file => file.name.endsWith('.h'))
 
   useEffect(() => {
     if (session && session.user && popup) {
@@ -71,6 +73,19 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
       confirmPrefix: <FilePlus size="15px" />,
       onConfirm: () => syncToGist(session, true)
     })
+  }
+
+  const handleFetchHeaderFiles = async () => {
+    setHeaderFilesLoading(true)
+    try {
+      const count = await fetchHeaderFiles()
+      if (count > 0) toast.success('Downloaded .h files')
+    } catch (err) {
+      const message = err instanceof Error ? err.message : 'Failed to download .h files'
+      toast.error(message)
+    } finally {
+      setHeaderFilesLoading(false)
+    }
   }
 
   const scrollRef = useRef<HTMLDivElement>(null)
@@ -132,6 +147,18 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
         }}
       >
         <Container css={{ width: 'unset', display: 'flex', alignItems: 'center' }}>
+          {!hasHeaderFiles && (
+            <Button
+              outline
+              size="sm"
+              css={{ mr: '$3' }}
+              isLoading={headerFilesLoading}
+              onClick={handleFetchHeaderFiles}
+            >
+              <DownloadSimple size="16px" />download .h files
+            </Button>
+          )}
+
           {status === 'authenticated' ? (
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
