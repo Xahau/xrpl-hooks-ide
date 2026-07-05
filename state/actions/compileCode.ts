@@ -28,6 +28,7 @@ export const compileCode = async (activeId: number) => {
     // if compiling is ongoing return // TODO Inform user about it.
     return
   }
+  const headerFiles = state.files.filter(file => file.name.endsWith('.h'))
   // Set loading state to true
   state.compiling = true
   state.logs = []
@@ -51,7 +52,15 @@ export const compileCode = async (activeId: number) => {
               name: file.name,
               src: file.content
             }
-          ]
+          ],
+          ...(headerFiles.length > 0 ? {
+            headers: headerFiles.map(file => ({
+              type: 'c',
+              options: state.compileOptions.optimizationLevel || '-O2',
+              name: file.name,
+              src: file.content
+            }))
+          } : {})
         })
       })
     } catch (error) {
