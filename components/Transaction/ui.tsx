@@ -79,6 +79,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     selectedFlags,
     fee,
     hookParameters,
+    hookName,
     memos
   } = txState
 
@@ -184,7 +185,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     }
   }, [handleChangeTxType, selectedTransaction?.value])
 
-  const richFields = ['TransactionType', 'Account', 'HookParameters', 'Memos']
+  const richFields = ['TransactionType', 'Account', 'HookName', 'HookParameters', 'Memos']
 
   if (flagsOptions.length) {
     richFields.push('Flags')
@@ -592,6 +593,12 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     return renderPrimitiveField(value, setValue)
   }
 
+  const optionalFieldDeleteButton = (onClick: () => void) => (
+    <Button css={{ ml: '$2' }} onClick={onClick} variant="destroy">
+      <Trash weight="regular" size="16px" />
+    </Button>
+  )
+
   return (
     <Container
       css={{
@@ -661,15 +668,9 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           const isOptionalField = optionalFields[field] !== undefined
           if (_value === undefined) return null
 
-          const optionalFieldDeleteButton =
+          const fieldDeleteButton =
             isOptionalField && !isArrayField(_value) && !isVec256Field(_value) ? (
-              <Button
-                css={{ ml: '$2' }}
-                onClick={() => handleRemoveOptionalField(field)}
-                variant="destroy"
-              >
-                <Trash weight="regular" size="16px" />
-              </Button>
+              optionalFieldDeleteButton(() => handleRemoveOptionalField(field))
             ) : null
 
           if (isIssue(_value)) {
@@ -693,7 +694,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
                     />
                   </Box>
                 </Flex>
-                {optionalFieldDeleteButton}
+                {fieldDeleteButton}
               </TxField>
             )
           }
@@ -704,7 +705,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
                 {renderAmountField(_value, nextValue =>
                   setRawField(field, nextValue.$type, nextValue.$value)
                 )}
-                {optionalFieldDeleteButton}
+                {fieldDeleteButton}
               </TxField>
             )
           }
@@ -714,7 +715,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
                 {renderAccountField(_value, nextValue =>
                   setRawField(field, nextValue.$type, nextValue.$value)
                 )}
-                {optionalFieldDeleteButton}
+                {fieldDeleteButton}
               </TxField>
             )
           }
@@ -722,14 +723,14 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
             return (
               <TxField multiLine key={field} label={field}>
                 {renderNestedValue(_value, value => setNestedField(field, () => value))}
-                {optionalFieldDeleteButton}
+                {fieldDeleteButton}
               </TxField>
             )
           }
           return (
             <TxField key={field} label={field}>
               {renderPrimitiveField(_value, value => handleSetField(field, value))}
-              {optionalFieldDeleteButton}
+              {fieldDeleteButton}
             </TxField>
           )
         })}
@@ -834,6 +835,29 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               Add Hook Parameter
             </Button>
           </Flex>
+        </TxField>
+        <TxField label="HookName">
+          {hookName !== null ? (
+            <Input
+              placeholder="Hook name (utf-8)"
+              value={hookName || ''}
+              onChange={(e: any) => setState({ hookName: e.target.value })}
+            />
+            ) :
+            (
+              <Button
+                outline
+                fullWidth
+                type="button"
+                onClick={() => {
+                  setState({ hookName: '' })
+                }}
+              >
+                <Plus size="16px" />
+                Add Hook Name
+              </Button>
+            )}
+          {hookName ? optionalFieldDeleteButton(() => setState({ hookName: null })) : null}
         </TxField>
         <TxField multiLine label="Memos">
           <Flex column fluid>

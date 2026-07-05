@@ -31,6 +31,7 @@ export interface TransactionState {
   selectedFlags: SelectOption[] | null
   fee: string
   hookParameters: HookParameters
+  hookName: string | null
   memos: Memos
   txIsLoading: boolean
   txIsDisabled: boolean
@@ -48,6 +49,7 @@ const commonFields = [
   'Flags',
   'Fee',
   'Sequence',
+  'HookName',
   'HookParameters'
 ] as const
 
@@ -62,6 +64,7 @@ export const defaultTransaction: TransactionState = {
   selectedFlags: null,
   fee: '12',
   hookParameters: {},
+  hookName: null,
   memos: {},
   editorIsSaved: true,
   txIsLoading: false,
@@ -360,7 +363,7 @@ export const prepareState = (value: string, transactionType?: string) => {
     return
   }
 
-  const { Account, TransactionType, HookParameters, Memos, ...rest } = options
+  const { Account, TransactionType, HookParameters, HookName, Memos, ...rest } = options
   let tx: Partial<TransactionState> = {}
   const schema = getTxFields(transactionType)
   tx.optionalFields = getOptionalTxFields(transactionType)
@@ -403,6 +406,10 @@ export const prepareState = (value: string, transactionType?: string) => {
       },
       {}
     )
+  }
+
+  if (HookName && typeof HookName === 'string') {
+    tx.hookName = HookName
   }
 
   if (Memos && Memos instanceof Array) {
