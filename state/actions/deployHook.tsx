@@ -105,7 +105,7 @@ export const prepareDeployHookTx = async (
               HookOnOutgoing: calculateHookOn(hookOnOutgoingValues),
             }),
           ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
-          ...(hookName && { HookName: hookName }),
+          ...(hookName && { HookName: toHex(hookName) }),
           HookNamespace,
           HookApiVersion: 0,
           Flags: 1,

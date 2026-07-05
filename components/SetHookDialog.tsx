@@ -324,11 +324,11 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Name</Label>
-                  <Input {...register('HookName', { required: false })} autoComplete={'off'} />
+                  <Input {...register('HookName', { required: false })} autoComplete={'off'} placeholder="Hook name (utf-8)" />
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Namespace Seed</Label>
-                  <Input {...register('HookNamespace', { required: true })} autoComplete={'off'} />
+                  <Input {...register('HookNamespace', { required: true })} autoComplete={'off'} placeholder="Hook namespace seed" />
                   {errors.HookNamespace?.type === 'required' && (
                     <Box css={{ display: 'inline', color: '$red11' }}>Namespace is required</Box>
                   )}
