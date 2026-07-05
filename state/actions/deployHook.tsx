@@ -60,6 +60,7 @@ export const prepareDeployHookTx = async (
   if (!activeFile?.compiledContent) {
     return
   }
+  const hookName = data.HookName && data.HookName.length > 0 ? data.HookName : undefined
   const HookNamespace = (await sha256(data.HookNamespace)).toUpperCase()
   // If both hookOnIncoming and hookOnOutgoing are empty, use hookOn
   const hookOnValues: (keyof TTS)[] = data.Invoke.map(tt => tt.value)
@@ -104,6 +105,7 @@ export const prepareDeployHookTx = async (
               HookOnOutgoing: calculateHookOn(hookOnOutgoingValues),
             }),
           ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
+          ...(hookName && { HookName: toHex(hookName) }),
           HookNamespace,
           HookApiVersion: 0,
           Flags: 1,
