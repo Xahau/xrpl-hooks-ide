@@ -62,7 +62,10 @@ export const prepareDeployHookTx = async (
   }
   const hookName = data.HookName && data.HookName.length > 0 ? data.HookName : undefined
   const HookNamespace = (await sha256(data.HookNamespace)).toUpperCase()
+  // If both hookOnIncoming and hookOnOutgoing are empty, use hookOn
   const hookOnValues: (keyof TTS)[] = data.Invoke.map(tt => tt.value)
+  const hookOnIncomingValues: (keyof TTS)[] = data.InvokeIncoming.map(tt => tt.value)
+  const hookOnOutgoingValues: (keyof TTS)[] = data.InvokeOutgoing.map(tt => tt.value)
   // In this IDE, does't select any transactions (length == 0) for HookCanEmit means it's allowed to emit all transactions (omit HookCanEmit)
   const hookCanEmitValues: (keyof TTS)[] | undefined = data.HookCanEmit && data.HookCanEmit?.length > 0 ? data.HookCanEmit.map(tt => tt.value) : undefined
   const { HookParameters } = data
@@ -95,7 +98,12 @@ export const prepareDeployHookTx = async (
       {
         Hook: {
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
-          HookOn: calculateHookOn(hookOnValues),
+          ...((hookOnIncomingValues.length === 0 && hookOnOutgoingValues.length === 0) ?
+            { HookOn: calculateHookOn(hookOnValues) } :
+            {
+              HookOnIncoming: calculateHookOn(hookOnIncomingValues),
+              HookOnOutgoing: calculateHookOn(hookOnOutgoingValues),
+            }),
           ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
           ...(hookName && { HookName: hookName }),
           HookNamespace,
@@ -250,9 +258,8 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
       })
       state.deployLogs.push({
         type: 'error',
-        message: `[${submitRes.engine_result || submitRes.error}] ${
-          submitRes.engine_result_message || submitRes.error_exception
-        }`
+        message: `[${submitRes.engine_result || submitRes.error}] ${submitRes.engine_result_message || submitRes.error_exception
+          }`
       })
     }
   } catch (err) {
