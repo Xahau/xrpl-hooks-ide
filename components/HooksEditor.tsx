@@ -95,7 +95,7 @@ const setMarkers = (monacoE: typeof monaco) => {
 const HooksEditor = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
   const monacoRef = useRef<typeof monaco>()
-  const subscriptionRef = useRef<{ close: () => void } | null>(null)
+  const subscriptionRef = useRef<{ close: () => void; reparse?: () => void } | null>(null)
   const startedRef = useRef(false)
   const snap = useSnapshot(state)
   const router = useRouter()
@@ -111,6 +111,16 @@ const HooksEditor = () => {
       subscriptionRef?.current?.close()
     }
   }, [])
+  useEffect(() => {
+    // dispose models of removed files so clangd closes them, then let it re-check the open files
+    monacoRef.current?.editor.getModels().forEach(model => {
+      const path = model.uri.path
+      if (path.startsWith('/work/c/') && !snap.files.some(f => `/work/c/${f.name}` === path)) {
+        model.dispose()
+      }
+    })
+    subscriptionRef.current?.reparse?.()
+  }, [snap.files])
   useEffect(() => {
     if (monacoRef.current) {
       setMarkers(monacoRef.current)
@@ -237,7 +247,8 @@ const HooksEditor = () => {
                   close: () => {
                     remote?.close()
                     worker?.close()
-                  }
+                  },
+                  reparse: worker?.reparse
                 }
               }
 

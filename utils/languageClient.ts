@@ -96,10 +96,14 @@ export function startRemoteClangd(endpoint: string): { close: () => void } {
   return { close: () => webSocket.close() }
 }
 
-export function startClangdWorker(onReady?: () => void): { close: () => void } {
+export function startClangdWorker(onReady?: () => void): {
+  close: () => void
+  reparse: () => void
+} {
   const worker = new Worker(new URL('./clangd.worker.ts', import.meta.url))
   let closed = false
   const disposables: { dispose: () => void }[] = []
+  let client: MonacoLanguageClient | undefined
 
   waitForReady(worker)
     .then(() => {
@@ -113,6 +117,11 @@ export function startClangdWorker(onReady?: () => void): { close: () => void } {
           sent.set(name, content)
           worker.postMessage({ type: 'writeFile', path: `/work/c/${name}`, content })
         })
+        sent.forEach((_, name) => {
+          if (state.files.some(f => f.name === name)) return
+          sent.delete(name)
+          worker.postMessage({ type: 'deleteFile', path: `/work/c/${name}` })
+        })
       }
       syncHeaders()
       disposables.push({ dispose: subscribe(state.files, syncHeaders) })
@@ -121,15 +130,28 @@ export function startClangdWorker(onReady?: () => void): { close: () => void } {
         new BrowserMessageReader(worker),
         new BrowserMessageWriter(worker)
       ) as unknown as MessageConnection
-      disposables.push(createLanguageClient(connection).start())
+      client = createLanguageClient(connection)
+      disposables.push(client.start())
     })
     .catch(err => console.warn('clangd worker failed to start', err))
+
+  const reparse = () => {
+    // any open document works: clangd re-validates all open files on didSave
+    const uri = state.editorCtx
+      ?.getModels()
+      .find(m => m.uri.path.startsWith('/work/c/'))
+      ?.uri.toString()
+    if (client?.initializeResult && uri) {
+      client.sendNotification('textDocument/didSave', { textDocument: { uri } })
+    }
+  }
 
   return {
     close: () => {
       closed = true
       disposables.forEach(d => d.dispose())
       worker.terminate()
-    }
+    },
+    reparse
   }
 }

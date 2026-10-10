@@ -127,6 +127,12 @@ async function main() {
       clangd.FS.writeFile(data.path, data.content)
       return
     }
+    if (data?.type === 'deleteFile') {
+      try {
+        clangd.FS.unlink(data.path)
+      } catch {}
+      return
+    }
     // non-ASCII characters cause bad Content-Length. Just escape them.
     const body = JSON.stringify(data).replace(/[\u007F-\uFFFF]/g, ch => {
       return '\\u' + ch.codePointAt(0)!.toString(16).padStart(4, '0')
