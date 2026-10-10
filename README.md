@@ -8,6 +8,10 @@ This is the repository for Xahau Hooks Builder. This project is built with Next.
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## Networks
+
+The network is chosen in the header (Xahau Testnet and Xahau Dev Net presets, plus "Add network…" for your own: WebSocket URL, explorer, faucet URL and kind, debug stream template, optional network id). The selection and custom networks are stored in `localStorage`; `NetworkID` comes from the preset, or from the node's `server_info` for custom networks without one (and is only sent on networks with id > 1024). The Next API route `/api/faucet` only proxies the preset faucets that lack CORS headers; faucets that allow CORS are called directly from the browser. `NEXT_PUBLIC_TESTNET_URL`, `NEXT_PUBLIC_NETWORK_ID`, `NEXT_PUBLIC_EXPLORER_URL` and `NEXT_PUBLIC_DEBUG_STREAM_URL` are no longer read.
+
 ## Getting Started
 
 First, copy the `.env.example` to `.env.local` file, someone from the team can provide you your enviroment variables.

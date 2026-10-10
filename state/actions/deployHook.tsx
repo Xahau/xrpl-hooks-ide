@@ -1,7 +1,7 @@
 import { derive, sign } from 'xrpl-accountlib'
 import toast from 'react-hot-toast'
 
-import state, { IAccount } from '../index'
+import state, { IAccount, networkIdField } from '../index'
 import calculateHookOn, { TTS } from '../../utils/hookOnCalculator'
 import { Link } from '../../components'
 import { ref } from 'valtio'
@@ -19,7 +19,6 @@ export const sha256 = async (string: string) => {
   const hashHex = hashArray.map(bytes => bytes.toString(16).padStart(2, '0')).join('')
   return hashHex
 }
-
 
 function arrayBufferToHex(arrayBuffer?: ArrayBuffer | null) {
   if (!arrayBuffer) {
@@ -67,7 +66,10 @@ export const prepareDeployHookTx = async (
   const hookOnIncomingValues: (keyof TTS)[] = data.InvokeIncoming.map(tt => tt.value)
   const hookOnOutgoingValues: (keyof TTS)[] = data.InvokeOutgoing.map(tt => tt.value)
   // In this IDE, does't select any transactions (length == 0) for HookCanEmit means it's allowed to emit all transactions (omit HookCanEmit)
-  const hookCanEmitValues: (keyof TTS)[] | undefined = data.HookCanEmit && data.HookCanEmit?.length > 0 ? data.HookCanEmit.map(tt => tt.value) : undefined
+  const hookCanEmitValues: (keyof TTS)[] | undefined =
+    data.HookCanEmit && data.HookCanEmit?.length > 0
+      ? data.HookCanEmit.map(tt => tt.value)
+      : undefined
   const { HookParameters } = data
   const filteredHookParameters = HookParameters.filter(
     hp => hp.HookParameter.HookParameterName && hp.HookParameter.HookParameterValue
@@ -87,23 +89,22 @@ export const prepareDeployHookTx = async (
   //   }
   // });
   if (typeof window === 'undefined') return
-  const networkID = process.env.NEXT_PUBLIC_NETWORK_ID ? Number(process.env.NEXT_PUBLIC_NETWORK_ID) : undefined
   const tx = {
     Account: account.address,
     TransactionType: 'SetHook',
     Sequence: account.sequence,
     Fee: data.Fee,
-    NetworkID: networkID,
+    ...networkIdField(),
     Hooks: [
       {
         Hook: {
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
-          ...((hookOnIncomingValues.length === 0 && hookOnOutgoingValues.length === 0) ?
-            { HookOn: calculateHookOn(hookOnValues) } :
-            {
-              HookOnIncoming: calculateHookOn(hookOnIncomingValues),
-              HookOnOutgoing: calculateHookOn(hookOnOutgoingValues),
-            }),
+          ...(hookOnIncomingValues.length === 0 && hookOnOutgoingValues.length === 0
+            ? { HookOn: calculateHookOn(hookOnValues) }
+            : {
+                HookOnIncoming: calculateHookOn(hookOnIncomingValues),
+                HookOnOutgoing: calculateHookOn(hookOnOutgoingValues)
+              }),
           ...(hookCanEmitValues && { HookCanEmit: calculateHookOn(hookCanEmitValues) }),
           ...(hookName && { HookName: toHex(hookName) }),
           HookNamespace,
@@ -157,7 +158,7 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
             Transaction hash:{' '}
             <Link
               as="a"
-              href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${txHash}`}
+              href={state.network.explorer ? `${state.network.explorer}/${txHash}` : undefined}
               target="_blank"
               rel="noopener noreferrer"
             >
@@ -205,13 +206,12 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   if (currentAccount?.isLoading || !currentAccount?.hooks.length) {
     return
   }
-  const networkID = process.env.NEXT_PUBLIC_NETWORK_ID ? Number(process.env.NEXT_PUBLIC_NETWORK_ID) : undefined
   const tx = {
     Account: account.address,
     TransactionType: 'SetHook',
     Sequence: account.sequence,
     Fee: '100000',
-    NetworkID: networkID,
+    ...networkIdField(),
     Hooks: [
       {
         Hook: {
@@ -258,8 +258,9 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
       })
       state.deployLogs.push({
         type: 'error',
-        message: `[${submitRes.engine_result || submitRes.error}] ${submitRes.engine_result_message || submitRes.error_exception
-          }`
+        message: `[${submitRes.engine_result || submitRes.error}] ${
+          submitRes.engine_result_message || submitRes.error_exception
+        }`
       })
     }
   } catch (err) {
