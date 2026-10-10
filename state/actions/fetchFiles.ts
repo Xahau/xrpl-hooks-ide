@@ -4,6 +4,79 @@ import { templateFileIds } from '../constants'
 
 const octokit = new Octokit()
 
+const defaultIndexFile: IFile = {
+  name: 'index.c',
+  language: 'c',
+  content: `/**
+ * This hook just accepts any transaction coming through it
+ */
+#include "hookapi.h"
+
+int64_t hook(uint32_t reserved) {
+
+  TRACESTR("index.c: Called.");
+  accept(SBUF("accept"), __LINE__);
+
+  GUARD(1);
+  // unreachable
+  return 0;
+}`
+}
+
+const headerFileFromEntry = ([key, value]: [string, unknown]) => {
+  const filename = key.endsWith('.h') ? key : `${key}.h`
+  return {
+    name: filename,
+    language: 'c',
+    content: typeof value === 'string' ? value : ''
+  }
+}
+
+const fetchApiHeaderFiles = async (): Promise<IFile[]> => {
+  const headerRes = await fetch(
+    `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
+  )
+  if (!headerRes.ok) throw Error('Failed to fetch headers')
+
+  const headerJson = (await headerRes.json()) as Record<string, unknown>
+  return Object.entries(headerJson).map(headerFileFromEntry)
+}
+
+export const fetchHeaderFiles = async () => {
+  if (state.files.some(file => file.name.endsWith('.h'))) return 0
+
+  state.loading = true
+  state.logs.push({
+    type: 'log',
+    message: 'Fetching header files'
+  })
+  try {
+    const headerFiles = await fetchApiHeaderFiles()
+    const existingFileNames = new Set(state.files.map(file => file.name))
+    const newHeaderFiles = headerFiles.filter(file => !existingFileNames.has(file.name))
+
+    if (!state.files.some(file => file.name.endsWith('.c'))) {
+      state.files.push({ ...defaultIndexFile })
+    }
+    state.files.push(...newHeaderFiles)
+    state.logs.push({
+      type: 'success',
+      message: 'Header files downloaded successfully ✅'
+    })
+    return newHeaderFiles.length
+  } catch (err) {
+    console.error(err)
+    const message = err instanceof Error ? err.message : 'Something went wrong, try again later!'
+    state.logs.push({
+      type: 'error',
+      message: `Error: ${message}`
+    })
+    throw err
+  } finally {
+    state.loading = false
+  }
+}
+
 /**
  * Fetches files from Github Gists based on gistId and stores them in global state
  */
@@ -28,23 +101,21 @@ export const fetchFiles = async (gistId: string) => {
       let headerFiles: Record<string, { filename: string; content: string; language: string }> =
         {}
       if (template?.headerId) {
-        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
-        if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
+        const resHeader = await octokit.request('GET /gists/{gist_id}', {
+          gist_id: template.headerId
+        })
+        if (!resHeader.data.files) {
+          throw new Error('No header files could be fetched from given gist id!')
+        }
         headerFiles = resHeader.data.files as any
       } else {
-        // fetch headers
-        const headerRes = await fetch(
-          `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
-        )
-        if (!headerRes.ok) throw Error('Failed to fetch headers')
-
-        const headerJson = await headerRes.json()
-        const headerFiles: Record<string, { filename: string; content: string; language: string }> =
-          {}
-        Object.entries(headerJson).forEach(([key, value]) => {
-          const fname = `${key}.h`
-          headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
-        })
+        const apiHeaderFiles = await fetchApiHeaderFiles()
+        headerFiles = apiHeaderFiles.reduce<
+          Record<string, { filename: string; content: string; language: string }>
+        >((files, file) => {
+          files[file.name] = { filename: file.name, content: file.content, language: 'C' }
+          return files
+        }, {})
       }
       const files = {
         ...res.data.files,
