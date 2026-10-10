@@ -28,7 +28,7 @@ export const names = [
  * is protected with CORS so that's why we did our own endpoint
  */
 export const addFaucetAccount = async (name?: string, showToast: boolean = false) => {
-  if (typeof window === undefined) return
+  if (typeof window === 'undefined') return
 
   const toastId = showToast ? toast.loading('Creating account') : ''
   const res = await fetch(`${window.location.origin}/api/faucet`, {
@@ -43,7 +43,7 @@ export const addFaucetAccount = async (name?: string, showToast: boolean = false
   const info = await fetchAccountInfo(json.address, { silent: true })
   state.accounts.push({
     name: name || names.filter(name => !currNames.includes(name))[0],
-    xrp: (json.xrp || 0 * 1000000).toString(),
+    xrp: ((json.xrp || 0) * 1000000).toString(),
     address: json.address,
     secret: json.secret,
     sequence: info?.Sequence || 1,

@@ -343,7 +343,7 @@ const Accounts: FC<AccountProps> = props => {
           if (accountToUpdate) {
             accountToUpdate.hooks =
               res.account_objects
-                .find((ac: any) => ac?.LedgerEntryType === 'Hook')
+                ?.find((ac: any) => ac?.LedgerEntryType === 'Hook')
                 ?.Hooks?.map((oo: any) => oo.Hook.HookHash) || []
           }
         })
