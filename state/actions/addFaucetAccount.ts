@@ -32,7 +32,8 @@ const requestFaucet = async (account?: string): Promise<FaucetAccountRes | { err
     const res = await fetch(faucet.url, {
       method: 'POST',
       headers: { 'content-type': 'application/json' },
-      body: '{}'
+      // `destination` funds an existing account; without it the faucet generates one
+      body: JSON.stringify(account ? { destination: account } : {})
     })
     const json = await res.json()
     if (!res.ok || !json?.account) {
@@ -101,8 +102,8 @@ export const addFaucetAccount = async (name?: string, showToast: boolean = false
 })()
 
 export const addFunds = async (address: string) => {
-  if (state.network.faucet?.kind !== 'newcreds') {
-    return toast.error('Adding funds is not supported on this network')
+  if (!state.network.faucet) {
+    return toast.error('This network has no faucet')
   }
   const toastId = toast.loading('Requesting funds')
   let json: FaucetAccountRes | { error: string }

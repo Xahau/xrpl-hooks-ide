@@ -216,7 +216,7 @@ export const AccountDialog = ({
                     }}
                     ghost
                     size="xs"
-                    disabled={snap.network.faucet?.kind !== 'newcreds'}
+                    disabled={!snap.network.faucet}
                     onClick={() => {
                       addFunds(activeAccount?.address || '')
                     }}
