@@ -89,6 +89,8 @@ By default `@monaco-editor/react` was using 0.29.? version of Monaco editor. @co
 
 Monaco Languageclient related stuff is found from `./utils/languageClient.ts`. Basically we're connecting the editor to clangd language server which lives on separate backend. That project can be found from https://github.com/eqlabs/xrpl-hooks-compiler/. If you need access to that project ask permissions from @vbar (Vaclav Barta) on GitHub.
 
+By default clangd runs in the browser as WebAssembly in a Web Worker (built from [guyutongxue/clangd-in-browser](https://github.com/guyutongxue/clangd-in-browser)). The binaries are fetched to `public/wasm/` by `scripts/fetch-clangd.mjs` on `dev`/`build` and checked against the SHA-256 hashes pinned in that script; the download location can be overridden with `CLANGD_WASM_BASE_URL`. This requires the COOP/COEP headers set in `next.config.js`. Setting `NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT` switches back to the remote language server; note that the hooks-specific `hooks-*` lint checks only exist on the remote server.
+
 ### Language server hover messages
 If you want to extend hover messages provided by language-server you can add extra docs to `xrpl-hooks-docs/md/` folder. Just make sure the filename is matching with the error code that comes from language server. So lets say you want to add extra documentation for `hooks-func-addr-taken` check create new file called `hooks-func-addr-taken.md` and then remember to import and export it on `docs.ts` file with same logic as the other files.
 

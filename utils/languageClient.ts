@@ -7,6 +7,13 @@ import {
 } from '@codingame/monaco-languageclient'
 import normalizeUrl from 'normalize-url'
 import ReconnectingWebSocket from 'reconnecting-websocket'
+import { subscribe } from 'valtio'
+import {
+  createMessageConnection,
+  BrowserMessageReader,
+  BrowserMessageWriter
+} from 'vscode-jsonrpc/browser'
+import state from '../state'
 
 export function createLanguageClient(connection: MessageConnection): MonacoLanguageClient {
   return new MonacoLanguageClient({
@@ -46,4 +53,60 @@ export function createWebSocket(url: string) {
     debug: false
   }
   return new ReconnectingWebSocket(url, [], socketOptions)
+}
+
+function waitForReady(worker: Worker) {
+  // the reader must not see the 'ready' message, so wait for it before creating the connection
+  return new Promise<void>((resolve, reject) => {
+    const onMessage = (e: MessageEvent) => {
+      if (e.data?.type !== 'ready') return
+      worker.removeEventListener('message', onMessage)
+      worker.removeEventListener('error', onError)
+      resolve()
+    }
+    const onError = (e: ErrorEvent) => {
+      worker.removeEventListener('message', onMessage)
+      worker.removeEventListener('error', onError)
+      reject(e.error || new Error(e.message))
+    }
+    worker.addEventListener('message', onMessage)
+    worker.addEventListener('error', onError)
+  })
+}
+
+export function startClangdWorker(): { close: () => void } {
+  const worker = new Worker(new URL('./clangd.worker.ts', import.meta.url))
+  let closed = false
+  const disposables: { dispose: () => void }[] = []
+
+  waitForReady(worker)
+    .then(() => {
+      if (closed) return
+      // keep header files in the worker's filesystem in sync with the state
+      const sent = new Map<string, string>()
+      const syncHeaders = () => {
+        state.files.forEach(({ name, content }) => {
+          if (!name.endsWith('.h') || sent.get(name) === content) return
+          sent.set(name, content)
+          worker.postMessage({ type: 'writeFile', path: `/work/c/${name}`, content })
+        })
+      }
+      syncHeaders()
+      disposables.push({ dispose: subscribe(state.files, syncHeaders) })
+
+      const connection = createMessageConnection(
+        new BrowserMessageReader(worker),
+        new BrowserMessageWriter(worker)
+      ) as unknown as MessageConnection
+      disposables.push(createLanguageClient(connection).start())
+    })
+    .catch(err => console.warn('clangd worker failed to start', err))
+
+  return {
+    close: () => {
+      closed = true
+      disposables.forEach(d => d.dispose())
+      worker.terminate()
+    }
+  }
 }

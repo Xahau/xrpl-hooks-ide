@@ -14,9 +14,8 @@ import state from '../state'
 import EditorNavigation from './EditorNavigation'
 import Text from './Text'
 import { MonacoServices } from '@codingame/monaco-languageclient'
-import { createLanguageClient, createWebSocket } from '../utils/languageClient'
+import { createLanguageClient, createWebSocket, startClangdWorker } from '../utils/languageClient'
 import { listen } from '@codingame/monaco-jsonrpc'
-import ReconnectingWebSocket from 'reconnecting-websocket'
 
 import docs from '../xrpl-hooks-docs/docs'
 import Monaco from './Monaco'
@@ -97,7 +96,8 @@ const setMarkers = (monacoE: typeof monaco) => {
 const HooksEditor = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
   const monacoRef = useRef<typeof monaco>()
-  const subscriptionRef = useRef<ReconnectingWebSocket | null>(null)
+  const subscriptionRef = useRef<{ close: () => void } | null>(null)
+  const startedRef = useRef(false)
   const snap = useSnapshot(state)
   const router = useRouter()
   const { theme } = useTheme()
@@ -211,7 +211,8 @@ const HooksEditor = () => {
               // }
 
               // create the web socket
-              if (!subscriptionRef.current) {
+              if (!startedRef.current) {
+                startedRef.current = true
                 monaco.languages.register({
                   id: 'c',
                   extensions: ['.c', '.h'],
@@ -224,27 +225,32 @@ const HooksEditor = () => {
                   mimetypes: ['text/plain'],
                 })
                 MonacoServices.install(monaco)
-                const webSocket = createWebSocket(
-                  process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT || ''
-                )
-                subscriptionRef.current = webSocket
-                // listen when the web socket is opened
-                listen({
-                  webSocket: webSocket as WebSocket,
-                  onConnection: connection => {
-                    // create and start the language client
-                    const languageClient = createLanguageClient(connection)
-                    const disposable = languageClient.start()
+                const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
+                if (endpoint) {
+                  const webSocket = createWebSocket(endpoint)
+                  subscriptionRef.current = webSocket
+                  // listen when the web socket is opened
+                  listen({
+                    webSocket: webSocket as WebSocket,
+                    onConnection: connection => {
+                      // create and start the language client
+                      const languageClient = createLanguageClient(connection)
+                      const disposable = languageClient.start()
 
-                    connection.onClose(() => {
-                      try {
-                        disposable.dispose()
-                      } catch (err) {
-                        console.log('err', err)
-                      }
-                    })
-                  }
-                })
+                      connection.onClose(() => {
+                        try {
+                          disposable.dispose()
+                        } catch (err) {
+                          console.log('err', err)
+                        }
+                      })
+                    }
+                  })
+                } else if (self.crossOriginIsolated) {
+                  subscriptionRef.current = startClangdWorker()
+                } else {
+                  console.warn('clangd in browser needs cross-origin isolation (COOP/COEP headers)')
+                }
               }
 
               // editor.updateOptions({
