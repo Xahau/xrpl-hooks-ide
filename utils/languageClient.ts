@@ -1,4 +1,4 @@
-import { MessageConnection } from '@codingame/monaco-jsonrpc'
+import { MessageConnection, listen } from '@codingame/monaco-jsonrpc'
 import {
   MonacoLanguageClient,
   ErrorAction,
@@ -43,7 +43,7 @@ export function createUrl(path: string): string {
   return normalizeUrl(`${protocol}://${location.host}${location.pathname}${path}`)
 }
 
-export function createWebSocket(url: string) {
+function createWebSocket(url: string) {
   const socketOptions = {
     maxReconnectionDelay: 10000,
     minReconnectionDelay: 1000,
@@ -74,7 +74,29 @@ function waitForReady(worker: Worker) {
   })
 }
 
-export function startClangdWorker(): { close: () => void } {
+export function startRemoteClangd(endpoint: string): { close: () => void } {
+  const webSocket = createWebSocket(endpoint)
+  // listen when the web socket is opened
+  listen({
+    webSocket: webSocket as WebSocket,
+    onConnection: connection => {
+      // create and start the language client
+      const languageClient = createLanguageClient(connection)
+      const disposable = languageClient.start()
+
+      connection.onClose(() => {
+        try {
+          disposable.dispose()
+        } catch (err) {
+          console.log('err', err)
+        }
+      })
+    }
+  })
+  return { close: () => webSocket.close() }
+}
+
+export function startClangdWorker(onReady?: () => void): { close: () => void } {
   const worker = new Worker(new URL('./clangd.worker.ts', import.meta.url))
   let closed = false
   const disposables: { dispose: () => void }[] = []
@@ -82,6 +104,7 @@ export function startClangdWorker(): { close: () => void } {
   waitForReady(worker)
     .then(() => {
       if (closed) return
+      onReady?.()
       // keep header files in the worker's filesystem in sync with the state
       const sent = new Map<string, string>()
       const syncHeaders = () => {

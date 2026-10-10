@@ -14,8 +14,7 @@ import state from '../state'
 import EditorNavigation from './EditorNavigation'
 import Text from './Text'
 import { MonacoServices } from '@codingame/monaco-languageclient'
-import { createLanguageClient, createWebSocket, startClangdWorker } from '../utils/languageClient'
-import { listen } from '@codingame/monaco-jsonrpc'
+import { startClangdWorker, startRemoteClangd } from '../utils/languageClient'
 
 import docs from '../xrpl-hooks-docs/docs'
 import Monaco from './Monaco'
@@ -226,30 +225,19 @@ const HooksEditor = () => {
                 })
                 MonacoServices.install(monaco)
                 const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
-                if (endpoint) {
-                  const webSocket = createWebSocket(endpoint)
-                  subscriptionRef.current = webSocket
-                  // listen when the web socket is opened
-                  listen({
-                    webSocket: webSocket as WebSocket,
-                    onConnection: connection => {
-                      // create and start the language client
-                      const languageClient = createLanguageClient(connection)
-                      const disposable = languageClient.start()
-
-                      connection.onClose(() => {
-                        try {
-                          disposable.dispose()
-                        } catch (err) {
-                          console.log('err', err)
-                        }
-                      })
-                    }
-                  })
-                } else if (self.crossOriginIsolated) {
-                  subscriptionRef.current = startClangdWorker()
-                } else {
+                // remote clangd is only a fallback until the in-browser one is ready
+                const remote = endpoint ? startRemoteClangd(endpoint) : null
+                const worker = self.crossOriginIsolated
+                  ? startClangdWorker(() => remote?.close())
+                  : null
+                if (!worker && !remote) {
                   console.warn('clangd in browser needs cross-origin isolation (COOP/COEP headers)')
+                }
+                subscriptionRef.current = {
+                  close: () => {
+                    remote?.close()
+                    worker?.close()
+                  }
                 }
               }
 
