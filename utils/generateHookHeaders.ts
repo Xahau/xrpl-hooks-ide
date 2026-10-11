@@ -156,9 +156,13 @@ export const generateHookHeaders = (
       .join('') +
     '#ifdef __cplusplus\n}\n#endif\n#define HOOK_EXTERN\n#endif  // HOOK_EXTERN\n'
 
+  // keylet_code names the emitted-txn keylet EMITTED_TXN; hookapi.h and the docs call it KEYLET_EMITTED
+  const keyletAliases: Record<string, string> = { EMITTED_TXN: 'EMITTED' }
   const keylets = Object.entries(hook.KEYLET_TYPES)
     .sort((a, b) => a[1] - b[1])
-    .map(([name, value]) => `#define KEYLET_${name} ${value}\n`)
+    .flatMap(([name, value]) =>
+      [name, keyletAliases[name]].filter(Boolean).map(n => `#define KEYLET_${n} ${value}\n`)
+    )
     .join('')
   result['hookapi.h'] = defaults['hookapi.h'].replace(/(?:#define KEYLET_\w+ .*\n)+/, () => keylets)
 

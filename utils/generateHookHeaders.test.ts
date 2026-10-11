@@ -33,7 +33,7 @@ const hook = {
     },
     _g: { return: 'int32_t', params: [{ type: 'uint32_t', name: 'id' }] }
   },
-  KEYLET_TYPES: { MANIFEST: 37, HOOK: 1 },
+  KEYLET_TYPES: { MANIFEST: 37, HOOK: 1, EMITTED_TXN: 22 },
   RETURN_CODES: { OUT_OF_BOUNDS: -1, SUCCESS: 0, INVALID_FLOAT: -10024 }
 }
 
@@ -73,5 +73,8 @@ test('HOOK section', () => {
   )
   assert.ok(ext.includes('extern int32_t __attribute__((noduplicate)) _g(uint32_t id);\n'))
   assert.ok(ext.indexOf('_g(') < ext.indexOf('accept('))
-  assert.equal(out['hookapi.h'], 'a\n#define KEYLET_HOOK 1\n#define KEYLET_MANIFEST 37\nb\n')
+  assert.equal(
+    out['hookapi.h'],
+    'a\n#define KEYLET_HOOK 1\n#define KEYLET_EMITTED_TXN 22\n#define KEYLET_EMITTED 22\n#define KEYLET_MANIFEST 37\nb\n'
+  )
 })
