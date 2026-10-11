@@ -8,6 +8,19 @@ This is the repository for Xahau Hooks Builder. This project is built with Next.
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## In-browser compiler
+
+Hooks are compiled entirely in the browser; there is no compile server. A Web Worker (`public/compiler/worker.js`) runs Clang and LLD compiled to WebAssembly (`@yowasp/clang`), then `wasm-opt` (binaryen.js) and `hook-cleaner`, all as wasm. The same source always produces the same bytes, and the hook headers live in the project as editable files (bundled defaults in `public/headers/`), so what you see is exactly what gets compiled.
+
+The worker bundle is 100 MB and is not committed. It is built by the sibling [hooks-compiler](../hooks-compiler) project and copied in:
+
+```bash
+cd ../hooks-compiler && pnpm install && pnpm build:worker
+cd ../xrpl-hooks-ide && sh scripts/sync-compiler.sh   # -> public/compiler/
+```
+
+Editor diagnostics still come from the in-browser clangd (see Monaco Editor below). After compiling, the hook is validated by the connected node's `hook_validate` RPC instead of a bundled guard checker. If the node does not support that command, validation is skipped with a warning and SetHook may still reject the hook. `NEXT_PUBLIC_COMPILE_API_ENDPOINT` and `NEXT_PUBLIC_COMPILE_API_BASE_URL` are no longer read.
+
 ## Getting Started
 
 First, copy the `.env.example` to `.env.local` file, someone from the team can provide you your enviroment variables.
