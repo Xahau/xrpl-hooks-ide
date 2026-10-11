@@ -25,26 +25,26 @@ export const fetchFiles = async (gistId: string) => {
 
     if (isTemplate(gistId)) {
       const template = Object.values(templateFileIds).find(tmp => tmp.id === gistId)
-      let headerFiles: Record<string, { filename: string; content: string; language: string }> =
-        {}
+      let headerFiles: Record<string, { filename: string; content: string; language: string }> = {}
       if (template?.headerId) {
-        const resHeader = await octokit.request('GET /gists/{gist_id}', { gist_id: template.headerId })
-        if (!resHeader.data.files) throw new Error('No header files could be fetched from given gist id!')
+        const resHeader = await octokit.request('GET /gists/{gist_id}', {
+          gist_id: template.headerId
+        })
+        if (!resHeader.data.files)
+          throw new Error('No header files could be fetched from given gist id!')
         headerFiles = resHeader.data.files as any
       } else {
-        // fetch headers
-        const headerRes = await fetch(
-          `${process.env.NEXT_PUBLIC_COMPILE_API_BASE_URL}/api/header-files`
+        // bundled headers
+        const idx = await fetch('/headers/index.json')
+        if (!idx.ok) throw Error('Failed to fetch bundled headers')
+        const names: string[] = await idx.json()
+        await Promise.all(
+          names.map(async name => {
+            const r = await fetch(`/headers/${name}`)
+            if (!r.ok) throw Error(`Failed to fetch header ${name}`)
+            headerFiles[name] = { filename: name, content: await r.text(), language: 'C' }
+          })
         )
-        if (!headerRes.ok) throw Error('Failed to fetch headers')
-
-        const headerJson = await headerRes.json()
-        const headerFiles: Record<string, { filename: string; content: string; language: string }> =
-          {}
-        Object.entries(headerJson).forEach(([key, value]) => {
-          const fname = `${key}.h`
-          headerFiles[fname] = { filename: fname, content: value as string, language: 'C' }
-        })
       }
       const files = {
         ...res.data.files,
