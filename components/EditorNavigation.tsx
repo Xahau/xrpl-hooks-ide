@@ -29,6 +29,7 @@ import toast from 'react-hot-toast'
 
 import { syncToGist, updateEditorSettings, downloadAsZip, updateHeaders } from '../state/actions'
 import state from '../state'
+import { defaultHookHeaders } from '../state/constants'
 import Box from './Box'
 import Button from './Button'
 import Container from './Container'
@@ -41,6 +42,7 @@ import {
   DialogClose
 } from './Dialog'
 import Flex from './Flex'
+import Pre from './Pre'
 import Stack from './Stack'
 import { Input, Label } from './Input'
 import Tooltip from './Tooltip'
@@ -52,10 +54,40 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
   const { data: session, status } = useSession()
   const [popup, setPopUp] = useState(false)
   const [updating, setUpdating] = useState(false)
-  const handleUpdateHeaders = async () => {
-    setUpdating(true)
-    await updateHeaders()
-    setUpdating(false)
+  const handleUpdateHeaders = () => {
+    const names = Object.keys(defaultHookHeaders)
+    const overwritten = names.filter(name => state.files.some(file => file.name === name))
+    const added = names.filter(name => !overwritten.includes(name))
+    showAlert('Update header files?', {
+      body: (
+        <>
+          Header files will be regenerated from <strong>{state.network.name}</strong>.
+          {overwritten.length > 0 && (
+            <>
+              <br />
+              <br />
+              These files will be <strong>overwritten</strong>:{' '}
+              <Pre css={{ wordBreak: 'normal' }}>{overwritten.join(', ')}</Pre>
+            </>
+          )}
+          {added.length > 0 && (
+            <>
+              <br />
+              <br />
+              These files will be added: <Pre css={{ wordBreak: 'normal' }}>{added.join(', ')}</Pre>
+            </>
+          )}
+        </>
+      ),
+      cancelText: 'Cancel',
+      confirmText: 'Update header files',
+      confirmPrefix: <ArrowsClockwise size="15px" />,
+      onConfirm: async () => {
+        setUpdating(true)
+        await updateHeaders()
+        setUpdating(false)
+      }
+    })
   }
   const [editorSettings, setEditorSettings] = useState(snap.editorSettings)
 
