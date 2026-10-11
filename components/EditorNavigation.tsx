@@ -10,7 +10,8 @@ import {
   CloudArrowUp,
   CaretDown,
   User,
-  FilePlus
+  FilePlus,
+  ArrowsClockwise
 } from 'phosphor-react'
 import Image from 'next/image'
 import {
@@ -26,7 +27,7 @@ import { signOut, useSession } from 'next-auth/react'
 import { useSnapshot } from 'valtio'
 import toast from 'react-hot-toast'
 
-import { syncToGist, updateEditorSettings, downloadAsZip } from '../state/actions'
+import { syncToGist, updateEditorSettings, downloadAsZip, updateHeaders } from '../state/actions'
 import state from '../state'
 import Box from './Box'
 import Button from './Button'
@@ -50,6 +51,12 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
   const [editorSettingsOpen, setEditorSettingsOpen] = useState(false)
   const { data: session, status } = useSession()
   const [popup, setPopUp] = useState(false)
+  const [updating, setUpdating] = useState(false)
+  const handleUpdateHeaders = async () => {
+    setUpdating(true)
+    await updateHeaders()
+    setUpdating(false)
+  }
   const [editorSettings, setEditorSettings] = useState(snap.editorSettings)
 
   useEffect(() => {
@@ -277,6 +284,17 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
                 )}
               </Button>
             </Tooltip>
+            <Tooltip content="Update header files from the current network">
+              <Button
+                outline
+                size="sm"
+                css={{ alignItems: 'center' }}
+                isLoading={updating}
+                onClick={handleUpdateHeaders}
+              >
+                <ArrowsClockwise size="16px" />
+              </Button>
+            </Tooltip>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
@@ -287,6 +305,9 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
               <DropdownMenuContent>
                 <DropdownMenuItem disabled={snap.zipLoading} onClick={downloadAsZip}>
                   <DownloadSimple size="16px" /> Download as ZIP
+                </DropdownMenuItem>
+                <DropdownMenuItem disabled={updating} onClick={handleUpdateHeaders}>
+                  <ArrowsClockwise size="16px" /> Update header files
                 </DropdownMenuItem>
                 <DropdownMenuItem
                   onClick={() => {
