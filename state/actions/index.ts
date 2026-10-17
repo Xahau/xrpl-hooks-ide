@@ -9,6 +9,7 @@ import { syncToGist } from './syncToGist'
 import { updateEditorSettings } from './updateEditorSettings'
 import { downloadAsZip } from './downloadAsZip'
 import { sendTransaction } from './sendTransaction'
+import { updateHeaders } from './updateHeaders'
 
 export {
   addFaucetAccount,
@@ -21,5 +22,6 @@ export {
   syncToGist,
   updateEditorSettings,
   downloadAsZip,
-  sendTransaction
+  sendTransaction,
+  updateHeaders
 }
