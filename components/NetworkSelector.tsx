@@ -1,11 +1,16 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import { Trash, X } from 'phosphor-react'
 import toast from 'react-hot-toast'
 
 import state, { INetwork } from '../state'
-import { presetNetworks } from '../state/constants/networks'
-import { addCustomNetwork, removeCustomNetwork, setNetwork } from '../state/actions/setNetwork'
+import {
+  addCustomNetwork,
+  allNetworks,
+  loadRemoteNetworks,
+  removeCustomNetwork,
+  setNetwork
+} from '../state/actions/setNetwork'
 import Box from './Box'
 import Button from './Button'
 import Flex from './Flex'
@@ -32,8 +37,12 @@ const NetworkSelector = () => {
   const set = (key: keyof typeof emptyForm) => (e: React.ChangeEvent<HTMLInputElement>) =>
     setForm({ ...form, [key]: e.target.value })
 
+  useEffect(() => {
+    loadRemoteNetworks()
+  }, [])
+
   const options = [
-    ...[...presetNetworks, ...snap.customNetworks].map(n => ({ label: n.name, value: n.name })),
+    ...allNetworks(snap).map(n => ({ label: n.name, value: n.name })),
     { label: 'Add network…', value: ADD }
   ]
 

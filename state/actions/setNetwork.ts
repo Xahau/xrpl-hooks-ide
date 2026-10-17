@@ -1,6 +1,6 @@
-import { connectClient, INetwork } from '../index'
+import { connectClient, INetwork, IState } from '../index'
 import state from '../index'
-import { presetNetworks } from '../constants/networks'
+import { defaultNetwork, presetNetworks, remoteNetworksUrl } from '../constants/networks'
 import { refreshAccounts } from '../../utils/refreshAccounts'
 
 const save = (key: string, value: string) => {
@@ -11,8 +11,40 @@ const save = (key: string, value: string) => {
   }
 }
 
+export const allNetworks = (s: Pick<IState, 'remoteNetworks' | 'customNetworks'> = state) => [
+  ...presetNetworks,
+  ...s.remoteNetworks,
+  ...s.customNetworks
+]
+
+/** Fetches the published network list and caches it for the next startup. */
+export const loadRemoteNetworks = async () => {
+  try {
+    const res = await fetch(remoteNetworksUrl)
+    if (!res.ok) throw new Error(`${remoteNetworksUrl}: ${res.status}`)
+    const { networks } = await res.json()
+    const remote: INetwork[] = (Array.isArray(networks) ? networks : [])
+      .filter((n: any) => n?.displayName && /^wss?:\/\//.test(n?.endpoints?.ws))
+      .map((n: any) => ({
+        name: n.displayName,
+        ws: n.endpoints.ws,
+        ...(n.endpoints.explorer && { explorer: n.endpoints.explorer.replace(/\/$/, '') }),
+        ...(n.endpoints.faucet && {
+          faucet: { url: `${n.endpoints.faucet}/accounts`, kind: 'accounts' as const }
+        }),
+        ...(n.endpoints.debugstream && { debugStream: `${n.endpoints.debugstream}{address}` })
+      }))
+    state.remoteNetworks = remote
+    save('hooksIdeRemoteNetworks', JSON.stringify(remote))
+    // the selected network was retired from the list (feature nets come and go)
+    if (!allNetworks().some(n => n.name === state.network.name)) setNetwork(defaultNetwork.name)
+  } catch (err) {
+    console.error(err)
+  }
+}
+
 export const setNetwork = async (name: string) => {
-  const network = [...presetNetworks, ...state.customNetworks].find(n => n.name === name)
+  const network = allNetworks().find(n => n.name === name)
   if (!network || network.name === state.network.name) return
   const old = state.client as any
   state.network = network
@@ -30,7 +62,7 @@ export const setNetwork = async (name: string) => {
 
 export const addCustomNetwork = (net: INetwork) => {
   if (
-    [...presetNetworks, ...state.customNetworks].some(n => n.name === net.name) ||
+    allNetworks().some(n => n.name === net.name) ||
     !net.name ||
     !net.ws
   ) {
