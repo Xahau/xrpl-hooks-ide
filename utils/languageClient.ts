@@ -76,12 +76,13 @@ function waitForReady(worker: Worker) {
 
 export function startRemoteClangd(endpoint: string): { close: () => void } {
   const webSocket = createWebSocket(endpoint)
+  let languageClient: MonacoLanguageClient | undefined
   // listen when the web socket is opened
   listen({
     webSocket: webSocket as WebSocket,
     onConnection: connection => {
       // create and start the language client
-      const languageClient = createLanguageClient(connection)
+      languageClient = createLanguageClient(connection)
       const disposable = languageClient.start()
 
       connection.onClose(() => {
@@ -93,7 +94,16 @@ export function startRemoteClangd(endpoint: string): { close: () => void } {
       })
     }
   })
-  return { close: () => webSocket.close() }
+  const close = () => {
+    /* Stop the client before closing the socket: its Monaco providers are unregistered synchronously, so a
+     * client starting at the same time (the in-browser clangd) does not make them send requests over a dead
+     * connection ("Connection got disposed"), and the socket closing afterwards is expected rather than
+     * logged as "Connection to server got closed". The timeout covers a server that never answers shutdown.
+     */
+    const stopped = languageClient?.stop().catch(() => {}) ?? Promise.resolve()
+    Promise.race([stopped, new Promise(r => setTimeout(r, 2000))]).then(() => webSocket.close())
+  }
+  return { close }
 }
 
 export function startClangdWorker(onReady?: () => void): {
