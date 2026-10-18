@@ -114,7 +114,10 @@ async function main() {
     '--target=wasm32-wasi',
     '-isystem/usr/include',
     '-isystem/usr/include/wasm32-wasi',
-    '-I/work/c'
+    '-I/work/c',
+    // clang 16+ makes uint8_t* -> uint32_t argument conversions an error; the Hook API relies on them
+    // and the compiler passes -Wno-error=int-conversion, so the editor must not flag them either
+    '-Wno-int-conversion'
   ]
   clangd.FS.mkdirTree('/work/c')
   clangd.FS.writeFile('/work/c/.clangd', JSON.stringify({ CompileFlags: { Add: flags } }))
