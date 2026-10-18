@@ -21,14 +21,22 @@ interface ValidateResult {
  * Throws (with a message) when the node cannot answer, so callers can warn and continue.
  */
 const validateHook = async (wasm: Uint8Array): Promise<ValidateResult> => {
-  const code = Array.from(wasm, b => b.toString(16).padStart(2, '0')).join('').toUpperCase()
+  const code = Array.from(wasm, b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()
   let timer: number | undefined
   const timeout = new Promise<never>((_, reject) => {
     timer = window.setTimeout(() => reject(new Error('timed out after 15s')), 15000)
   })
   try {
-    const res = (await Promise.race([xrplSend({ command: 'hook_validate', code }), timeout])) as ValidateResult
-    if (res?.error) throw new Error(['unknownCmd', 'notSupported'].includes(res.error) ? '' : res.error_message || res.error)
+    const res = (await Promise.race([
+      xrplSend({ command: 'hook_validate', code }),
+      timeout
+    ])) as ValidateResult
+    if (res?.error)
+      throw new Error(
+        ['unknownCmd', 'notSupported'].includes(res.error) ? '' : res.error_message || res.error
+      )
     return res
   } finally {
     clearTimeout(timer)
@@ -64,9 +72,10 @@ export const compileCode = async (activeId: number) => {
   file.containsErrors = false
   const toastId = toast.loading('Compiling…', { position: 'bottom-center' })
   try {
-    const result = await compileFiles(files, file.name, opt, (done, total) => {
-      const pct = total ? Math.floor((done / total) * 100) : 0
-      toast.loading(`Loading compiler ${pct}%…`, { id: toastId, position: 'bottom-center' })
+    const result = await compileFiles(files, file.name, opt, fraction => {
+      // the toolchain currently reports only its final 1, so most of the download shows no percentage
+      const pct = fraction > 0 && fraction < 1 ? ` ${Math.floor(fraction * 100)}%` : ''
+      toast.loading(`Loading compiler${pct}…`, { id: toastId, position: 'bottom-center' })
     })
     // copy into a plain ArrayBuffer of exactly the wasm bytes
     const buffer = result.wasm.buffer.slice(
@@ -89,7 +98,8 @@ export const compileCode = async (activeId: number) => {
     try {
       validation = await validateHook(result.wasm)
     } catch (e) {
-      const reason = (e instanceof Error && e.message) || 'the connected node does not support hook_validate'
+      const reason =
+        (e instanceof Error && e.message) || 'the connected node does not support hook_validate'
       state.logs.push({
         type: 'warning',
         message: `Guard check skipped: ${reason}. SetHook may still reject this hook.`

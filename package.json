@@ -8,7 +8,7 @@
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
-    "postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js"
+    "postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js && ./node_modules/.bin/hooks-compiler copy-assets public/compiler"
   },
   "dependencies": {
     "@codingame/monaco-jsonrpc": "^0.3.1",
@@ -31,6 +31,7 @@
     "dinero.js": "^1.9.1",
     "file-saver": "^2.0.5",
     "filesize": "^8.0.7",
+    "hooks-compiler": "0.2.0",
     "javascript-time-ago": "^2.3.11",
     "jszip": "^3.7.1",
     "monaco-editor": "^0.33.0",

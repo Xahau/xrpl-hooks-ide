@@ -10,16 +10,11 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## In-browser compiler
 
-Hooks are compiled entirely in the browser; there is no compile server. A Web Worker (`public/compiler/worker.js`) runs Clang and LLD compiled to WebAssembly (`@yowasp/clang`), then `wasm-opt` (binaryen.js) and `hook-cleaner`, all as wasm. The same source always produces the same bytes, and the hook headers live in the project as editable files (bundled defaults in `public/headers/`), so what you see is exactly what gets compiled.
+Hooks are compiled entirely in the browser; there is no compile server. A Web Worker (`utils/compiler.worker.ts`, bundled from the [hooks-compiler](https://www.npmjs.com/package/hooks-compiler) package) runs Clang and LLD compiled to WebAssembly (`@live-codes/clang-wasm`), then `wasm-opt` (binaryen.js) and `hook-cleaner`, all as wasm. The same source always produces the same bytes, and the hook headers live in the project as editable files (bundled defaults in `public/headers/`), so what you see is exactly what gets compiled.
 
-The worker bundle is 100 MB and is not committed. It is built by the sibling [hooks-compiler](../hooks-compiler) project and copied in:
+The toolchain assets (clang/lld and binaryen.js, about 45 MB) are not committed: `yarn install` copies them to `public/compiler/` (`hooks-compiler copy-assets`, see `postinstall`), and the worker fetches them from `/compiler/` on first compile.
 
-```bash
-cd ../hooks-compiler && pnpm install && pnpm build:worker
-cd ../xrpl-hooks-ide && sh scripts/sync-compiler.sh   # -> public/compiler/
-```
-
-Editor diagnostics still come from the in-browser clangd (see Monaco Editor below). After compiling, the hook is validated by the connected node's `hook_validate` RPC instead of a bundled guard checker. If the node does not support that command, validation is skipped with a warning and SetHook may still reject the hook. `NEXT_PUBLIC_COMPILE_API_ENDPOINT` and `NEXT_PUBLIC_COMPILE_API_BASE_URL` are no longer read.
+After compiling, the connected node runs its guard check through the `hook_validate` RPC. Nodes without the command log a warning and the compile still succeeds.
 
 ## Getting Started
 

@@ -17,7 +17,7 @@ interface Job {
   files: Record<string, string>
   entry: string
   opt?: Opt
-  onProgress?: (done: number, total: number) => void
+  onProgress?: (fraction: number) => void // toolchain download, 0..1
   resolve: (v: any) => void
   reject: (e: Error) => void
 }
@@ -39,19 +39,31 @@ const finish = (fn: (job: Job) => void) => {
   pump()
 }
 
+// toolchain assets (clang/, binaryen.js) copied by `hooks-compiler copy-assets public/compiler` (postinstall)
+const baseUrl = () => new URL('/compiler/', location.href).href
+
+/* A crash fires an ErrorEvent with message/filename/lineno; a worker script that fails to
+ * load fires a bare Event with no message. (Missing toolchain assets are reported by the
+ * worker itself as a normal error.)
+ */
+const describeCrash = (e: ErrorEvent | Event) => {
+  if (!(e instanceof ErrorEvent) || !e.message) return 'Compiler worker crashed'
+  return e.filename ? `${e.message} (${e.filename}:${e.lineno})` : e.message
+}
+
 const getWorker = () => {
   if (worker) return worker
-  const w = new Worker('/compiler/worker.js', { type: 'module' })
+  const w = new Worker(new URL('./compiler.worker.ts', import.meta.url), { type: 'module' })
   w.onmessage = ({ data }) => {
     if (!current || data.id !== nextId - 1) return
-    if (data.progress) current.onProgress?.(data.progress.done, data.progress.total)
+    if (data.progress !== undefined) current.onProgress?.(data.progress)
     else if (data.error !== undefined) finish(j => j.reject(new Error(data.error)))
     else if (data.result) finish(j => j.resolve(data.result))
     else if (data.lines) finish(j => j.resolve(data.lines))
   }
   w.onerror = e => {
     dropWorker()
-    finish(j => j.reject(new Error(e.message || 'Compiler worker crashed')))
+    finish(j => j.reject(new Error(describeCrash(e))))
   }
   worker = w
   return w
@@ -61,7 +73,15 @@ const pump = () => {
   if (current || !pending.length) return
   current = pending.shift()!
   const { kind, files, entry, opt } = current
-  getWorker().postMessage({ id: nextId++, type: kind, files, entry, opt })
+  getWorker().postMessage({
+    id: nextId++,
+    type: kind,
+    files,
+    entry,
+    opt,
+    wat: true,
+    baseUrl: baseUrl()
+  })
 }
 
 const enqueue = <T>(job: Omit<Job, 'resolve' | 'reject'>) =>
@@ -79,5 +99,5 @@ export const compileFiles = (
   files: Record<string, string>,
   entry: string,
   opt: Opt = '-O2',
-  onProgress?: (done: number, total: number) => void
+  onProgress?: (fraction: number) => void
 ) => enqueue<CompileResult>({ kind: 'compile', files, entry, opt, onProgress })
