@@ -12,7 +12,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 Hooks are compiled entirely in the browser; there is no compile server. A Web Worker (`utils/compiler.worker.ts`, bundled from the [hooks-compiler](https://www.npmjs.com/package/hooks-compiler) package) runs Clang and LLD compiled to WebAssembly (`@live-codes/clang-wasm`), then `wasm-opt` (binaryen.js) and `hook-cleaner`, all as wasm. The same source always produces the same bytes, and the hook headers live in the project as editable files (bundled defaults in `public/headers/`), so what you see is exactly what gets compiled.
 
-The toolchain assets (clang/lld and binaryen.js, about 45 MB) are not committed: `yarn install` copies them to `public/compiler/` (`hooks-compiler copy-assets`, see `postinstall`), and the worker fetches them from `/compiler/` on first compile.
+The toolchain assets (clang/lld and binaryen.js, about 45 MB) are not committed: `yarn install` copies them to `public/compiler/` (`hooks-compiler copy-assets`, see `postinstall`), and the worker fetches them from `/compiler/` once the editor has opened (after the in-browser clangd is ready), so the first compile does not wait for the download.
 
 After compiling, the connected node runs its guard check through the `hook_validate` RPC. Nodes without the command log a warning and the compile still succeeds.
 

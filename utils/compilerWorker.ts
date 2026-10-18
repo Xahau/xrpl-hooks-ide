@@ -13,7 +13,7 @@ export interface CompileResult {
 }
 
 interface Job {
-  kind: 'compile' | 'check'
+  kind: 'compile' | 'check' | 'prefetch'
   files: Record<string, string>
   entry: string
   opt?: Opt
@@ -60,6 +60,7 @@ const getWorker = () => {
     else if (data.error !== undefined) finish(j => j.reject(new Error(data.error)))
     else if (data.result) finish(j => j.resolve(data.result))
     else if (data.lines) finish(j => j.resolve(data.lines))
+    else if (data.ok) finish(j => j.resolve(undefined))
   }
   w.onerror = e => {
     dropWorker()
@@ -94,6 +95,16 @@ const enqueue = <T>(job: Omit<Job, 'resolve' | 'reject'>) =>
     pending.push({ ...job, resolve, reject })
     pump()
   })
+
+let prefetched = false
+/* Downloads the toolchain (clang/lld ~24 MB, binaryen 3 MB) ahead of the first compile. Once per page:
+ * the worker keeps the modules in memory, and a failed download is retried (and reported) by the compile itself.
+ */
+export const prefetchCompiler = () => {
+  if (prefetched) return
+  prefetched = true
+  enqueue<void>({ kind: 'prefetch', files: {}, entry: '' }).catch(() => {})
+}
 
 export const compileFiles = (
   files: Record<string, string>,
