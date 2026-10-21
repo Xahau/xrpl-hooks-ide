@@ -1,11 +1,11 @@
-import hookapi from './hookapi.h'
-import macro from './macro.h'
-import extern from './extern.h'
-import error from './error.h'
-import sfcodes from './sfcodes.h'
-import tts from './tts.h'
-import lsflags from './ls_flags.h'
-import txflags from './tx_flags.h'
+import hookapi from '../../../public/headers/hookapi.h'
+import macro from '../../../public/headers/macro.h'
+import extern from '../../../public/headers/extern.h'
+import error from '../../../public/headers/error.h'
+import sfcodes from '../../../public/headers/sfcodes.h'
+import tts from '../../../public/headers/tts.h'
+import lsflags from '../../../public/headers/ls_flags.h'
+import txflags from '../../../public/headers/tx_flags.h'
 
 export const defaultHookHeaders: Record<string, string> = {
   'hookapi.h': hookapi,
