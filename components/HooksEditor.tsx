@@ -14,9 +14,7 @@ import state from '../state'
 import EditorNavigation from './EditorNavigation'
 import Text from './Text'
 import { MonacoServices } from '@codingame/monaco-languageclient'
-import { createLanguageClient, createWebSocket } from '../utils/languageClient'
-import { listen } from '@codingame/monaco-jsonrpc'
-import ReconnectingWebSocket from 'reconnecting-websocket'
+import { startClangdWorker, startRemoteClangd } from '../utils/languageClient'
 
 import docs from '../xrpl-hooks-docs/docs'
 import Monaco from './Monaco'
@@ -97,7 +95,8 @@ const setMarkers = (monacoE: typeof monaco) => {
 const HooksEditor = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
   const monacoRef = useRef<typeof monaco>()
-  const subscriptionRef = useRef<ReconnectingWebSocket | null>(null)
+  const subscriptionRef = useRef<{ close: () => void; reparse?: () => void } | null>(null)
+  const startedRef = useRef(false)
   const snap = useSnapshot(state)
   const router = useRouter()
   const { theme } = useTheme()
@@ -112,6 +111,16 @@ const HooksEditor = () => {
       subscriptionRef?.current?.close()
     }
   }, [])
+  useEffect(() => {
+    // dispose models of removed files so clangd closes them, then let it re-check the open files
+    monacoRef.current?.editor.getModels().forEach(model => {
+      const path = model.uri.path
+      if (path.startsWith('/work/c/') && !snap.files.some(f => `/work/c/${f.name}` === path)) {
+        model.dispose()
+      }
+    })
+    subscriptionRef.current?.reparse?.()
+  }, [snap.files])
   useEffect(() => {
     if (monacoRef.current) {
       setMarkers(monacoRef.current)
@@ -211,7 +220,8 @@ const HooksEditor = () => {
               // }
 
               // create the web socket
-              if (!subscriptionRef.current) {
+              if (!startedRef.current) {
+                startedRef.current = true
                 monaco.languages.register({
                   id: 'c',
                   extensions: ['.c', '.h'],
@@ -224,27 +234,22 @@ const HooksEditor = () => {
                   mimetypes: ['text/plain'],
                 })
                 MonacoServices.install(monaco)
-                const webSocket = createWebSocket(
-                  process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT || ''
-                )
-                subscriptionRef.current = webSocket
-                // listen when the web socket is opened
-                listen({
-                  webSocket: webSocket as WebSocket,
-                  onConnection: connection => {
-                    // create and start the language client
-                    const languageClient = createLanguageClient(connection)
-                    const disposable = languageClient.start()
-
-                    connection.onClose(() => {
-                      try {
-                        disposable.dispose()
-                      } catch (err) {
-                        console.log('err', err)
-                      }
-                    })
-                  }
-                })
+                const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
+                // remote clangd is only a fallback until the in-browser one is ready
+                const remote = endpoint ? startRemoteClangd(endpoint) : null
+                const worker = self.crossOriginIsolated
+                  ? startClangdWorker(() => remote?.close())
+                  : null
+                if (!worker && !remote) {
+                  console.warn('clangd in browser needs cross-origin isolation (COOP/COEP headers)')
+                }
+                subscriptionRef.current = {
+                  close: () => {
+                    remote?.close()
+                    worker?.close()
+                  },
+                  reparse: worker?.reparse
+                }
               }
 
               // editor.updateOptions({

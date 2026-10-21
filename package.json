@@ -3,8 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
-    "build": "next build",
+    "dev": "node scripts/fetch-clangd.mjs && next dev",
+    "build": "node scripts/fetch-clangd.mjs && next build",
     "start": "next start",
     "lint": "next lint",
     "format": "prettier --write .",
@@ -58,6 +58,7 @@
     "regexify-string": "^1.0.17",
     "ripple-binary-codec": "npm:xahau-binary-codec@^2.2.0",
     "valtio": "^1.2.5",
+    "vscode-jsonrpc": "6.0.0",
     "wabt": "^1.0.30",
     "xrpl-accountlib": "^9.1.0",
     "xrpl-client": "^2.0.2"
