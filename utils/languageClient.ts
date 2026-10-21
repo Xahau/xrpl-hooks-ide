@@ -5,7 +5,6 @@ import {
   CloseAction,
   createConnection
 } from '@codingame/monaco-languageclient'
-import normalizeUrl from 'normalize-url'
 import ReconnectingWebSocket from 'reconnecting-websocket'
 import { subscribe } from 'valtio'
 import {
@@ -36,11 +35,6 @@ export function createLanguageClient(connection: MessageConnection): MonacoLangu
       }
     }
   })
-}
-
-export function createUrl(path: string): string {
-  const protocol = location.protocol === 'https:' ? 'wss' : 'ws'
-  return normalizeUrl(`${protocol}://${location.host}${location.pathname}${path}`)
 }
 
 function createWebSocket(url: string) {
