@@ -50,10 +50,6 @@ const syncFileModels = (monacoE: typeof monaco) => {
       return
     }
 
-    if (model.getLanguageId() !== file.language) {
-      monacoE.editor.setModelLanguage(model, file.language)
-    }
-
     if (model.getValue() !== file.content && model.getAlternativeVersionId() === 1) {
       model.setValue(file.content)
     }
@@ -61,13 +57,8 @@ const syncFileModels = (monacoE: typeof monaco) => {
 }
 
 const syncActiveFileFromModel = (model: monaco.editor.ITextModel | null) => {
-  const filename = model?.uri.path.split('/').pop()
-  if (!filename) return
-
-  const activeIndex = state.files.findIndex(file => file.name === filename)
-  if (activeIndex !== -1 && state.active !== activeIndex) {
-    state.active = activeIndex
-  }
+  const i = state.files.findIndex(f => model?.uri.path.endsWith('/' + f.name))
+  if (i !== -1) state.active = i
 }
 
 const patchOpenCodeEditor = (
@@ -78,21 +69,15 @@ const patchOpenCodeEditor = (
   if (!codeEditorService || codeEditorService.__hooksOpenCodeEditorPatched) return
 
   const openCodeEditor = codeEditorService.openCodeEditor.bind(codeEditorService)
-  codeEditorService.openCodeEditor = async (
+  // the standalone service only opens a resource that is already the editor's model
+  codeEditorService.openCodeEditor = (
     input: { resource?: monaco.Uri },
     source?: monaco.editor.IStandaloneCodeEditor,
     sideBySide?: boolean
   ) => {
-    const model = input.resource ? monacoE.editor.getModel(input.resource) : null
-    if (source && model && source.getModel()?.uri.toString() !== model.uri.toString()) {
-      source.setModel(model)
-      syncActiveFileFromModel(model)
-    }
-
-    const openedEditor = await openCodeEditor(input, source, sideBySide)
-    if (openedEditor) syncActiveFileFromModel(openedEditor.getModel())
-
-    return openedEditor
+    const model = input.resource && monacoE.editor.getModel(input.resource)
+    if (source && model) source.setModel(model)
+    return openCodeEditor(input, source, sideBySide)
   }
   codeEditorService.__hooksOpenCodeEditorPatched = true
 }
@@ -177,14 +162,14 @@ const HooksEditor = () => {
         model.dispose()
       }
     })
+    if (monacoRef.current) syncFileModels(monacoRef.current)
     subscriptionRef.current?.reparse?.()
   }, [snap.files])
   useEffect(() => {
     if (monacoRef.current) {
-      syncFileModels(monacoRef.current)
       setMarkers(monacoRef.current)
     }
-  }, [snap.active, snap.files])
+  }, [snap.active])
   useEffect(() => {
     return () => {
       saveAllFiles()
@@ -292,7 +277,7 @@ const HooksEditor = () => {
                   extensions: ['.txt'],
                   mimetypes: ['text/plain'],
                 })
-                MonacoServices.install(monaco, { rootUri: 'file:///work/c' })
+                MonacoServices.install(monaco)
                 syncFileModels(monaco)
                 const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
                 // remote clangd is only a fallback until the in-browser one is ready
@@ -349,10 +334,7 @@ const HooksEditor = () => {
                   setMarkers(monacoRef.current)
                 }
               })
-              editor.onDidChangeModel(() => {
-                syncActiveFileFromModel(editor.getModel())
-                validateWritability(editor)
-              })
+              editor.onDidChangeModel(() => syncActiveFileFromModel(editor.getModel()))
 
               // Hacky way to hide Peek menu
               editor.onContextMenu(e => {
