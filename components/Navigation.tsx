@@ -341,27 +341,43 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Link href={gistId ? `/develop/${gistId}` : '/develop'} shallow>
-                <Button outline={!router.pathname.includes('/develop')} uppercase>
-                  Develop
-                </Button>
-              </Link>
-              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} shallow>
-                <Button outline={!router.pathname.includes('/deploy')} uppercase>
-                  Deploy
-                </Button>
-              </Link>
-              <Link href={gistId ? `/test/${gistId}` : '/test'} shallow>
-                <Button outline={!router.pathname.includes('/test')} uppercase>
-                  Test
-                </Button>
-              </Link>
-            </ButtonGroup>
-            <Link href="https://xahau.network/docs/hooks/" target="_blank" rel="noreferrer noopener">
-              <Button outline>
-                <BookOpen size="15px" />
+              <Button
+                as={Link}
+                href={gistId ? `/develop/${gistId}` : '/develop'}
+                shallow
+                outline={!router.pathname.includes('/develop')}
+                uppercase
+              >
+                Develop
               </Button>
-            </Link>
+              <Button
+                as={Link}
+                href={gistId ? `/deploy/${gistId}` : '/deploy'}
+                shallow
+                outline={!router.pathname.includes('/deploy')}
+                uppercase
+              >
+                Deploy
+              </Button>
+              <Button
+                as={Link}
+                href={gistId ? `/test/${gistId}` : '/test'}
+                shallow
+                outline={!router.pathname.includes('/test')}
+                uppercase
+              >
+                Test
+              </Button>
+            </ButtonGroup>
+            <Button
+              as="a"
+              href="https://xahau.network/docs/hooks/"
+              target="_blank"
+              rel="noreferrer noopener"
+              outline
+            >
+              <BookOpen size="15px" />
+            </Button>
           </Stack>
         </Flex>
       </Container>
