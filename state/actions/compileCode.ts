@@ -3,8 +3,45 @@ import Router from 'next/router'
 
 import state from '../index'
 import { saveFile } from './saveFile'
-import { decodeBinary } from '../../utils/decodeBinary'
+import { compileFiles } from '../../utils/compilerWorker'
 import { ref } from 'valtio'
+import { xrplSend } from './xrpl-client'
+
+interface ValidateResult {
+  valid?: boolean
+  instruction_count_hook?: string
+  instruction_count_cbak?: string
+  log?: string[]
+  vm_error?: string
+  error?: string
+  error_message?: string
+}
+
+/* Asks the connected node to run its guard/gas checks on the wasm.
+ * Throws (with a message) when the node cannot answer, so callers can warn and continue.
+ */
+const validateHook = async (wasm: Uint8Array): Promise<ValidateResult> => {
+  const code = Array.from(wasm, b => b.toString(16).padStart(2, '0'))
+    .join('')
+    .toUpperCase()
+  let timer: number | undefined
+  const timeout = new Promise<never>((_, reject) => {
+    timer = window.setTimeout(() => reject(new Error('timed out after 15s')), 15000)
+  })
+  try {
+    const res = (await Promise.race([
+      xrplSend({ command: 'hook_validate', code }),
+      timeout
+    ])) as ValidateResult
+    if (res?.error)
+      throw new Error(
+        ['unknownCmd', 'notSupported'].includes(res.error) ? '' : res.error_message || res.error
+      )
+    return res
+  } finally {
+    clearTimeout(timer)
+  }
+}
 
 /* compileCode sends the code of the active file to compile endpoint
  * If all goes well you will get base64 encoded wasm file back with
@@ -20,136 +57,108 @@ export const compileCode = async (activeId: number) => {
     return compileWat(activeId)
   }
 
-  if (!process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT) {
-    throw Error('Missing env!')
-  }
   // Bail out if we're already compiling
-  if (state.compiling) {
-    // if compiling is ongoing return // TODO Inform user about it.
-    return
-  }
-  const headerFiles = state.files.filter(file => file.name.endsWith('.h'))
-  // Set loading state to true
+  if (state.compiling) return
+
+  const files: Record<string, string> = {}
+  state.files.forEach(f => {
+    if (f.name.endsWith('.c') || f.name.endsWith('.h')) files[f.name] = f.content
+  })
+  const level = state.compileOptions.optimizationLevel
+  const opt = level === '-O4' ? '-O3' : level || '-O2'
+
   state.compiling = true
   state.logs = []
+  file.containsErrors = false
+  const toastId = toast.loading('Compiling…', { position: 'bottom-center' })
   try {
-    file.containsErrors = false
-    let res: Response
+    const result = await compileFiles(files, file.name, opt, fraction => {
+      // the toolchain currently reports only its final 1, so most of the download shows no percentage
+      const pct = fraction > 0 && fraction < 1 ? ` ${Math.floor(fraction * 100)}%` : ''
+      toast.loading(`Loading compiler${pct}…`, { id: toastId, position: 'bottom-center' })
+    })
+    // copy into a plain ArrayBuffer of exactly the wasm bytes
+    const buffer = result.wasm.buffer.slice(
+      result.wasm.byteOffset,
+      result.wasm.byteOffset + result.wasm.byteLength
+    ) as ArrayBuffer
+    // xahaud's HookHash is the first 32 bytes of SHA-512 over the CreateCode
+    const hookHash = Array.from(
+      new Uint8Array(await crypto.subtle.digest('SHA-512', buffer)).subarray(0, 32),
+      x => x.toString(16).padStart(2, '0')
+    )
+      .join('')
+      .toUpperCase()
+    if (result.logs.length) {
+      state.logs.push({ type: 'log', message: result.logs.join('\n'), defaultCollapsed: true })
+    }
+
+    toast.loading('Validating…', { id: toastId, position: 'bottom-center' })
+    let validation: ValidateResult | undefined
     try {
-      res = await fetch(process.env.NEXT_PUBLIC_COMPILE_API_ENDPOINT, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          output: 'wasm',
-          compress: true,
-          strip: state.compileOptions.strip,
-          files: [
-            {
-              type: 'c',
-              options: state.compileOptions.optimizationLevel || '-O2',
-              name: file.name,
-              src: file.content
-            }
-          ],
-          ...(headerFiles.length > 0 ? {
-            headers: headerFiles.map(file => ({
-              type: 'c',
-              options: state.compileOptions.optimizationLevel || '-O2',
-              name: file.name,
-              src: file.content
-            }))
-          } : {})
-        })
+      validation = await validateHook(result.wasm)
+    } catch (e) {
+      const reason =
+        (e instanceof Error && e.message) || 'the connected node does not support hook_validate'
+      state.logs.push({
+        type: 'warning',
+        message: `Guard check skipped: ${reason}. SetHook may still reject this hook.`
       })
-    } catch (error) {
-      throw Error('Something went wrong, check your network connection and try again!')
     }
-    const json = await res.json()
-    state.compiling = false
-    if (!json.success) {
-      const errors = [json.message]
-      if (json.tasks && json.tasks.length > 0) {
-        json.tasks.forEach((task: any) => {
-          if (!task.success) {
-            errors.push(task?.console)
-          }
-        })
-      }
-      throw errors
-    }
-    try {
-      // Decode base64 encoded wasm that is coming back from the endpoint
-      const bufferData = await decodeBinary(json.output)
-
-      // Import wabt from and create human readable version of wasm file and
-      // put it into state
-      const ww = await (await import('wabt')).default()
-      const myModule = ww.readWasm(new Uint8Array(bufferData), {
-        readDebugNames: true
-      })
-      myModule.applyNames()
-
-      const wast = myModule.toText({ foldExprs: false, inlineExport: false })
-
-      file.compiledContent = ref(bufferData)
-      file.lastCompiled = new Date()
-      file.compiledValueSnapshot = file.content
-      file.compiledWatContent = wast
-    } catch (error) {
-      throw Error('Invalid compilation result produced, check your code for errors and try again!')
+    if (validation && validation.valid === false) {
+      ;(validation.log || []).forEach(l => state.logs.push({ type: 'error', message: l }))
+      if (validation.vm_error) state.logs.push({ type: 'error', message: validation.vm_error })
+      toast.error('Hook validation failed!', { id: toastId, position: 'bottom-center' })
+      file.containsErrors = true
+      state.compiling = false
+      return
     }
 
-    toast.success('Compiled successfully!', { position: 'bottom-center' })
+    file.compiledContent = ref(buffer)
+    file.lastCompiled = new Date()
+    file.compiledValueSnapshot = file.content
+    file.compiledWatContent = result.wat
+
+    toast.success('Compiled successfully!', { id: toastId, position: 'bottom-center' })
+    const name = file.name.replace(/\.c$/, '.wasm')
     state.logs.push({
       type: 'success',
-      message: `File ${state.files?.[activeId]?.name} compiled successfully. Ready to deploy.`,
+      message:
+        `Compiled ${name}: ${result.finalSize} bytes (raw ${result.rawSize}, wasm-opt ${result.optimizedSize})` +
+        (validation?.valid
+          ? ` · worst-case instruction count hook ${validation.instruction_count_hook}, cbak ${validation.instruction_count_cbak}`
+          : '') +
+        ` · HookHash ${hookHash}`,
       link: Router.asPath.replace('develop', 'deploy'),
       linkText: 'Go to deploy'
     })
   } catch (err) {
     console.log(err)
-
-    if (err instanceof Array && typeof err[0] === 'string') {
-      err.forEach(message => {
-        state.logs.push({
-          type: 'error',
-          message
-        })
-      })
-    } else if (err instanceof Error) {
-      state.logs.push({
-        type: 'error',
-        message: err.message
-      })
-    } else {
-      state.logs.push({
-        type: 'error',
-        message: 'Something went wrong, come back later!'
-      })
-    }
-
-    state.compiling = false
-    toast.error(`Error occurred while compiling!`, { position: 'bottom-center' })
+    const message = err instanceof Error ? err.message : 'Something went wrong, come back later!'
+    message
+      .split('\n')
+      .filter(l => l.trim())
+      .forEach(l => state.logs.push({ type: 'error', message: l }))
+    toast.error('Error occurred while compiling!', { id: toastId, position: 'bottom-center' })
     file.containsErrors = true
   }
+  state.compiling = false
 }
 
 export const compileWat = async (activeId: number) => {
-  if (state.compiling) return;
+  if (state.compiling) return
   const file = state.files[activeId]
   state.compiling = true
   state.logs = []
   try {
     const wabt = await (await import('wabt')).default()
-    const module = wabt.parseWat(file.name, file.content);
-    module.resolveNames();
-    module.validate();
+    const module = wabt.parseWat(file.name, file.content)
+    module.resolveNames()
+    module.validate()
     const { buffer } = module.toBinary({
       log: false,
-      write_debug_names: true,
-    });
+      write_debug_names: true
+    })
 
     file.compiledContent = ref(buffer)
     file.lastCompiled = new Date()
@@ -165,7 +174,7 @@ export const compileWat = async (activeId: number) => {
     })
   } catch (err) {
     console.log(err)
-    let message = "Error compiling WAT file!"
+    let message = 'Error compiling WAT file!'
     if (err instanceof Error) {
       message = err.message
     }

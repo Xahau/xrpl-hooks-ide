@@ -8,6 +8,14 @@ This is the repository for Xahau Hooks Builder. This project is built with Next.
 
 This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next-app`](https://github.com/vercel/next.js/tree/canary/packages/create-next-app).
 
+## In-browser compiler
+
+Hooks are compiled entirely in the browser; there is no compile server. A Web Worker (`utils/compiler.worker.ts`, bundled from the [hooks-compiler](https://www.npmjs.com/package/hooks-compiler) package) runs Clang and LLD compiled to WebAssembly (`@live-codes/clang-wasm`), then `wasm-opt` (binaryen.js) and `hook-cleaner`, all as wasm. The same source always produces the same bytes, and the hook headers live in the project as editable files (bundled defaults in `public/headers/`), so what you see is exactly what gets compiled.
+
+The toolchain assets (clang/lld and binaryen.js, about 45 MB) are not committed: `yarn install` copies them to `public/compiler/` (`hooks-compiler copy-assets`, see `postinstall`), and the worker fetches them from `/compiler/` once the editor has opened (after the in-browser clangd is ready), so the first compile does not wait for the download.
+
+After compiling, the connected node runs its guard check through the `hook_validate` RPC. Nodes without the command log a warning and the compile still succeeds.
+
 ## Networks
 
 The network is chosen in the header (the Xahau Testnet preset, the networks published at [xahau-dev.net/networks.json](https://xahau-dev.net/networks.json) fetched directly and cached in `localStorage`, plus "Add network…" for your own: WebSocket URL, explorer, faucet URL and kind, debug stream template, optional network id). The selection and custom networks are stored in `localStorage`; `NetworkID` comes from the preset, or from the node's `server_info` for custom networks without one (and is only sent on networks with id > 1024). The Next API route `/api/faucet` only proxies the preset faucets that lack CORS headers; faucets that allow CORS are called directly from the browser. `NEXT_PUBLIC_TESTNET_URL`, `NEXT_PUBLIC_NETWORK_ID`, `NEXT_PUBLIC_EXPLORER_URL` and `NEXT_PUBLIC_DEBUG_STREAM_URL` are no longer read.
@@ -92,6 +100,8 @@ loader.config({
 By default `@monaco-editor/react` was using 0.29.? version of Monaco editor. @codingame/monaco-languageclient library (connects to clangd language server) was using API methods that were introduced in Monaco Editor 0.30 so that's why we're loading certain version of it.
 
 Monaco Languageclient related stuff is found from `./utils/languageClient.ts`. Basically we're connecting the editor to clangd language server which lives on separate backend. That project can be found from https://github.com/eqlabs/xrpl-hooks-compiler/. If you need access to that project ask permissions from @vbar (Vaclav Barta) on GitHub.
+
+By default clangd runs in the browser as WebAssembly in a Web Worker (built from [guyutongxue/clangd-in-browser](https://github.com/guyutongxue/clangd-in-browser)). The binaries are fetched to `public/wasm/` by `scripts/fetch-clangd.mjs` on `dev`/`build` and checked against the SHA-256 hashes pinned in that script; the download location can be overridden with `CLANGD_WASM_BASE_URL`. This requires the COOP/COEP headers set in `next.config.js`. Setting `NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT` provides the remote language server as a fallback until the in-browser clangd is ready (and permanently if the browser is not cross-origin isolated or the wasm failed to load). The hooks-specific `hooks-*` lint checks only exist on the remote server, so they disappear once the in-browser clangd takes over.
 
 ### Language server hover messages
 If you want to extend hover messages provided by language-server you can add extra docs to `xrpl-hooks-docs/md/` folder. Just make sure the filename is matching with the error code that comes from language server. So lets say you want to add extra documentation for `hooks-func-addr-taken` check create new file called `hooks-func-addr-taken.md` and then remember to import and export it on `docs.ts` file with same logic as the other files.
