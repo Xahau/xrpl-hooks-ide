@@ -3,6 +3,7 @@ import { proxy, ref, subscribe } from 'valtio'
 import { devtools, subscribeKey } from 'valtio/utils'
 import { XrplClient } from 'xrpl-client'
 import { SplitSize } from './actions/persistSplits'
+import { defaultNetwork, presetNetworks } from './constants/networks'
 
 declare module 'valtio' {
   function useSnapshot<T extends object>(p: T): T
@@ -18,6 +19,19 @@ export interface IFile {
   compiledWatContent?: string | null
   lastCompiled?: Date
   containsErrors?: boolean
+}
+
+export interface INetwork {
+  name: string
+  /** wss://host */
+  ws: string
+  /** https://host, links are `${explorer}/${hash|address}` */
+  explorer?: string
+  faucet?: { url: string; kind: 'newcreds' | 'accounts' }
+  /** template with {address} */
+  debugStream?: string
+  /** override; otherwise taken from server_info */
+  networkId?: number
 }
 
 export interface FaucetAccountRes {
@@ -57,6 +71,10 @@ export interface ILog {
 export type DeployValue = Record<IFile['name'], any>
 
 export interface IState {
+  network: INetwork
+  remoteNetworks: INetwork[]
+  customNetworks: INetwork[]
+  networkId?: number
   files: IFile[]
   gistId?: string | null
   gistOwner?: string | null
@@ -92,6 +110,10 @@ export interface IState {
 
 // let localStorageState: null | string = null;
 let initialState: IState = {
+  network: defaultNetwork,
+  remoteNetworks: [],
+  customNetworks: [],
+  networkId: defaultNetwork.networkId,
   files: [],
   // active file index on the Develop page editor
   active: 0,
@@ -145,23 +167,59 @@ if (typeof window !== 'undefined') {
   // initialAccounts = initialAccounts.filter(acc => acc.version === '2');
 }
 
+let initialCustomNetworks: INetwork[] = []
+let initialRemoteNetworks: INetwork[] = []
+let initialNetwork = defaultNetwork
+if (typeof window !== 'undefined') {
+  try {
+    initialCustomNetworks = JSON.parse(localStorage.getItem('hooksIdeCustomNetworks') || '[]')
+    // last fetched copy, so a saved remote network connects before the list is refreshed
+    initialRemoteNetworks = JSON.parse(localStorage.getItem('hooksIdeRemoteNetworks') || '[]')
+    const name = localStorage.getItem('hooksIdeNetwork')
+    initialNetwork =
+      [...presetNetworks, ...initialRemoteNetworks, ...initialCustomNetworks].find(
+        n => n.name === name
+      ) || defaultNetwork
+  } catch (err) {
+    console.log(`localStorage network state broken`)
+  }
+}
+
 // Initialize state
 const state = proxy<IState>({
   ...initialState,
+  network: initialNetwork,
+  remoteNetworks: initialRemoteNetworks,
+  customNetworks: initialCustomNetworks,
+  networkId: initialNetwork.networkId,
   accounts: initialAccounts.length > 0 ? initialAccounts : [],
   logs: []
 })
 // Initialize socket connection
-const client = new XrplClient(`wss://${process.env.NEXT_PUBLIC_TESTNET_URL}`)
-state.client = ref(client);
-
-client.on('online', () => {
-  state.clientStatus = 'online'
-})
-
-client.on('offline', () => {
+export const connectClient = (network: INetwork) => {
+  const client = new XrplClient(network.ws)
+  state.client = ref(client)
   state.clientStatus = 'offline'
-})
+  state.networkId = network.networkId
+  client.on('online', () => {
+    if (state.client !== client) return
+    state.clientStatus = 'online'
+    if (network.networkId === undefined) {
+      client
+        .send({ command: 'server_info' })
+        .then((res: any) => {
+          const id = res?.info?.network_id
+          if (state.client === client && typeof id === 'number') state.networkId = id
+        })
+        .catch(console.error)
+    }
+  })
+  client.on('offline', () => {
+    if (state.client === client) state.clientStatus = 'offline'
+  })
+  return client
+}
+connectClient(state.network)
 
 if (process.env.NODE_ENV !== 'production') {
   devtools(state, { name: 'Files State' })
@@ -185,6 +243,10 @@ if (typeof window !== 'undefined') {
   subscribeKey(state, 'active', updateActiveWat)
   subscribeKey(state, 'files', updateActiveWat)
 }
+/** `NetworkID` field for transactions: only networks with id > 1024 accept (and require) it. */
+export const networkIdField = () =>
+  state.networkId !== undefined && state.networkId > 1024 ? { NetworkID: state.networkId } : {}
+
 export default state
 
 export * from './transactions'

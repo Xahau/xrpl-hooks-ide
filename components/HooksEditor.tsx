@@ -14,9 +14,8 @@ import state from '../state'
 import EditorNavigation from './EditorNavigation'
 import Text from './Text'
 import { MonacoServices } from '@codingame/monaco-languageclient'
-import { createLanguageClient, createWebSocket } from '../utils/languageClient'
-import { listen } from '@codingame/monaco-jsonrpc'
-import ReconnectingWebSocket from 'reconnecting-websocket'
+import { startClangdWorker, startRemoteClangd } from '../utils/languageClient'
+import { prefetchCompiler } from '../utils/compilerWorker'
 
 import docs from '../xrpl-hooks-docs/docs'
 import Monaco from './Monaco'
@@ -40,6 +39,48 @@ const validateWritability = (editor: monaco.editor.IStandaloneCodeEditor) => {
 }
 
 let decorations: { [key: string]: string[] } = {}
+
+const syncFileModels = (monacoE: typeof monaco) => {
+  state.files.forEach(file => {
+    const uri = monacoE.Uri.parse(`file:///work/c/${file.name}`)
+    const model = monacoE.editor.getModel(uri)
+
+    if (!model) {
+      monacoE.editor.createModel(file.content, file.language, uri)
+      return
+    }
+
+    if (model.getValue() !== file.content && model.getAlternativeVersionId() === 1) {
+      model.setValue(file.content)
+    }
+  })
+}
+
+const syncActiveFileFromModel = (model: monaco.editor.ITextModel | null) => {
+  const i = state.files.findIndex(f => model?.uri.path.endsWith('/' + f.name))
+  if (i !== -1) state.active = i
+}
+
+const patchOpenCodeEditor = (
+  editor: monaco.editor.IStandaloneCodeEditor,
+  monacoE: typeof monaco
+) => {
+  const codeEditorService = (editor as any)._codeEditorService
+  if (!codeEditorService || codeEditorService.__hooksOpenCodeEditorPatched) return
+
+  const openCodeEditor = codeEditorService.openCodeEditor.bind(codeEditorService)
+  // the standalone service only opens a resource that is already the editor's model
+  codeEditorService.openCodeEditor = (
+    input: { resource?: monaco.Uri },
+    source?: monaco.editor.IStandaloneCodeEditor,
+    sideBySide?: boolean
+  ) => {
+    const model = input.resource && monacoE.editor.getModel(input.resource)
+    if (source && model) source.setModel(model)
+    return openCodeEditor(input, source, sideBySide)
+  }
+  codeEditorService.__hooksOpenCodeEditorPatched = true
+}
 
 const setMarkers = (monacoE: typeof monaco) => {
   // Get all the markers that are active at the moment,
@@ -97,7 +138,8 @@ const setMarkers = (monacoE: typeof monaco) => {
 const HooksEditor = () => {
   const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
   const monacoRef = useRef<typeof monaco>()
-  const subscriptionRef = useRef<ReconnectingWebSocket | null>(null)
+  const subscriptionRef = useRef<{ close: () => void; reparse?: () => void } | null>(null)
+  const startedRef = useRef(false)
   const snap = useSnapshot(state)
   const router = useRouter()
   const { theme } = useTheme()
@@ -112,6 +154,17 @@ const HooksEditor = () => {
       subscriptionRef?.current?.close()
     }
   }, [])
+  useEffect(() => {
+    // dispose models of removed files so clangd closes them, then let it re-check the open files
+    monacoRef.current?.editor.getModels().forEach(model => {
+      const path = model.uri.path
+      if (path.startsWith('/work/c/') && !snap.files.some(f => `/work/c/${f.name}` === path)) {
+        model.dispose()
+      }
+    })
+    if (monacoRef.current) syncFileModels(monacoRef.current)
+    subscriptionRef.current?.reparse?.()
+  }, [snap.files])
   useEffect(() => {
     if (monacoRef.current) {
       setMarkers(monacoRef.current)
@@ -211,7 +264,8 @@ const HooksEditor = () => {
               // }
 
               // create the web socket
-              if (!subscriptionRef.current) {
+              if (!startedRef.current) {
+                startedRef.current = true
                 monaco.languages.register({
                   id: 'c',
                   extensions: ['.c', '.h'],
@@ -224,27 +278,29 @@ const HooksEditor = () => {
                   mimetypes: ['text/plain'],
                 })
                 MonacoServices.install(monaco)
-                const webSocket = createWebSocket(
-                  process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT || ''
-                )
-                subscriptionRef.current = webSocket
-                // listen when the web socket is opened
-                listen({
-                  webSocket: webSocket as WebSocket,
-                  onConnection: connection => {
-                    // create and start the language client
-                    const languageClient = createLanguageClient(connection)
-                    const disposable = languageClient.start()
-
-                    connection.onClose(() => {
-                      try {
-                        disposable.dispose()
-                      } catch (err) {
-                        console.log('err', err)
-                      }
+                syncFileModels(monaco)
+                const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
+                // remote clangd is only a fallback until the in-browser one is ready
+                const remote = endpoint ? startRemoteClangd(endpoint) : null
+                const worker = self.crossOriginIsolated
+                  ? startClangdWorker(() => {
+                      remote?.close()
+                      prefetchCompiler()
                     })
-                  }
-                })
+                  : null
+                if (!worker && !remote) {
+                  console.warn('clangd in browser needs cross-origin isolation (COOP/COEP headers)')
+                }
+                // the compiler download normally starts once clangd (24 MB) is ready so the two do not
+                // compete; the timer covers no in-browser clangd and a slow or failed clangd download
+                setTimeout(prefetchCompiler, worker ? 30_000 : 0)
+                subscriptionRef.current = {
+                  close: () => {
+                    remote?.close()
+                    worker?.close()
+                  },
+                  reparse: worker?.reparse
+                }
               }
 
               // editor.updateOptions({
@@ -260,11 +316,14 @@ const HooksEditor = () => {
             onMount={(editor, monaco) => {
               editorRef.current = editor
               monacoRef.current = monaco
+              patchOpenCodeEditor(editor, monaco)
               editor.updateOptions({
                 glyphMargin: true,
                 lightbulb: {
                   enabled: true
-                }
+                },
+                // clangd's semantic tokens (types, macros, functions...) colour on top of the Monarch tokens
+                'semanticHighlighting.enabled': true
               })
               editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
                 saveFile()
@@ -277,6 +336,7 @@ const HooksEditor = () => {
                   setMarkers(monacoRef.current)
                 }
               })
+              editor.onDidChangeModel(() => syncActiveFileFromModel(editor.getModel()))
 
               // Hacky way to hide Peek menu
               editor.onContextMenu(e => {

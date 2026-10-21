@@ -17,5 +17,5 @@
     "noUnusedLocals": true
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx"],
-  "exclude": ["node_modules", "*.md"]
+  "exclude": ["node_modules", "*.md", "**/*.test.ts"]
 }

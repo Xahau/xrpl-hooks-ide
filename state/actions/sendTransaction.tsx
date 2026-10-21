@@ -1,6 +1,6 @@
 import { derive, sign } from 'xrpl-accountlib'
 
-import state from '..'
+import state, { networkIdField } from '..'
 import type { IAccount } from '..'
 import ResultLink from '../../components/ResultLink'
 import { ref } from 'valtio'
@@ -28,7 +28,7 @@ export const sendTransaction = async (
     Account: account.address,
     Sequence: account.sequence,
     Fee,
-    NetworkID: process.env.NEXT_PUBLIC_NETWORK_ID,
+    ...networkIdField(),
     ...opts
   }
   const { logPrefix = '' } = options || {}

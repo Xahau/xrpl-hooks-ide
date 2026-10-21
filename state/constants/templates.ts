@@ -51,4 +51,13 @@ export const templateFileIds: Record<string, Template> = {
   }
 }
 
-export const apiHeaderFiles = ['hookapi.h', 'sfcodes.h', 'macro.h', 'extern.h', 'error.h']
+export const apiHeaderFiles = [
+  'hookapi.h',
+  'sfcodes.h',
+  'macro.h',
+  'extern.h',
+  'error.h',
+  'tts.h',
+  'ls_flags.h',
+  'tx_flags.h'
+]
