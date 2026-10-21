@@ -79,6 +79,11 @@
     "@babel/helper-validator-identifier" "^7.16.7"
     to-fast-properties "^2.0.0"
 
+"@bjorn3/browser_wasi_shim@^0.4.2":
+  version "0.4.2"
+  resolved "https://registry.yarnpkg.com/@bjorn3/browser_wasi_shim/-/browser_wasi_shim-0.4.2.tgz#7419f414ec01521653f1863b737d1f03e3e94725"
+  integrity sha512-/iHkCVUG3VbcbmEHn5iIUpIrh7a7WPiwZ3sHy4HZKZzBdSadwdddYDZAII2zBvQYV0Lfi8naZngPCN7WPHI/hA==
+
 "@codingame/monaco-jsonrpc@^0.3.1":
   version "0.3.1"
   resolved "https://registry.npmjs.org/@codingame/monaco-jsonrpc/-/monaco-jsonrpc-0.3.1.tgz"
@@ -208,6 +213,14 @@
   version "1.2.1"
   resolved "https://registry.npmjs.org/@humanwhocodes/object-schema/-/object-schema-1.2.1.tgz"
   integrity sha512-ZnQMnLV4e7hDlUvw8H+U8ASL02SS2Gn6+9Ac3wGGLIe7+je2AeAOxPY+izIPJDfFDb7eDjev0Us8MO1iFRN8hA==
+
+"@live-codes/clang-wasm@0.3.0":
+  version "0.3.0"
+  resolved "https://registry.yarnpkg.com/@live-codes/clang-wasm/-/clang-wasm-0.3.0.tgz#63ce5832086bb97305d24164c3c6902ce3292f9b"
+  integrity sha512-huXYRvmE1hwZfykw71W9/5N0Yz0yFhOPreg5cZaWGp29IY+v4w04vXUpXPPJxUftnNF41DzPG4LgoWGFeSxV9g==
+  dependencies:
+    "@bjorn3/browser_wasi_shim" "^0.4.2"
+    "@wasm-idle/llvm-core" "^1.0.0"
 
 "@monaco-editor/loader@^1.3.2":
   version "1.3.2"
@@ -976,6 +989,20 @@
     "@typescript-eslint/types" "4.33.0"
     eslint-visitor-keys "^2.0.0"
 
+"@wasm-idle/core@1.1.1":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@wasm-idle/core/-/core-1.1.1.tgz#b94d802412b8489ee77dc30b1f45e79432857038"
+  integrity sha512-jLSz31FEE1/yBbSDxlWXoviXdhJpGoQpSZI6UsUlhRTD7uCmQMmMK6UeMdxf0njzyk7uy8TvF0mffJKIBljW/w==
+
+"@wasm-idle/llvm-core@^1.0.0":
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/@wasm-idle/llvm-core/-/llvm-core-1.1.1.tgz#c7be6ca1de5668251bb232f97ecd3a7048c9e577"
+  integrity sha512-RkeLYIZn+n+2i3L7HuWw6CQJPvVZtX16N6utK2b3NxO6cvcvkYnzrhmXBqYt5akM4VBF51oANtZ8ZNIVukxFnQ==
+  dependencies:
+    "@bjorn3/browser_wasi_shim" "^0.4.2"
+    "@wasm-idle/core" "1.1.1"
+    fflate "0.8.3"
+
 "@xrplf/isomorphic@^1.0.0", "@xrplf/isomorphic@^1.0.1":
   version "1.0.1"
   resolved "https://registry.yarnpkg.com/@xrplf/isomorphic/-/isomorphic-1.0.1.tgz#d7676e0ec0e55a39f37ddc1f3cc30eeab52e0739"
@@ -1230,6 +1257,11 @@ bignumber.js@^9.0.0:
   version "9.0.2"
   resolved "https://registry.npmjs.org/bignumber.js/-/bignumber.js-9.0.2.tgz"
   integrity sha512-GAcQvbpsM0pUb0zw1EI0KhQEZ+lRwR5fYaAp3vPOYuP7aDvGy6cVN6XHLauvF8SOga2y0dcLcjt3iQDTSEliyw==
+
+binaryen@132.0.0:
+  version "132.0.0"
+  resolved "https://registry.yarnpkg.com/binaryen/-/binaryen-132.0.0.tgz#7d8e2d3a501bfc2d93e6e906c2460e551a84d927"
+  integrity sha512-4Usg7yEvwO3FMso3Oov6qkOOHSod1IEv+boKkh77kTljM+eNBouqCTbqWswGzbG+vDNO/b/v2C4gfEh1WgB9Lg==
 
 bindings@^1.3.0:
   version "1.5.0"
@@ -2287,6 +2319,11 @@ fastq@^1.6.0:
   dependencies:
     reusify "^1.0.4"
 
+fflate@0.8.3:
+  version "0.8.3"
+  resolved "https://registry.yarnpkg.com/fflate/-/fflate-0.8.3.tgz#bc27d8eb30343d4d512abb03480202ce65d825fc"
+  integrity sha512-tbZNuJrLwGUp3zshBtdy4W+ORxZuIh8a5ilyIEQDC5rY1f3U20JMry0Ll3WBzU58EZKsEuJFXhb5gwv8CsPvgA==
+
 file-entry-cache@^6.0.1:
   version "6.0.1"
   resolved "https://registry.npmjs.org/file-entry-cache/-/file-entry-cache-6.0.1.tgz"
@@ -2531,6 +2568,14 @@ hoist-non-react-statics@^3.3.1:
   integrity sha512-/gGivxi8JPKWNm/W0jSmzcMPpfpPLc3dY/6GxhX2hQ9iGj3aDfklV4ET7NjKpSinLpJ5vafa9iiGIEZg10SfBw==
   dependencies:
     react-is "^16.7.0"
+
+hooks-compiler@0.2.0:
+  version "0.2.0"
+  resolved "https://registry.yarnpkg.com/hooks-compiler/-/hooks-compiler-0.2.0.tgz#e2033e71284b5109128bd704307fe7c30d6e1e76"
+  integrity sha512-5d/NmLfltFaofoLqIf6blTH7Yi9NlD911pnYh4KYdTU2Gh9AVL6OgveGh9ZXkwNn2pyM2Rr7jdiUNnGWecx9NA==
+  dependencies:
+    "@live-codes/clang-wasm" "0.3.0"
+    binaryen "132.0.0"
 
 hotkeys-js@^3.8.1:
   version "3.8.7"

@@ -42,3 +42,6 @@ tsconfig.tsbuildinfo
 
 # clangd wasm (fetched by scripts/fetch-clangd.mjs)
 /public/wasm/
+
+# in-browser compiler toolchain (clang/, binaryen.js, worker) copied by postinstall: hooks-compiler copy-assets
+/public/compiler/

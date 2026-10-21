@@ -15,6 +15,7 @@ import EditorNavigation from './EditorNavigation'
 import Text from './Text'
 import { MonacoServices } from '@codingame/monaco-languageclient'
 import { startClangdWorker, startRemoteClangd } from '../utils/languageClient'
+import { prefetchCompiler } from '../utils/compilerWorker'
 
 import docs from '../xrpl-hooks-docs/docs'
 import Monaco from './Monaco'
@@ -238,11 +239,17 @@ const HooksEditor = () => {
                 // remote clangd is only a fallback until the in-browser one is ready
                 const remote = endpoint ? startRemoteClangd(endpoint) : null
                 const worker = self.crossOriginIsolated
-                  ? startClangdWorker(() => remote?.close())
+                  ? startClangdWorker(() => {
+                      remote?.close()
+                      prefetchCompiler()
+                    })
                   : null
                 if (!worker && !remote) {
                   console.warn('clangd in browser needs cross-origin isolation (COOP/COEP headers)')
                 }
+                // the compiler download normally starts once clangd (24 MB) is ready so the two do not
+                // compete; the timer covers no in-browser clangd and a slow or failed clangd download
+                setTimeout(prefetchCompiler, worker ? 30_000 : 0)
                 subscriptionRef.current = {
                   close: () => {
                     remote?.close()
