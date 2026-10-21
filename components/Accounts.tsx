@@ -33,7 +33,7 @@ import { addFunds } from '../state/actions/addFaucetAccount'
 import { deleteHook } from '../state/actions/deployHook'
 import { capitalize } from '../utils/helpers'
 import { deleteAccount } from '../state/actions/deleteAccount'
-import { xrplSend } from '../state/actions/xrpl-client'
+import { refreshAccounts } from '../utils/refreshAccounts'
 
 export const AccountDialog = ({
   activeAccountAddress,
@@ -117,13 +117,17 @@ export const AccountDialog = ({
                     a: { '&:hover': { textDecoration: 'underline' } }
                   }}
                 >
-                  <a
-                    href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${activeAccount?.address}`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                  >
-                    {activeAccount?.address}
-                  </a>
+                  {snap.network.explorer ? (
+                    <a
+                      href={`${snap.network.explorer}/${activeAccount?.address}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      {activeAccount?.address}
+                    </a>
+                  ) : (
+                    activeAccount?.address
+                  )}
                 </Text>
               </Flex>
               <Flex css={{ marginLeft: 'auto', color: '$mauve12' }}>
@@ -212,6 +216,7 @@ export const AccountDialog = ({
                     }}
                     ghost
                     size="xs"
+                    disabled={!snap.network.faucet}
                     onClick={() => {
                       addFunds(activeAccount?.address || '')
                     }}
@@ -220,21 +225,23 @@ export const AccountDialog = ({
                   </Button>
                 </Text>
               </Flex>
-              <Flex
-                css={{
-                  marginLeft: 'auto'
-                }}
-              >
-                <a
-                  href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${activeAccount?.address}`}
-                  target="_blank"
-                  rel="noreferrer noopener"
+              {snap.network.explorer && (
+                <Flex
+                  css={{
+                    marginLeft: 'auto'
+                  }}
                 >
-                  <Button size="sm" ghost css={{ color: '$grass11 !important', mt: '$3' }}>
-                    <ArrowSquareOut size="15px" />
-                  </Button>
-                </a>
-              </Flex>
+                  <a
+                    href={`${snap.network.explorer}/${activeAccount?.address}`}
+                    target="_blank"
+                    rel="noreferrer noopener"
+                  >
+                    <Button size="sm" ghost css={{ color: '$grass11 !important', mt: '$3' }}>
+                      <ArrowSquareOut size="15px" />
+                    </Button>
+                  </a>
+                </Flex>
+              )}
             </Flex>
             <Flex css={{ alignItems: 'center' }}>
               <Flex css={{ flexDirection: 'column' }}>
@@ -250,7 +257,9 @@ export const AccountDialog = ({
                         return (
                           <a
                             key={i}
-                            href={`https://${process.env.NEXT_PUBLIC_EXPLORER_URL}/${i}`}
+                            href={
+                              snap.network.explorer ? `${snap.network.explorer}/${i}` : undefined
+                            }
                             target="_blank"
                             rel="noopener noreferrer"
                           >
@@ -300,54 +309,7 @@ const Accounts: FC<AccountProps> = props => {
   const [activeAccountAddress, setActiveAccountAddress] = useState<string | null>(null)
   useEffect(() => {
     const fetchAccInfo = async () => {
-      if (snap.clientStatus === 'online') {
-        const requests = snap.accounts.map(acc =>
-          xrplSend({
-            id: `hooks-builder-req-info-${acc.address}`,
-            command: 'account_info',
-            account: acc.address
-          })
-        )
-        const responses = await Promise.all(requests)
-        responses.forEach((res: any) => {
-          const address = res?.account_data?.Account as string
-          const balance = res?.account_data?.Balance as string
-          const sequence = res?.account_data?.Sequence as number
-          const accountToUpdate = state.accounts.find(acc => acc.address === address)
-          if (accountToUpdate) {
-            accountToUpdate.xrp = balance
-            accountToUpdate.sequence = sequence
-            accountToUpdate.error = null
-          } else {
-            const oldAccount = state.accounts.find(acc => acc.address === res?.account)
-            if (oldAccount) {
-              oldAccount.xrp = '0'
-              oldAccount.error = {
-                code: res?.error,
-                message: res?.error_message
-              }
-            }
-          }
-        })
-        const objectRequests = snap.accounts.map(acc => {
-          return xrplSend({
-            id: `hooks-builder-req-objects-${acc.address}`,
-            command: 'account_objects',
-            account: acc.address
-          })
-        })
-        const objectResponses = await Promise.all(objectRequests)
-        objectResponses.forEach((res: any) => {
-          const address = res?.account as string
-          const accountToUpdate = state.accounts.find(acc => acc.address === address)
-          if (accountToUpdate) {
-            accountToUpdate.hooks =
-              res.account_objects
-                ?.find((ac: any) => ac?.LedgerEntryType === 'Hook')
-                ?.Hooks?.map((oo: any) => oo.Hook.HookHash) || []
-          }
-        })
-      }
+      if (snap.clientStatus === 'online') await refreshAccounts()
     }
 
     let fetchAccountInfoInterval: NodeJS.Timer
