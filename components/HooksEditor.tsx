@@ -321,7 +321,9 @@ const HooksEditor = () => {
                 glyphMargin: true,
                 lightbulb: {
                   enabled: true
-                }
+                },
+                // clangd's semantic tokens (types, macros, functions...) colour on top of the Monarch tokens
+                'semanticHighlighting.enabled': true
               })
               editor.addCommand(monaco.KeyMod.CtrlCmd | monaco.KeyCode.KeyS, () => {
                 saveFile()
