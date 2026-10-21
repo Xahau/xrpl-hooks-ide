@@ -77,7 +77,7 @@ export const PopoverArrow = StyledArrow
 export const PopoverClose = StyledClose
 
 interface IPopover {
-  content: string | React.ReactElement
+  content: React.ReactNode
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void

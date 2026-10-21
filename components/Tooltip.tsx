@@ -57,7 +57,7 @@ const StyledArrow = styled(TooltipPrimitive.Arrow, {
 })
 
 interface ITooltip {
-  content: string | React.ReactNode
+  content: React.ReactNode
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void

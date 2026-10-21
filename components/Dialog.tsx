@@ -16,7 +16,7 @@ const contentShow = keyframes({
 })
 const StyledOverlay = styled(DialogPrimitive.Overlay, {
   zIndex: 3000,
-  backgroundColor: blackA.blackA9,
+  backgroundColor: blackA.blackA7,
   position: 'fixed',
   inset: 0,
   top: 0,
@@ -30,7 +30,7 @@ const StyledOverlay = styled(DialogPrimitive.Overlay, {
     animation: `${overlayShow} 250ms cubic-bezier(0.16, 1, 0.3, 1)`
   },
   '.dark &': {
-    backgroundColor: blackA.blackA11
+    backgroundColor: blackA.blackA8
   }
 })
 
