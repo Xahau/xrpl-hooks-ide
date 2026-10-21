@@ -40,6 +40,48 @@ const validateWritability = (editor: monaco.editor.IStandaloneCodeEditor) => {
 
 let decorations: { [key: string]: string[] } = {}
 
+const syncFileModels = (monacoE: typeof monaco) => {
+  state.files.forEach(file => {
+    const uri = monacoE.Uri.parse(`file:///work/c/${file.name}`)
+    const model = monacoE.editor.getModel(uri)
+
+    if (!model) {
+      monacoE.editor.createModel(file.content, file.language, uri)
+      return
+    }
+
+    if (model.getValue() !== file.content && model.getAlternativeVersionId() === 1) {
+      model.setValue(file.content)
+    }
+  })
+}
+
+const syncActiveFileFromModel = (model: monaco.editor.ITextModel | null) => {
+  const i = state.files.findIndex(f => model?.uri.path.endsWith('/' + f.name))
+  if (i !== -1) state.active = i
+}
+
+const patchOpenCodeEditor = (
+  editor: monaco.editor.IStandaloneCodeEditor,
+  monacoE: typeof monaco
+) => {
+  const codeEditorService = (editor as any)._codeEditorService
+  if (!codeEditorService || codeEditorService.__hooksOpenCodeEditorPatched) return
+
+  const openCodeEditor = codeEditorService.openCodeEditor.bind(codeEditorService)
+  // the standalone service only opens a resource that is already the editor's model
+  codeEditorService.openCodeEditor = (
+    input: { resource?: monaco.Uri },
+    source?: monaco.editor.IStandaloneCodeEditor,
+    sideBySide?: boolean
+  ) => {
+    const model = input.resource && monacoE.editor.getModel(input.resource)
+    if (source && model) source.setModel(model)
+    return openCodeEditor(input, source, sideBySide)
+  }
+  codeEditorService.__hooksOpenCodeEditorPatched = true
+}
+
 const setMarkers = (monacoE: typeof monaco) => {
   // Get all the markers that are active at the moment,
   // Also if same error is there twice, we can show the content
@@ -120,6 +162,7 @@ const HooksEditor = () => {
         model.dispose()
       }
     })
+    if (monacoRef.current) syncFileModels(monacoRef.current)
     subscriptionRef.current?.reparse?.()
   }, [snap.files])
   useEffect(() => {
@@ -235,6 +278,7 @@ const HooksEditor = () => {
                   mimetypes: ['text/plain'],
                 })
                 MonacoServices.install(monaco)
+                syncFileModels(monaco)
                 const endpoint = process.env.NEXT_PUBLIC_LANGUAGE_SERVER_API_ENDPOINT
                 // remote clangd is only a fallback until the in-browser one is ready
                 const remote = endpoint ? startRemoteClangd(endpoint) : null
@@ -272,6 +316,7 @@ const HooksEditor = () => {
             onMount={(editor, monaco) => {
               editorRef.current = editor
               monacoRef.current = monaco
+              patchOpenCodeEditor(editor, monaco)
               editor.updateOptions({
                 glyphMargin: true,
                 lightbulb: {
@@ -289,6 +334,7 @@ const HooksEditor = () => {
                   setMarkers(monacoRef.current)
                 }
               })
+              editor.onDidChangeModel(() => syncActiveFileFromModel(editor.getModel()))
 
               // Hacky way to hide Peek menu
               editor.onContextMenu(e => {
