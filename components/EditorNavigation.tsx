@@ -194,8 +194,8 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
                 >
                   <Image
                     src={session?.user?.image || ''}
-                    width={30}
-                    height={30}
+                    width={24}
+                    height={24}
                     style={{ objectFit: 'cover' }}
                     alt="User avatar"
                   />

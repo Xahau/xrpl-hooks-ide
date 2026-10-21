@@ -15,14 +15,14 @@ const contentShow = keyframes({
 
 const StyledOverlay = styled(AlertDialogPrimitive.Overlay, {
   zIndex: 1000,
-  backgroundColor: blackA.blackA9,
+  backgroundColor: blackA.blackA7,
   position: 'fixed',
   inset: 0,
   '@media (prefers-reduced-motion: no-preference)': {
     animation: `${overlayShow} 150ms cubic-bezier(0.16, 1, 0.3, 1)`
   },
   '.dark &': {
-    backgroundColor: blackA.blackA11
+    backgroundColor: blackA.blackA8
   }
 })
 
