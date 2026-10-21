@@ -396,8 +396,8 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                       step="1"
                       defaultValue={10000}
                       css={{
-                        '-moz-appearance': 'textfield',
-                        '&::-webkit-outer-spin-button': {
+                        '& input': { '-moz-appearance': 'textfield' },
+                        '& input::-webkit-outer-spin-button': {
                           '-webkit-appearance': 'none',
                           margin: 0
                         },

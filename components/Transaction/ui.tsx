@@ -270,8 +270,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
       onChange={e => setValue(e.target.value)}
       css={{
         flex: 'inherit',
-        '-moz-appearance': 'textfield',
-        '&::-webkit-outer-spin-button': {
+        '& input': { '-moz-appearance': 'textfield' },
+        '& input::-webkit-outer-spin-button': {
           '-webkit-appearance': 'none',
           margin: 0
         },
@@ -747,8 +747,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
             }}
             css={{
               flex: 'inherit',
-              '-moz-appearance': 'textfield',
-              '&::-webkit-outer-spin-button': {
+              '& input': { '-moz-appearance': 'textfield' },
+              '& input::-webkit-outer-spin-button': {
                 '-webkit-appearance': 'none',
                 margin: 0
               },

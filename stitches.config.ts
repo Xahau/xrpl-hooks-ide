@@ -272,11 +272,11 @@ for (const [scale, props] of Object.entries(scaleProps)) {
   for (const p of props.split(' ')) themeMap[p] = scale
 }
 
-// `$token` / `$scale$token` / `-$token`; names are [\w-]+ exactly like stitches (so `$0.5` is as broken as before)
+// `$token` / `$scale$token` / `-$token` -> `var(--hb-scale-token)`; the hb- prefix keeps clear of Radix Themes' own --space-N etc.; names are [\w-]+ exactly like stitches (so `$0.5` is as broken as before)
 const resolveTokens = (value: string, scale?: string) =>
   value.replace(/(-?)\$(?:(\w+)\$)?([\w-]+)/g, (_, neg, explicit, token) => {
     const s = explicit ?? scale
-    const ref = `var(--${s ? `${s}-` : ''}${token})`
+    const ref = `var(--hb-${s ? `${s}-` : ''}${token})`
     return neg ? `calc(${ref}*-1)` : ref
   })
 
@@ -305,7 +305,7 @@ const cssVars = (tokens: Record<string, Record<string, string | number>>): CSS =
   const out: CSS = {}
   for (const [scale, values] of Object.entries(tokens)) {
     for (const [token, value] of Object.entries(values)) {
-      out[`--${scale}-${token}`] =
+      out[`--hb-${scale}-${token}`] =
         typeof value === 'string' ? resolveTokens(value, scale) : String(value)
     }
   }

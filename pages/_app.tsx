@@ -113,20 +113,6 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
             <PlausibleProvider domain="hooks-builder.xrpl.org" trackOutboundLinks>
               <Navigation />
               <Component {...pageProps} />
-              <Toaster
-                toastOptions={{
-                  className: css({
-                    backgroundColor: '$mauve1',
-                    color: '$mauve10',
-                    fontSize: '$sm',
-                    zIndex: 9999,
-                    '.dark &': {
-                      backgroundColor: '$mauve4',
-                      color: '$mauve12'
-                    }
-                  })()
-                }}
-              />
               <Alert />
               <Flex
                 as="a"
@@ -142,6 +128,21 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
               </Flex>
             </PlausibleProvider>
             </Theme>
+            {/* outside the Theme root: its stacking context would put toasts under Themes' dialog overlays */}
+            <Toaster
+              toastOptions={{
+                className: css({
+                  backgroundColor: '$mauve1',
+                  color: '$mauve10',
+                  fontSize: '$sm',
+                  zIndex: 9999,
+                  '.dark &': {
+                    backgroundColor: '$mauve4',
+                    color: '$mauve12'
+                  }
+                })()
+              }}
+            />
           </ThemeProvider>
       </SessionProvider>
     </>
