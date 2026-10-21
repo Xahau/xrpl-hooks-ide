@@ -173,7 +173,7 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
         <Container css={{ width: 'unset', display: 'flex', alignItems: 'center' }}>
           {status === 'authenticated' ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild data-dropdown-menu-trigger="">
                 <Box
                   css={{
                     display: 'flex',
@@ -329,7 +329,7 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
             </Tooltip>
 
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
+              <DropdownMenuTrigger asChild data-dropdown-menu-trigger="">
                 <Button outline size="sm">
                   <CaretDown size="16px" />
                 </Button>

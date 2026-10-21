@@ -89,7 +89,7 @@ export const StyledButton = styled('button', {
         '&:focus': {
           boxShadow: 'inset 0 0 0 1px $colors$mauve12, inset 0 0 0 2px $colors$mauve12'
         },
-        '&[data-state="open"]':
+        '&[data-popover-trigger][data-state="open"], &[data-dropdown-menu-trigger][data-state="open"]':
           {
             backgroundColor: '$mauve4',
             boxShadow: 'inset 0 0 0 1px $colors$mauve8'
@@ -112,7 +112,7 @@ export const StyledButton = styled('button', {
         '&:focus': {
           boxShadow: 'inset 0 0 0 2px $colors$purple12'
         },
-        '&[data-state="open"]':
+        '&[data-popover-trigger][data-state="open"], &[data-dropdown-menu-trigger][data-state="open"]':
           {
             backgroundColor: '$mauve4',
             boxShadow: 'inset 0 0 0 1px $colors$purple8'
@@ -135,7 +135,7 @@ export const StyledButton = styled('button', {
         '&:focus': {
           boxShadow: 'inset 0 0 0 2px $colors$purple12'
         },
-        '&[data-state="open"]':
+        '&[data-popover-trigger][data-state="open"], &[data-dropdown-menu-trigger][data-state="open"]':
           {
             backgroundColor: '$mauve4',
             boxShadow: 'inset 0 0 0 1px $colors$purple8'
@@ -158,7 +158,7 @@ export const StyledButton = styled('button', {
         '&:focus': {
           boxShadow: 'inset 0 0 0 2px $colors$red12'
         },
-        '&[data-state="open"]':
+        '&[data-popover-trigger][data-state="open"], &[data-dropdown-menu-trigger][data-state="open"]':
           {
             backgroundColor: '$mauve4',
             boxShadow: 'inset 0 0 0 1px $colors$red8'
