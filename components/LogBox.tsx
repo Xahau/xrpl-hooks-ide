@@ -15,6 +15,7 @@ interface ILogBox {
   renderNav?: () => ReactNode
   enhanced?: boolean
   Icon?: FC<IconProps>
+  children?: ReactNode
 }
 
 const LogBox: FC<ILogBox> = ({
@@ -160,9 +161,9 @@ export const Log: FC<ILog> = ({
         )}
         <Pre>{message}</Pre>
         {link && (
-          <NextLink href={link} shallow passHref>
-            <Link as="a">{linkText}</Link>
-          </NextLink>
+          <Link as={NextLink} href={link} shallow>
+            {linkText}
+          </Link>
         )}
         {jsonData && (
           <Link onClick={() => setExpanded(!expanded)} as="a">

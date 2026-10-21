@@ -1,3 +1,4 @@
+import React from 'react'
 import * as DropdownMenuPrimitive from '@radix-ui/react-dropdown-menu'
 
 import { styled } from '../stitches.config'
@@ -68,7 +69,7 @@ const StyledCheckboxItem = styled(DropdownMenuPrimitive.CheckboxItem, {
 const StyledRadioItem = styled(DropdownMenuPrimitive.RadioItem, {
   ...itemStyles
 })
-const StyledTriggerItem = styled(DropdownMenuPrimitive.TriggerItem, {
+const StyledTriggerItem = styled(DropdownMenuPrimitive.SubTrigger, {
   '&[data-state="open"]': {
     backgroundColor: '$purple9',
     color: '$purple9'
@@ -105,10 +106,17 @@ const StyledArrow = styled(DropdownMenuPrimitive.Arrow, {
   }
 })
 
+// Wrap Content with Portal for Radix UI v2
+const ContentWithPortal: React.FC<React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }> = ({ children, ...props }) => (
+  <DropdownMenuPrimitive.Portal>
+    <StyledContent {...props}>{children}</StyledContent>
+  </DropdownMenuPrimitive.Portal>
+)
+
 // Exports
 export const DropdownMenu = DropdownMenuPrimitive.Root
 export const DropdownMenuTrigger = DropdownMenuPrimitive.Trigger
-export const DropdownMenuContent = StyledContent
+export const DropdownMenuContent = ContentWithPortal
 export const DropdownMenuItem = StyledItem
 export const DropdownMenuCheckboxItem = StyledCheckboxItem
 export const DropdownMenuRadioGroup = DropdownMenuPrimitive.RadioGroup

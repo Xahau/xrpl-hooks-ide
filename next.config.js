@@ -1,8 +1,16 @@
 /** @type {import('next').NextConfig} */
 module.exports = {
   reactStrictMode: true,
+  async redirects() {
+    return [{ source: '/', destination: '/develop', permanent: false }]
+  },
   images: {
-    domains: ['avatars.githubusercontent.com']
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+    ],
   },
   async headers() {
     // required for SharedArrayBuffer (multithreaded clangd wasm)

@@ -222,7 +222,7 @@ export const connectClient = (network: INetwork) => {
 connectClient(state.network)
 
 if (process.env.NODE_ENV !== 'production') {
-  devtools(state, 'Files State')
+  devtools(state, { name: 'Files State' })
 }
 
 if (typeof window !== 'undefined') {

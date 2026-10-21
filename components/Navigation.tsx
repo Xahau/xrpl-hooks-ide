@@ -67,7 +67,8 @@ const Navigation = () => {
       <Container
         css={{
           display: 'flex',
-          alignItems: 'center'
+          alignItems: 'center',
+          height: '100%'
         }}
       >
         <Flex
@@ -75,22 +76,21 @@ const Navigation = () => {
             flex: 1,
             alignItems: 'center',
             borderRight: '1px solid $colors$mauve6',
-            py: '$3',
-            pr: '$4'
+            pr: '$4',
+            height: '100%'
           }}
         >
-          <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref>
-            <Box
-              as="a"
-              css={{
-                display: 'flex',
-                alignItems: 'center',
-                color: '$textColor'
-              }}
-            >
-              <Logo width="32px" height="32px" />
-            </Box>
-          </Link>
+          <Box
+            as={Link}
+            href={gistId ? `/develop/${gistId}` : '/develop'}
+            css={{
+              display: 'flex',
+              alignItems: 'center',
+              color: '$textColor'
+            }}
+          >
+            <Logo width="32px" height="32px" />
+          </Box>
           <Flex
             css={{
               ml: '$5',
@@ -106,19 +106,15 @@ const Navigation = () => {
                 <Text css={{ fontSize: '$xs', color: '$mauve10', lineHeight: 1 }}>
                   {snap.files.length > 0 ? 'Gist: ' : 'Builder'}
                   {snap.files.length > 0 && (
-                    <Link
+                    <Text
+                      as="a"
                       href={`https://gist.github.com/${snap.gistOwner || ''}/${snap.gistId || ''}`}
-                      passHref
+                      target="_blank"
+                      rel="noreferrer noopener"
+                      css={{ color: '$mauve12' }}
                     >
-                      <Text
-                        as="a"
-                        target="_blank"
-                        rel="noreferrer noopener"
-                        css={{ color: '$mauve12' }}
-                      >
-                        {`${snap.gistOwner || '-'}/${truncate(snap.gistId || '')}`}
-                      </Text>
-                    </Link>
+                      {`${snap.gistOwner || '-'}/${truncate(snap.gistId || '')}`}
+                    </Text>
                   )}
                 </Text>
               </>
@@ -325,6 +321,8 @@ const Navigation = () => {
             flexWrap: 'nowrap',
             marginLeft: '$4',
             overflowX: 'scroll',
+            alignItems: 'center',
+            height: '100%',
             '&::-webkit-scrollbar': {
               height: 0,
               background: 'transparent'
@@ -343,29 +341,43 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Link href={gistId ? `/develop/${gistId}` : '/develop'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/develop')} uppercase>
-                  Develop
-                </Button>
-              </Link>
-              <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/deploy')} uppercase>
-                  Deploy
-                </Button>
-              </Link>
-              <Link href={gistId ? `/test/${gistId}` : '/test'} passHref shallow>
-                <Button as="a" outline={!router.pathname.includes('/test')} uppercase>
-                  Test
-                </Button>
-              </Link>
+              <Button
+                as={Link}
+                href={gistId ? `/develop/${gistId}` : '/develop'}
+                shallow
+                outline={!router.pathname.includes('/develop')}
+                uppercase
+              >
+                Develop
+              </Button>
+              <Button
+                as={Link}
+                href={gistId ? `/deploy/${gistId}` : '/deploy'}
+                shallow
+                outline={!router.pathname.includes('/deploy')}
+                uppercase
+              >
+                Deploy
+              </Button>
+              <Button
+                as={Link}
+                href={gistId ? `/test/${gistId}` : '/test'}
+                shallow
+                outline={!router.pathname.includes('/test')}
+                uppercase
+              >
+                Test
+              </Button>
             </ButtonGroup>
-            <Link href="https://xahau.network/docs/hooks/" passHref>
-              <a target="_blank" rel="noreferrer noopener">
-                <Button outline>
-                  <BookOpen size="15px" />
-                </Button>
-              </a>
-            </Link>
+            <Button
+              as="a"
+              href="https://xahau.network/docs/hooks/"
+              target="_blank"
+              rel="noreferrer noopener"
+              outline
+            >
+              <BookOpen size="15px" />
+            </Button>
           </Stack>
         </Flex>
       </Container>

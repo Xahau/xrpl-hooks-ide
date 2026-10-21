@@ -152,15 +152,15 @@ export const compileWat = async (activeId: number) => {
   state.logs = []
   try {
     const wabt = await (await import('wabt')).default()
-    const module = wabt.parseWat(file.name, file.content)
-    module.resolveNames()
-    module.validate()
-    const { buffer } = module.toBinary({
+    const wasmModule = wabt.parseWat(file.name, file.content)
+    wasmModule.resolveNames()
+    wasmModule.validate()
+    const { buffer } = wasmModule.toBinary({
       log: false,
       write_debug_names: true
     })
 
-    file.compiledContent = ref(buffer)
+    file.compiledContent = ref(buffer) as any
     file.lastCompiled = new Date()
     file.compiledValueSnapshot = file.content
     file.compiledWatContent = file.content

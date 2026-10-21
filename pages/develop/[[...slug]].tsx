@@ -76,6 +76,7 @@ const CompilerSettings = () => {
                 }
               }
             }}
+            // @ts-expect-error React 18 type compatibility issue
             content={<StyledOptimizationText />}
           >
             <Flex
@@ -157,6 +158,7 @@ const Home: NextPage = () => {
       <main style={{ display: 'flex', flex: 1, position: 'relative' }}>
         <HooksEditor />
         {canCompile && (
+          // @ts-expect-error React 18 compatibility
           <Hotkeys
             keyName="command+b,ctrl+b"
             onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}
@@ -182,6 +184,7 @@ const Home: NextPage = () => {
                 <Play weight="bold" size="16px" />
                 Compile to Wasm
               </Button>
+              {/* @ts-expect-error React 18 type compatibility issue */}
               <Popover content={<CompilerSettings />}>
                 <Button variant="primary" css={{ px: '10px' }}>
                   <Gear size="16px" />
@@ -191,6 +194,7 @@ const Home: NextPage = () => {
           </Hotkeys>
         )}
         {activeFileExt === 'js' && (
+          // @ts-expect-error React 18 compatibility
           <Hotkeys
             keyName="command+b,ctrl+b"
             onKeyDown={() => !snap.compiling && snap.files.length && compileCode(snap.active)}

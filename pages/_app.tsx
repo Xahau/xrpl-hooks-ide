@@ -6,7 +6,7 @@ import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import { IdProvider } from '@radix-ui/react-id'
+import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import PlausibleProvider from 'next-plausible'
 
 import { darkTheme, css } from '../stitches.config'
@@ -90,7 +90,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <meta name="theme-color" content="#FDFCFD" media="(prefers-color-scheme: light)" />
       </Head>
 
-      <IdProvider>
+      <TooltipPrimitive.Provider delayDuration={100}>
         <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"
@@ -134,7 +134,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
             </PlausibleProvider>
           </ThemeProvider>
         </SessionProvider>
-      </IdProvider>
+      </TooltipPrimitive.Provider>
     </>
   )
 }

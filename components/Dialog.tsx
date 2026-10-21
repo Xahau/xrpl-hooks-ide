@@ -1,9 +1,8 @@
 import React from 'react'
-import * as Stiches from '@stitches/react'
-import { keyframes } from '@stitches/react'
+import type { CSS } from '../stitches.config'
 import { blackA } from '@radix-ui/colors'
 import * as DialogPrimitive from '@radix-ui/react-dialog'
-import { styled } from '../stitches.config'
+import { styled, keyframes } from '../stitches.config'
 
 const overlayShow = keyframes({
   '0%': { opacity: 0.01 },
@@ -16,7 +15,7 @@ const contentShow = keyframes({
 })
 const StyledOverlay = styled(DialogPrimitive.Overlay, {
   zIndex: 3000,
-  backgroundColor: blackA.blackA9,
+  backgroundColor: blackA.blackA7,
   position: 'fixed',
   inset: 0,
   top: 0,
@@ -30,7 +29,7 @@ const StyledOverlay = styled(DialogPrimitive.Overlay, {
     animation: `${overlayShow} 250ms cubic-bezier(0.16, 1, 0.3, 1)`
   },
   '.dark &': {
-    backgroundColor: blackA.blackA11
+    backgroundColor: blackA.blackA8
   }
 })
 
@@ -56,11 +55,13 @@ const StyledContent = styled(DialogPrimitive.Content, {
   }
 })
 
-const Content: React.FC<{ css?: Stiches.CSS }> = ({ css, children }) => {
+const Content: React.FC<{ css?: CSS; children?: React.ReactNode }> = ({ css, children }) => {
   return (
-    <StyledOverlay>
-      <StyledContent css={css}>{children}</StyledContent>
-    </StyledOverlay>
+    <DialogPrimitive.Portal>
+      <StyledOverlay>
+        <StyledContent css={css}>{children}</StyledContent>
+      </StyledOverlay>
+    </DialogPrimitive.Portal>
   )
 }
 

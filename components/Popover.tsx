@@ -77,10 +77,11 @@ export const PopoverArrow = StyledArrow
 export const PopoverClose = StyledClose
 
 interface IPopover {
-  content: string | ReactNode
+  content: React.ReactNode
   open?: boolean
   defaultOpen?: boolean
   onOpenChange?: (open: boolean) => void
+  children?: ReactNode
 }
 
 const Popover: React.FC<IPopover & React.ComponentProps<typeof PopoverContent>> = ({
@@ -92,10 +93,14 @@ const Popover: React.FC<IPopover & React.ComponentProps<typeof PopoverContent>> 
   ...rest
 }) => (
   <PopoverRoot open={open} defaultOpen={defaultOpen} onOpenChange={onOpenChange}>
-    <PopoverTrigger asChild>{children}</PopoverTrigger>
-    <PopoverContent sideOffset={5} {...rest}>
-      {content} <PopoverArrow offset={5} className="arrow" />
-    </PopoverContent>
+    <PopoverTrigger asChild data-popover-trigger="">
+      {children}
+    </PopoverTrigger>
+    <PopoverPrimitive.Portal>
+      <PopoverContent sideOffset={5} {...rest}>
+        {content} <PopoverArrow offset={5} className="arrow" />
+      </PopoverContent>
+    </PopoverPrimitive.Portal>
   </PopoverRoot>
 )
 
