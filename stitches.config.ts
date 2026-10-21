@@ -7,7 +7,6 @@ import {
   blue,
   crimson,
   grass,
-  slate,
   mauve,
   mauveA,
   amber,
@@ -17,7 +16,6 @@ import {
   blueDark,
   crimsonDark,
   grassDark,
-  slateDark,
   mauveDark,
   mauveDarkA,
   amberDark,
@@ -36,7 +34,6 @@ export const theme = {
     ...blue,
     ...crimson,
     ...grass,
-    ...slate,
     ...mauve,
     ...mauveA,
     ...amber,
@@ -49,7 +46,6 @@ export const theme = {
     backgroundOverlay: '$mauve2',
     text: '$gray12',
     textMuted: '$gray10',
-    primary: '$plum',
     error: '$red9',
     warning: '$amber11',
     success: '$grass11',
@@ -206,13 +202,7 @@ export const theme = {
     one: 1,
     body: 1.5,
     heading: 0.85
-  },
-  letterSpacings: {},
-  borderWidths: {},
-  borderStyles: {},
-  shadows: {},
-  zIndices: {},
-  transitions: {}
+  }
 }
 
 const darkColors = {
@@ -220,7 +210,6 @@ const darkColors = {
   ...blueDark,
   ...crimsonDark,
   ...grassDark,
-  ...slateDark,
   ...mauveDark,
   ...mauveDarkA,
   ...amberDark,
@@ -231,38 +220,30 @@ const darkColors = {
   backgroundOverlay: '$mauve5'
 }
 
+// only the media keys call sites use
 const media: Record<string, string> = {
-  sm: '(min-width: 30em)',
   md: '(min-width: 48em)',
   lg: '(min-width: 62em)',
-  xl: '(min-width: 80em)',
-  '2xl': '(min-width: 96em)',
-  hover: '(any-hover: hover)',
-  dark: '(prefers-color-scheme: dark)',
-  light: '(prefers-color-scheme: light)'
+  hover: '(any-hover: hover)'
 }
 
 const utils: Record<string, (v: any) => CSS> = {
-  m: (v) => ({ margin: v }),
-  mt: (v) => ({ marginTop: v }),
-  mr: (v) => ({ marginRight: v }),
-  mb: (v) => ({ marginBottom: v }),
-  ml: (v) => ({ marginLeft: v }),
-  mx: (v) => ({ marginLeft: v, marginRight: v }),
-  my: (v) => ({ marginTop: v, marginBottom: v }),
-  p: (v) => ({ padding: v }),
-  pt: (v) => ({ paddingTop: v }),
-  pr: (v) => ({ paddingRight: v }),
-  pb: (v) => ({ paddingBottom: v }),
-  pl: (v) => ({ paddingLeft: v }),
-  px: (v) => ({ paddingLeft: v, paddingRight: v }),
-  py: (v) => ({ paddingTop: v, paddingBottom: v }),
-  size: (v) => ({ width: v, height: v }),
-  linearGradient: (v) => ({ backgroundImage: `linear-gradient(${v})` }),
-  br: (v) => ({ borderRadius: v })
+  m: v => ({ margin: v }),
+  mt: v => ({ marginTop: v }),
+  mr: v => ({ marginRight: v }),
+  mb: v => ({ marginBottom: v }),
+  ml: v => ({ marginLeft: v }),
+  mx: v => ({ marginLeft: v, marginRight: v }),
+  my: v => ({ marginTop: v, marginBottom: v }),
+  p: v => ({ padding: v }),
+  pt: v => ({ paddingTop: v }),
+  pr: v => ({ paddingRight: v }),
+  pb: v => ({ paddingBottom: v }),
+  pl: v => ({ paddingLeft: v }),
+  px: v => ({ paddingLeft: v, paddingRight: v }),
+  py: v => ({ paddingTop: v, paddingBottom: v }),
+  size: v => ({ width: v, height: v })
 }
-
-export const config = { theme, media, utils }
 
 // ---------------------------------------------------------------- token resolution
 // property -> theme scale, same as the stitches default themeMap
@@ -306,7 +287,7 @@ const nestKey = (key: string) =>
     ? key
     : key
         .split(',')
-        .map((s) => (s.includes('&') ? s.trim() : `& ${s.trim()}`))
+        .map(s => (s.includes('&') ? s.trim() : `& ${s.trim()}`))
         .join(', ')
 
 function resolve(styles: CSS | undefined, out: CSS = {}, nest = true): CSS {
@@ -324,51 +305,49 @@ const cssVars = (tokens: Record<string, Record<string, string | number>>): CSS =
   const out: CSS = {}
   for (const [scale, values] of Object.entries(tokens)) {
     for (const [token, value] of Object.entries(values)) {
-      out[`--${scale}-${token}`] = typeof value === 'string' ? resolveTokens(value, scale) : String(value)
+      out[`--${scale}-${token}`] =
+        typeof value === 'string' ? resolveTokens(value, scale) : String(value)
     }
   }
   return out
 }
 
-injectGlobal({ ':root': cssVars(theme) })
+injectGlobal({ ':root': cssVars(theme), '.dark': cssVars({ colors: darkColors }) })
 
-export const createTheme = (name: string, overrides: { colors: Record<string, string> }) => {
-  injectGlobal({ [`.${name}`]: cssVars(overrides) })
-  return { className: name, toString: () => name }
-}
-
-export const darkTheme = createTheme('dark', { colors: darkColors })
-
-export const globalCss = (styles: CSS) => {
-  let injected = false
-  return () => {
-    if (!injected) injectGlobal(resolve(styles, {}, false))
-    injected = true
-  }
-}
+// next-themes adds this class to <html>; the `.dark &` selectors in components rely on it
+export const darkTheme = { className: 'dark' }
 
 export const keyframes = (styles: CSS) => emotionKeyframes(resolve(styles, {}, false))
 
+// call sites use the stitches form `css({...})()`
 export const css = (styles: CSS) => {
   const className = emotionCss(resolve(styles))
-  return Object.assign(() => className, { className, toString: () => className })
+  return () => className
 }
 
-export const globalStyles = globalCss({
-  // body: { backgroundColor: '$background', color: '$text', fontFamily: 'Helvetica' },
-  'html, body': {
-    backgroundColor: '$mauve2',
-    color: '$mauve12',
-    fontFamily: '$body',
-    fontSize: '$md',
-    '-webkit-font-smoothing': 'antialiased',
-    '-moz-osx-font-smoothing': 'grayscale'
-  },
-  a: {
-    color: 'inherit',
-    textDecoration: 'none'
-  }
-})
+// emotion skips global styles it has already inserted, so calling this per request is fine
+export const globalStyles = () =>
+  injectGlobal(
+    resolve(
+      {
+        // body: { backgroundColor: '$background', color: '$text', fontFamily: 'Helvetica' },
+        'html, body': {
+          backgroundColor: '$mauve2',
+          color: '$mauve12',
+          fontFamily: '$body',
+          fontSize: '$md',
+          '-webkit-font-smoothing': 'antialiased',
+          '-moz-osx-font-smoothing': 'grayscale'
+        },
+        a: {
+          color: 'inherit',
+          textDecoration: 'none'
+        }
+      },
+      {},
+      false
+    )
+  )
 
 // ---------------------------------------------------------------- styled
 type Variants = Record<string, Record<string, any>>
@@ -441,38 +420,42 @@ export function styled(target: any, styles: StyleDef<Variants> = {}): any {
           ])
         ),
         defaults: defaultVariants,
-        compound: compoundVariants.map((c) => ({ ...c, css: resolve(c.css) }))
+        compound: compoundVariants.map(c => ({ ...c, css: resolve(c.css) }))
       }
     ]
   }
-  const defaults = Object.assign({}, ...chain.layers.map((l) => l.defaults))
-  const names = Array.from(new Set(chain.layers.flatMap((l) => Object.keys(l.variants))))
+  const defaults = Object.assign({}, ...chain.layers.map(l => l.defaults))
+  const names = Array.from(new Set(chain.layers.flatMap(l => Object.keys(l.variants))))
 
-  const Styled = React.forwardRef<unknown, any>(({ as, css: cssProp, className, ...props }, ref) => {
-    const value: Record<string, string> = {}
-    for (const name of names) {
-      const v = props[name] ?? defaults[name]
-      if (v != null) value[name] = String(v)
-      delete props[name]
+  const Styled = React.forwardRef<unknown, any>(
+    ({ as, css: cssProp, className, ...props }, ref) => {
+      const value: Record<string, string> = {}
+      for (const name of names) {
+        const v = props[name] ?? defaults[name]
+        if (v != null) value[name] = String(v)
+        delete props[name]
+      }
+      // same layering as stitches: all bases, then all variants, then compound variants, then the css prop
+      const parts = [
+        ...chain.layers.map(l => l.base),
+        ...chain.layers.flatMap(l =>
+          Object.entries(l.variants).map(([name, options]) => options[value[name]])
+        ),
+        ...chain.layers
+          .flatMap(l =>
+            l.compound.filter(({ css: _, ...match }) =>
+              Object.entries(match).every(([name, v]) => value[name] === String(v))
+            )
+          )
+          .map(c => c.css),
+        resolve(cssProp)
+      ]
+      // cx merges emotion classes passed via className (e.g. `className={css({...})()}`) after the component's own
+      // styles, so they win like stitches' later-injected rules did; markers and plain class names pass through
+      const cls = cx(...chain.markers, emotionCss(...parts.filter(Boolean)), className)
+      return React.createElement(as ?? chain.root, { ...props, className: cls, ref })
     }
-    // same layering as stitches: all bases, then all variants, then compound variants, then the css prop
-    const parts = [
-      ...chain.layers.map((l) => l.base),
-      ...chain.layers.flatMap((l) =>
-        Object.entries(l.variants).map(([name, options]) => options[value[name]])
-      ),
-      ...chain.layers.flatMap((l) =>
-        l.compound.filter(({ css: _, ...match }) =>
-          Object.entries(match).every(([name, v]) => value[name] === String(v))
-        )
-      ).map((c) => c.css),
-      resolve(cssProp)
-    ]
-    // cx merges emotion classes passed via className (e.g. `className={css({...})()}`) after the component's own
-    // styles, so they win like stitches' later-injected rules did; markers and plain class names pass through
-    const cls = cx(...chain.markers, emotionCss(...parts.filter(Boolean)), className)
-    return React.createElement(as ?? chain.root, { ...props, className: cls, ref })
-  })
+  )
   Styled.displayName = `Styled(${label})`
   return Object.assign(Styled, { __chain: chain, toString: () => `.${marker}` })
 }
