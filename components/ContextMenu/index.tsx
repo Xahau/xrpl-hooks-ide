@@ -1,18 +1,17 @@
-import { CaretRight, Check, Circle } from 'phosphor-react'
 import { FC, Fragment, ReactNode } from 'react'
-import { Flex, Text } from '../'
 import {
   ContextMenuCheckboxItem,
   ContextMenuContent,
   ContextMenuItem,
-  ContextMenuItemIndicator,
   ContextMenuLabel,
   ContextMenuRadioGroup,
   ContextMenuRadioItem,
   ContextMenuRoot,
+  ContextMenuSub,
+  ContextMenuSubContent,
+  ContextMenuSubTrigger,
   ContextMenuSeparator,
-  ContextMenuTrigger,
-  ContextMenuTriggerItem
+  ContextMenuTrigger
 } from './primitive'
 
 export type TextOption = {
@@ -47,25 +46,22 @@ export interface IContextMenu {
   children?: React.ReactNode
 }
 export const ContextMenu: FC<IContextMenu> = ({ children, options, isNested }) => {
+  // nested menus are a Sub with a SubTrigger item and their own SubContent
+  const Root = isNested ? ContextMenuSub : ContextMenuRoot
+  const Trigger = isNested ? ContextMenuSubTrigger : ContextMenuTrigger
+  const Content = isNested ? ContextMenuSubContent : ContextMenuContent
   return (
-    <ContextMenuRoot>
-      {isNested ? (
-        <ContextMenuTriggerItem>{children}</ContextMenuTriggerItem>
-      ) : (
-        <ContextMenuTrigger>{children}</ContextMenuTrigger>
-      )}
+    <Root>
+      <Trigger>{children}</Trigger>
       {options && !!options.length && (
-        <ContextMenuContent>
+        <Content>
           {options.map(({ key, ...option }) => {
             if (option.type === 'text') {
               const { children, label, onSelect } = option
               if (children)
                 return (
                   <ContextMenu isNested key={key} options={children}>
-                    <Flex fluid row justify="space-between" align="center">
-                      <Text>{label}</Text>
-                      <CaretRight />
-                    </Flex>
+                    {label}
                   </ContextMenu>
                 )
               return (
@@ -82,12 +78,7 @@ export const ContextMenu: FC<IContextMenu> = ({ children, options, isNested }) =
                   checked={checked}
                   onCheckedChange={onCheckedChange}
                 >
-                  <Flex row align="center">
-                    <ContextMenuItemIndicator>
-                      <Check />
-                    </ContextMenuItemIndicator>
-                    <Text css={{ ml: checked ? '$4' : undefined }}>{label}</Text>
-                  </Flex>
+                  {label}
                 </ContextMenuCheckboxItem>
               )
             }
@@ -97,25 +88,20 @@ export const ContextMenu: FC<IContextMenu> = ({ children, options, isNested }) =
                 <Fragment key={key}>
                   <ContextMenuLabel>{label}</ContextMenuLabel>
                   <ContextMenuRadioGroup value={value} onValueChange={onValueChange}>
-                    {options?.map(({ value: v, label }) => {
-                      return (
-                        <ContextMenuRadioItem key={v} value={v}>
-                          <ContextMenuItemIndicator>
-                            <Circle weight="fill" />
-                          </ContextMenuItemIndicator>
-                          <Text css={{ ml: '$4' }}>{label}</Text>
-                        </ContextMenuRadioItem>
-                      )
-                    })}
+                    {options?.map(({ value: v, label }) => (
+                      <ContextMenuRadioItem key={v} value={v}>
+                        {label}
+                      </ContextMenuRadioItem>
+                    ))}
                   </ContextMenuRadioGroup>
                 </Fragment>
               )
             }
             return <ContextMenuSeparator key={key} />
           })}
-        </ContextMenuContent>
+        </Content>
       )}
-    </ContextMenuRoot>
+    </Root>
   )
 }
 

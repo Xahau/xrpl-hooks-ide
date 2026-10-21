@@ -142,7 +142,7 @@ const NetworkSelector = () => {
               ))}
             </Flex>
             <Flex css={{ marginTop: 25, justifyContent: 'flex-end', gap: '$3' }}>
-              <DialogClose asChild>
+              <DialogClose>
                 <Button type="button" outline>
                   Cancel
                 </Button>
@@ -172,7 +172,7 @@ const NetworkSelector = () => {
               ))}
             </Flex>
           )}
-          <DialogClose asChild>
+          <DialogClose>
             <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
               <X size="20px" />
             </Box>

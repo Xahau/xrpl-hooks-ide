@@ -44,13 +44,13 @@ const Alert: FC = () => {
         <AlertDialogDescription>{body}</AlertDialogDescription>
         <Flex css={{ justifyContent: 'flex-end', gap: '$3' }}>
           {(cancelText || onCancel) && (
-            <AlertDialogCancel asChild>
+            <AlertDialogCancel>
               <Button css={{ minWidth: '$16' }} outline onClick={onCancel}>
                 {cancelText || 'Cancel'}
               </Button>
             </AlertDialogCancel>
           )}
-          <AlertDialogAction asChild>
+          <AlertDialogAction>
             <Button
               css={{ minWidth: '$16' }}
               variant="primary"

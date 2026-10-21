@@ -258,7 +258,7 @@ export const Tabs = ({
           ))}
           {onCreateNewTab && (
             <Dialog open={isNewtabDialogOpen} onOpenChange={setIsNewtabDialogOpen}>
-              <DialogTrigger asChild>
+              <DialogTrigger>
                 <Button ghost size="sm" css={{ alignItems: 'center', px: '$2', mr: '$3' }}>
                   <Plus size="16px" /> {tabs.length === 0 && `Add new ${label.toLocaleLowerCase()}`}
                 </Button>
@@ -286,14 +286,14 @@ export const Tabs = ({
                     gap: '$3'
                   }}
                 >
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button outline>Cancel</Button>
                   </DialogClose>
                   <Button variant="primary" onClick={handleCreateTab}>
                     Create
                   </Button>
                 </Flex>
-                <DialogClose asChild>
+                <DialogClose>
                   <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
                     <X size="20px" />
                   </Box>
@@ -328,14 +328,14 @@ export const Tabs = ({
                     gap: '$3'
                   }}
                 >
-                  <DialogClose asChild>
+                  <DialogClose>
                     <Button outline>Cancel</Button>
                   </DialogClose>
                   <Button variant="primary" onClick={handleRenameTab}>
                     Confirm
                   </Button>
                 </Flex>
-                <DialogClose asChild>
+                <DialogClose>
                   <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
                     <X size="20px" />
                   </Box>

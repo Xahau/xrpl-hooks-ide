@@ -54,3 +54,10 @@ html.light .gutter-horizontal:hover {
 .monaco-editor .monaco-hover {
   z-index: 9999;
 }
+
+.radix-themes {
+  --default-font-family: 'Work Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI',
+    Roboto, 'Helvetica Neue', sans-serif;
+  --code-font-family: 'Roboto Mono', monospace;
+  --cursor-button: pointer;
+}

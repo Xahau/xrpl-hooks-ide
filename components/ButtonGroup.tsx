@@ -1,10 +1,10 @@
 import { styled } from '../stitches.config'
-import { StyledButton } from './Button'
+import Button from './Button'
 
 const ButtonGroup = styled('div', {
   display: 'flex',
   marginLeft: '1px',
-  [`& ${StyledButton}`]: {
+  [`& ${Button}`]: {
     marginLeft: '-1px',
     px: '$4',
     zIndex: 2,
@@ -13,14 +13,14 @@ const ButtonGroup = styled('div', {
       zIndex: 200
     }
   },
-  [`& ${StyledButton}:not(:only-of-type):not(:first-child):not(:last-child)`]: {
+  [`& ${Button}:not(:only-of-type):not(:first-child):not(:last-child)`]: {
     borderRadius: 0
   },
-  [`& ${StyledButton}:first-child:not(:only-of-type)`]: {
+  [`& ${Button}:first-child:not(:only-of-type)`]: {
     borderBottomRightRadius: 0,
     borderTopRightRadius: 0
   },
-  [`& ${StyledButton}:last-child:not(:only-of-type)`]: {
+  [`& ${Button}:last-child:not(:only-of-type)`]: {
     borderBottomLeftRadius: 0,
     borderTopLeftRadius: 0
   }

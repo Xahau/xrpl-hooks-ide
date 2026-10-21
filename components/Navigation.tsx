@@ -128,7 +128,7 @@ const Navigation = () => {
                   open={snap.mainModalOpen}
                   onOpenChange={open => (state.mainModalOpen = open)}
                 >
-                  <DialogTrigger asChild>
+                  <DialogTrigger>
                     <Button outline>
                       <FolderOpen size="15px" />
                     </Button>
@@ -293,7 +293,7 @@ const Navigation = () => {
                         ))}
                       </Flex>
                     </Flex>
-                    <DialogClose asChild>
+                    <DialogClose>
                       <Box
                         css={{
                           position: 'absolute',
@@ -341,42 +341,26 @@ const Navigation = () => {
             }}
           >
             <ButtonGroup>
-              <Button
-                as={Link}
-                href={gistId ? `/develop/${gistId}` : '/develop'}
-                shallow
-                outline={!router.pathname.includes('/develop')}
-                uppercase
-              >
-                Develop
+              <Button asChild outline={!router.pathname.includes('/develop')} uppercase>
+                <Link href={gistId ? `/develop/${gistId}` : '/develop'} shallow>
+                  Develop
+                </Link>
               </Button>
-              <Button
-                as={Link}
-                href={gistId ? `/deploy/${gistId}` : '/deploy'}
-                shallow
-                outline={!router.pathname.includes('/deploy')}
-                uppercase
-              >
-                Deploy
+              <Button asChild outline={!router.pathname.includes('/deploy')} uppercase>
+                <Link href={gistId ? `/deploy/${gistId}` : '/deploy'} shallow>
+                  Deploy
+                </Link>
               </Button>
-              <Button
-                as={Link}
-                href={gistId ? `/test/${gistId}` : '/test'}
-                shallow
-                outline={!router.pathname.includes('/test')}
-                uppercase
-              >
-                Test
+              <Button asChild outline={!router.pathname.includes('/test')} uppercase>
+                <Link href={gistId ? `/test/${gistId}` : '/test'} shallow>
+                  Test
+                </Link>
               </Button>
             </ButtonGroup>
-            <Button
-              as="a"
-              href="https://xahau.network/docs/hooks/"
-              target="_blank"
-              rel="noreferrer noopener"
-              outline
-            >
-              <BookOpen size="15px" />
+            <Button asChild outline>
+              <a href="https://xahau.network/docs/hooks/" target="_blank" rel="noreferrer noopener">
+                <BookOpen size="15px" />
+              </a>
             </Button>
           </Stack>
         </Flex>

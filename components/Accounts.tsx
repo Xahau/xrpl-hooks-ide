@@ -92,7 +92,7 @@ export const AccountDialog = ({
           }}
         >
           <Wallet size="15px" /> {activeAccount?.name}
-          <DialogClose asChild>
+          <DialogClose>
             <Button
               size="xs"
               outline
@@ -288,7 +288,7 @@ export const AccountDialog = ({
             </Flex>
           </Stack>
         </DialogDescription>
-        <DialogClose asChild>
+        <DialogClose>
           <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
             <X size="20px" />
           </Box>
@@ -486,7 +486,7 @@ const ImportAccountDialog = ({ type = 'import' }: { type?: 'import' | 'create' }
   }
   return (
     <Dialog>
-      <DialogTrigger asChild>
+      <DialogTrigger>
         <Button ghost size="sm">
           {btnText}
         </Button>
@@ -529,16 +529,16 @@ const ImportAccountDialog = ({ type = 'import' }: { type?: 'import' | 'create' }
             gap: '$3'
           }}
         >
-          <DialogClose asChild>
+          <DialogClose>
             <Button outline>Cancel</Button>
           </DialogClose>
-          <DialogClose asChild>
+          <DialogClose>
             <Button type="submit" variant="primary" onClick={handleSubmit}>
               {title}
             </Button>
           </DialogClose>
         </Flex>
-        <DialogClose asChild>
+        <DialogClose>
           <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
             <X size="20px" />
           </Box>

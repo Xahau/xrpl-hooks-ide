@@ -1,6 +1,6 @@
 import React, { useCallback, useEffect, useState } from 'react'
 import { Plus, Trash, X } from 'phosphor-react'
-import { Button, Box, Text, Switch, SwitchThumb } from '.'
+import { Button, Box, Text, Switch } from '.'
 import { Stack, Flex, Select } from '.'
 import {
   Dialog,
@@ -202,24 +202,15 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                 setValue('InvokeOutgoing', [])
               }
             }}
-            css={{ width: 32, height: 18 }}
-          >
-            <SwitchThumb
-              css={{
-                width: 14,
-                height: 14,
-                transform: 'translateX(2px)',
-                '&[data-state="checked"]': { transform: 'translateX(16px)' }
-              }}
-            />
-          </Switch>
+            size="1"
+          />
         </Flex>
       )
     }
 
     return (
       <Dialog open={isSetHookDialogOpen} onOpenChange={onOpenChange}>
-        <DialogTrigger asChild>
+        <DialogTrigger>
           <Button
             size="xs"
             uppercase
@@ -513,16 +504,16 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                 gap: '$3'
               }}
             >
-              <DialogClose asChild>
+              <DialogClose>
                 <Button outline>Cancel</Button>
               </DialogClose>
-              {/* <DialogClose asChild> */}
+              {/* <DialogClose> */}
               <Button variant="primary" type="submit" isLoading={account?.isLoading}>
                 Set Hook
               </Button>
               {/* </DialogClose> */}
             </Flex>
-            <DialogClose asChild>
+            <DialogClose>
               <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
                 <X size="20px" />
               </Box>

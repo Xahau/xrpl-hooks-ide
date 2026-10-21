@@ -1,6 +1,6 @@
 // Minimal stitches-compatible styling layer on top of @emotion/css (framework-agnostic, no css prop magic).
 import * as React from 'react'
-import { css as emotionCss, cx, keyframes as emotionKeyframes, injectGlobal } from '@emotion/css'
+import { css as emotionCss, cx, injectGlobal } from '@emotion/css'
 
 import {
   gray,
@@ -316,8 +316,6 @@ injectGlobal({ ':root': cssVars(theme), '.dark': cssVars({ colors: darkColors })
 
 // next-themes adds this class to <html>; the `.dark &` selectors in components rely on it
 export const darkTheme = { className: 'dark' }
-
-export const keyframes = (styles: CSS) => emotionKeyframes(resolve(styles, {}, false))
 
 // call sites use the stitches form `css({...})()`
 export const css = (styles: CSS) => {

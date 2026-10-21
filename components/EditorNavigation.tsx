@@ -19,7 +19,6 @@ import {
   DropdownMenuTrigger,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuArrow,
   DropdownMenuSeparator
 } from './DropdownMenu'
 import NewWindow from 'react-new-window'
@@ -35,7 +34,6 @@ import Button from './Button'
 import Container from './Container'
 import {
   Dialog,
-  DialogTrigger,
   DialogContent,
   DialogTitle,
   DialogDescription,
@@ -173,7 +171,7 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
         <Container css={{ width: 'unset', display: 'flex', alignItems: 'center' }}>
           {status === 'authenticated' ? (
             <DropdownMenu>
-              <DropdownMenuTrigger asChild data-dropdown-menu-trigger="">
+              <DropdownMenuTrigger>
                 <Box
                   css={{
                     display: 'flex',
@@ -215,8 +213,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
                 <DropdownMenuItem onClick={() => signOut({ callbackUrl: '/' })}>
                   <SignOut size="16px" /> Log out
                 </DropdownMenuItem>
-
-                <DropdownMenuArrow offset={10} />
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
@@ -329,7 +325,7 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
             </Tooltip>
 
             <DropdownMenu>
-              <DropdownMenuTrigger asChild data-dropdown-menu-trigger="">
+              <DropdownMenuTrigger>
                 <Button outline size="sm">
                   <CaretDown size="16px" />
                 </Button>
@@ -373,8 +369,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
                 <DropdownMenuItem onClick={() => setEditorSettingsOpen(true)}>
                   <Gear size="16px" /> Editor Settings
                 </DropdownMenuItem>
-
-                <DropdownMenuArrow offset={10} />
               </DropdownMenuContent>
             </DropdownMenu>
           </Stack>
@@ -384,11 +378,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
       </Flex>
 
       <Dialog open={editorSettingsOpen} onOpenChange={setEditorSettingsOpen}>
-        <DialogTrigger asChild>
-          {/* <Button outline size="sm" css={{ alignItems: "center" }}>
-                  <Gear size="16px" />
-                </Button> */}
-        </DialogTrigger>
         <DialogContent>
           <DialogTitle>Editor settings</DialogTitle>
           <DialogDescription>
@@ -407,18 +396,18 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
           </DialogDescription>
 
           <Flex css={{ marginTop: 25, justifyContent: 'flex-end', gap: '$3' }}>
-            <DialogClose asChild>
+            <DialogClose>
               <Button outline onClick={() => updateEditorSettings(editorSettings)}>
                 Cancel
               </Button>
             </DialogClose>
-            <DialogClose asChild>
+            <DialogClose>
               <Button variant="primary" onClick={() => updateEditorSettings(editorSettings)}>
                 Save changes
               </Button>
             </DialogClose>
           </Flex>
-          <DialogClose asChild>
+          <DialogClose>
             <Box css={{ position: 'absolute', top: '$3', right: '$3' }}>
               <X size="20px" />
             </Box>

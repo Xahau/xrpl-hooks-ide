@@ -206,7 +206,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
   return (
     <>
       <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-        <DialogTrigger asChild>
+        <DialogTrigger>
           <Button
             variant="primary"
             onClick={() => {
@@ -282,7 +282,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
                     />
                   ) : (
                     <Input
-                      type={type || 'text'}
+                      type={(type || 'text') as 'text'}
                       value={value}
                       css={{ mt: '$1' }}
                       onChange={e => {
@@ -297,7 +297,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
               )
             })}
             <Flex css={{ justifyContent: 'flex-end', width: '100%', gap: '$3' }}>
-              <DialogClose asChild>
+              <DialogClose>
                 <Button outline>Cancel</Button>
               </DialogClose>
               <Button variant="primary" isDisabled={isDisabled || isLoading} isLoading={isLoading} onClick={handleRun}>
@@ -305,7 +305,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
               </Button>
             </Flex>
           </Stack>
-          <DialogClose asChild>
+          <DialogClose>
             <Box
               css={{
                 position: 'absolute',

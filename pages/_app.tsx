@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import '@radix-ui/themes/styles.css'
 import '../styles/globals.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
@@ -6,7 +7,7 @@ import { SessionProvider } from 'next-auth/react'
 import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast'
 import { useRouter } from 'next/router'
-import * as TooltipPrimitive from '@radix-ui/react-tooltip'
+import { Theme } from '@radix-ui/themes'
 import PlausibleProvider from 'next-plausible'
 
 import { darkTheme, css } from '../stitches.config'
@@ -90,8 +91,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <meta name="theme-color" content="#FDFCFD" media="(prefers-color-scheme: light)" />
       </Head>
 
-      <TooltipPrimitive.Provider delayDuration={100}>
-        <SessionProvider session={session}>
+      <SessionProvider session={session}>
           <ThemeProvider
             attribute="class"
             defaultTheme="dark"
@@ -101,6 +101,15 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
               dark: darkTheme.className
             }}
           >
+            <Theme
+              appearance="inherit"
+              accentColor="purple"
+              grayColor="mauve"
+              radius="small"
+              scaling="100%"
+              panelBackground="solid"
+              hasBackground={false}
+            >
             <PlausibleProvider domain="hooks-builder.xrpl.org" trackOutboundLinks>
               <Navigation />
               <Component {...pageProps} />
@@ -132,9 +141,9 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
                 </Button>
               </Flex>
             </PlausibleProvider>
+            </Theme>
           </ThemeProvider>
-        </SessionProvider>
-      </TooltipPrimitive.Provider>
+      </SessionProvider>
     </>
   )
 }
