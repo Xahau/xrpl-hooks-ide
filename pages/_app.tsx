@@ -1,18 +1,15 @@
 import { useEffect } from 'react'
 import '../styles/globals.css'
-import '../styles/theme.css'
-import '../styles/global.css'
 import type { AppProps } from 'next/app'
 import Head from 'next/head'
 import { SessionProvider } from 'next-auth/react'
-import { ThemeProvider, useTheme } from 'next-themes'
+import { ThemeProvider } from 'next-themes'
 import { Toaster } from 'react-hot-toast'
 import { useRouter } from 'next/router'
 import * as TooltipPrimitive from '@radix-ui/react-tooltip'
 import PlausibleProvider from 'next-plausible'
 
-import { css, lightTheme as stitchesLightTheme, darkTheme as stitchesDarkTheme } from '../stitches.config'
-import { lightTheme as vanillaLightTheme, darkTheme as vanillaDarkTheme } from '../styles/theme.css'
+import { darkTheme, css } from '../stitches.config'
 import Navigation from '../components/Navigation'
 import { fetchFiles } from '../state/actions'
 import state from '../state'
@@ -26,25 +23,6 @@ import { ChatCircleText } from 'phosphor-react'
 
 TimeAgo.setDefaultLocale(en.locale)
 TimeAgo.addLocale(en)
-
-// Component to sync Stitches theme with next-themes
-function StitchesThemeSync() {
-  const { theme } = useTheme()
-
-  useEffect(() => {
-    const html = document.documentElement
-    // Remove both theme classes first
-    html.classList.remove(stitchesLightTheme, stitchesDarkTheme)
-    // Add the appropriate theme class
-    if (theme === 'light') {
-      html.classList.add(stitchesLightTheme)
-    } else {
-      html.classList.add(stitchesDarkTheme)
-    }
-  }, [theme])
-
-  return null
-}
 
 function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const router = useRouter()
@@ -119,11 +97,10 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
             defaultTheme="dark"
             enableSystem={false}
             value={{
-              light: vanillaLightTheme,
-              dark: vanillaDarkTheme,
+              light: 'light',
+              dark: darkTheme.className
             }}
           >
-            <StitchesThemeSync />
             <PlausibleProvider domain="hooks-builder.xrpl.org" trackOutboundLinks>
               <Navigation />
               <Component {...pageProps} />
