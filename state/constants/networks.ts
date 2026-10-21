@@ -8,16 +8,11 @@ export const presetNetworks: INetwork[] = [
     faucet: { url: 'https://xahau-test.net/newcreds', kind: 'newcreds' },
     debugStream: 'wss://xahau-test.net/debugstream/{address}',
     networkId: 21338
-  },
-  {
-    name: 'Xahau Dev Net',
-    ws: 'wss://xahau-dev.net',
-    explorer: 'https://explorer.xahau-dev.net',
-    faucet: { url: 'https://faucet.xahau-dev.net/accounts', kind: 'accounts' },
-    debugStream: 'wss://xahau-dev.net/{address}',
-    networkId: 21339
   }
 ]
+
+/** Published network list; served with `Access-Control-Allow-Origin: *`, so fetched directly */
+export const remoteNetworksUrl = 'https://xahau-dev.net/networks.json'
 
 export const defaultNetwork = presetNetworks[0]
 

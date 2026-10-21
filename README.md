@@ -10,7 +10,7 @@ This is a [Next.js](https://nextjs.org/) project bootstrapped with [`create-next
 
 ## Networks
 
-The network is chosen in the header (Xahau Testnet and Xahau Dev Net presets, plus "Add network…" for your own: WebSocket URL, explorer, faucet URL and kind, debug stream template, optional network id). The selection and custom networks are stored in `localStorage`; `NetworkID` comes from the preset, or from the node's `server_info` for custom networks without one (and is only sent on networks with id > 1024). The Next API route `/api/faucet` only proxies the preset faucets that lack CORS headers; faucets that allow CORS are called directly from the browser. `NEXT_PUBLIC_TESTNET_URL`, `NEXT_PUBLIC_NETWORK_ID`, `NEXT_PUBLIC_EXPLORER_URL` and `NEXT_PUBLIC_DEBUG_STREAM_URL` are no longer read.
+The network is chosen in the header (the Xahau Testnet preset, the networks published at [xahau-dev.net/networks.json](https://xahau-dev.net/networks.json) fetched directly and cached in `localStorage`, plus "Add network…" for your own: WebSocket URL, explorer, faucet URL and kind, debug stream template, optional network id). The selection and custom networks are stored in `localStorage`; `NetworkID` comes from the preset, or from the node's `server_info` for custom networks without one (and is only sent on networks with id > 1024). The Next API route `/api/faucet` only proxies the preset faucets that lack CORS headers; faucets that allow CORS are called directly from the browser. `NEXT_PUBLIC_TESTNET_URL`, `NEXT_PUBLIC_NETWORK_ID`, `NEXT_PUBLIC_EXPLORER_URL` and `NEXT_PUBLIC_DEBUG_STREAM_URL` are no longer read.
 
 ## Getting Started
 

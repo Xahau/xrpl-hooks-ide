@@ -72,6 +72,7 @@ export type DeployValue = Record<IFile['name'], any>
 
 export interface IState {
   network: INetwork
+  remoteNetworks: INetwork[]
   customNetworks: INetwork[]
   networkId?: number
   files: IFile[]
@@ -110,6 +111,7 @@ export interface IState {
 // let localStorageState: null | string = null;
 let initialState: IState = {
   network: defaultNetwork,
+  remoteNetworks: [],
   customNetworks: [],
   networkId: defaultNetwork.networkId,
   files: [],
@@ -166,13 +168,18 @@ if (typeof window !== 'undefined') {
 }
 
 let initialCustomNetworks: INetwork[] = []
+let initialRemoteNetworks: INetwork[] = []
 let initialNetwork = defaultNetwork
 if (typeof window !== 'undefined') {
   try {
     initialCustomNetworks = JSON.parse(localStorage.getItem('hooksIdeCustomNetworks') || '[]')
+    // last fetched copy, so a saved remote network connects before the list is refreshed
+    initialRemoteNetworks = JSON.parse(localStorage.getItem('hooksIdeRemoteNetworks') || '[]')
     const name = localStorage.getItem('hooksIdeNetwork')
     initialNetwork =
-      [...presetNetworks, ...initialCustomNetworks].find(n => n.name === name) || defaultNetwork
+      [...presetNetworks, ...initialRemoteNetworks, ...initialCustomNetworks].find(
+        n => n.name === name
+      ) || defaultNetwork
   } catch (err) {
     console.log(`localStorage network state broken`)
   }
@@ -182,6 +189,7 @@ if (typeof window !== 'undefined') {
 const state = proxy<IState>({
   ...initialState,
   network: initialNetwork,
+  remoteNetworks: initialRemoteNetworks,
   customNetworks: initialCustomNetworks,
   networkId: initialNetwork.networkId,
   accounts: initialAccounts.length > 0 ? initialAccounts : [],
