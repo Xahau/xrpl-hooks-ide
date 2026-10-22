@@ -4,6 +4,12 @@ interface Flags {
     [key: string]: string;
 }
 
+export const hookSetFlags: Flags = {
+    hsfOVERRIDE: '0x00000001',
+    hsfNSDELETE: '0x00000002',
+    hsfCOLLECT: '0x00000004',
+}
+
 export const transactionFlags: { [key: /* TransactionType */ string]: Flags } = {
     "*": {
         tfFullyCanonicalSig: '0x80000000'

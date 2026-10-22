@@ -9,6 +9,7 @@ import estimateFee from '../../utils/estimateFee'
 import { SetHookData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { xrplSend } from './xrpl-client'
+import { combineFlags } from '../constants/flags'
 import { XrplDefinitions } from 'xrpl-accountlib'
 import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
@@ -109,7 +110,7 @@ export const prepareDeployHookTx = async (
           ...(hookName && { HookName: toHex(hookName) }),
           HookNamespace,
           HookApiVersion: 0,
-          Flags: 1,
+          Flags: Number(combineFlags(data.Flags?.map(f => f.value))) || 1,
           // ...(filteredHookGrants.length > 0 && { HookGrants: filteredHookGrants }),
           ...(filteredHookParameters.length > 0 && {
             HookParameters: filteredHookParameters

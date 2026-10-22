@@ -22,6 +22,7 @@ import estimateFee from '../utils/estimateFee'
 import { getParameters, getInvokeOptions, transactionOptions, SetHookData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
 import AccountSequence from './Sequence'
+import { hookSetFlags } from '../state/constants/flags'
 
 export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
   ({ accountAddress }) => {
@@ -59,6 +60,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
         Invoke: getInvokeOptions(content),
         InvokeIncoming: [],
         InvokeOutgoing: [],
+        Flags: [{ label: 'hsfOVERRIDE', value: hookSetFlags.hsfOVERRIDE }],
         HookParameters: getParameters(content),
         ...(activeFile && snap.deployValues[activeFile.name])
       }
@@ -320,6 +322,25 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                       />
                     )}
                   />
+                </Box>
+                <Box css={{ width: '100%' }}>
+                  <Label>Flags</Label>
+                  <Controller
+                    name="Flags"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        {...field}
+                        closeMenuOnSelect={false}
+                        isMulti
+                        menuPosition="fixed"
+                        options={Object.entries(hookSetFlags).map(([label, value]) => ({ label, value }))}
+                      />
+                    )}
+                  />
+                  <Label css={{ fontSize: '$sm', mt: '$1' }}>
+                    hsfOVERRIDE replaces an existing hook at this position. Cron hooks need hsfCOLLECT.
+                  </Label>
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Name</Label>
