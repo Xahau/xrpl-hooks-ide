@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect, useState } from 'react'
+import { FC, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import Container from '../Container'
 import Flex from '../Flex'
 import Input from '../Input'
@@ -18,7 +18,7 @@ import state from '../../state'
 import { streamState } from '../DebugStream'
 import { Box, Button } from '..'
 import { getFlags } from '../../state/constants/flags'
-import { Plus, Trash } from 'phosphor-react'
+import { CalendarBlank, Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
 import { capitalize, typeIs } from '../../utils/helpers'
 
@@ -87,16 +87,156 @@ const formatLocalDate = (seconds: number | string, ripple: boolean) => {
   )
 }
 
-// local `yyyy/MM/dd[ HH:mm[:ss]]` -> seconds in the field's epoch, undefined if invalid
+const MAX_UINT32 = 4294967295
+
+// local date parts -> seconds in the field's epoch, or an error message
+const fromParts = (
+  y: number,
+  mo: number,
+  d: number,
+  h: number,
+  mi: number,
+  s: number,
+  ripple: boolean
+): { seconds: number } | { error: string } => {
+  const date = new Date(y, mo - 1, d, h, mi, s)
+  // rebuilding the date and comparing rejects values that would roll over (02/30, 25:00)
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== mo - 1 ||
+    date.getDate() !== d ||
+    date.getHours() !== h ||
+    date.getMinutes() !== mi ||
+    date.getSeconds() !== s
+  ) {
+    return { error: 'Invalid date' }
+  }
+  const seconds = Math.floor(date.getTime() / 1000) - (ripple ? RIPPLE_EPOCH_OFFSET : 0)
+  if (seconds < 0 && ripple) return { error: 'Must be on or after 2000/01/01 00:00:00 UTC' }
+  if (seconds < 0 || seconds > MAX_UINT32) return { error: 'Out of range for this field' }
+  return { seconds }
+}
+
+// local `yyyy/MM/dd[ HH:mm[:ss]]` -> seconds in the field's epoch, or an error message
 const parseLocalDate = (input: string, ripple: boolean) => {
   const m = input
     .trim()
     .match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/)
-  if (!m) return undefined
-  const [y, mo, d, h, mi, s] = m.slice(1).map(n => Number(n || 0))
-  const ms = new Date(y, mo - 1, d, h, mi, s).getTime()
-  if (Number.isNaN(ms)) return undefined
-  return Math.floor(ms / 1000) - (ripple ? RIPPLE_EPOCH_OFFSET : 0)
+  if (!m) return { error: 'Use yyyy/MM/dd HH:mm:ss' }
+  const [y, mo, d, h, mi, sec] = m.slice(1).map(n => Number(n || 0))
+  return fromParts(y, mo, d, h, mi, sec, ripple)
+}
+
+// seconds in the field's epoch -> local `YYYY-MM-DDTHH:mm:ss` for <input type="datetime-local">
+const toDatetimeLocal = (seconds: number | string, ripple: boolean) =>
+  formatLocalDate(seconds, ripple).replace(/\//g, '-').replace(' ', 'T')
+
+// `YYYY-MM-DDTHH:mm[:ss]` from <input type="datetime-local"> -> seconds, or an error message
+const parseDatetimeLocal = (input: string, ripple: boolean) => {
+  const m = input.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/)
+  if (!m) return { error: 'Invalid date' }
+  const [y, mo, d, h, mi, sec] = m.slice(1).map(n => Number(n || 0))
+  return fromParts(y, mo, d, h, mi, sec, ripple)
+}
+
+const isUInt32 = (v: number | string) =>
+  v === '' || (/^\d+$/.test(String(v)) && Number(v) <= MAX_UINT32)
+
+const TimeInput: FC<{
+  value: TimeField
+  onChange: (v: TimeField) => void
+  hint?: string
+}> = ({ value, onChange, hint }) => {
+  const ripple = value.$type === 'time.ripple'
+  const [draft, setDraft] = useState(formatLocalDate(value.$value, ripple))
+  const [error, setError] = useState('')
+  const pickerRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setDraft(formatLocalDate(value.$value, ripple))
+  }, [value.$value, ripple])
+
+  const commit = (result: { seconds: number } | { error: string }) => {
+    if ('error' in result) return setError(result.error)
+    setError('')
+    // same value: the effect above will not run, so re-format explicitly
+    setDraft(formatLocalDate(result.seconds, ripple))
+    onChange({ ...value, $value: result.seconds })
+  }
+
+  const openPicker = () => {
+    const el = pickerRef.current
+    if (!el) return
+    try {
+      if (typeof el.showPicker === 'function') el.showPicker()
+      else el.focus()
+    } catch {
+      // showPicker throws without user activation or when unsupported
+      el.focus()
+    }
+  }
+
+  const secondsError = isUInt32(value.$value)
+    ? ''
+    : `Must be a whole number between 0 and ${MAX_UINT32}`
+  const message = error || secondsError
+
+  return (
+    <Flex column fluid>
+      <Flex fluid css={{ alignItems: 'center' }}>
+        <Input
+          type="number"
+          value={value.$value}
+          onChange={e => onChange({ ...value, $value: e.target.value })}
+          css={{
+            flex: 'inherit',
+            '-moz-appearance': 'textfield',
+            '&::-webkit-outer-spin-button': {
+              '-webkit-appearance': 'none',
+              margin: 0
+            },
+            '&::-webkit-inner-spin-button ': {
+              '-webkit-appearance': 'none',
+              margin: 0
+            }
+          }}
+        />
+        <Box css={{ ml: '$2', width: '240px', flexShrink: 0, position: 'relative', display: 'flex' }}>
+          <Input
+            placeholder="yyyy/MM/dd HH:mm:ss"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && commit(parseLocalDate(draft, ripple))}
+            onBlur={() => commit(parseLocalDate(draft, ripple))}
+          />
+          <input
+            ref={pickerRef}
+            type="datetime-local"
+            step="1"
+            tabIndex={-1}
+            aria-hidden
+            style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+            value={toDatetimeLocal(value.$value, ripple)}
+            onChange={e => e.target.value && commit(parseDatetimeLocal(e.target.value, ripple))}
+          />
+          <Button outline type="button" css={{ ml: '$1', px: '$2' }} title="Pick a date" onClick={openPicker}>
+            <CalendarBlank size="16px" />
+          </Button>
+        </Box>
+      </Flex>
+      {message ? (
+        <Text error css={{ fontSize: '$xs' }}>
+          {message}
+        </Text>
+      ) : (
+        hint && (
+          <Text muted css={{ fontSize: '$xs' }}>
+            {hint}
+          </Text>
+        )
+      )}
+    </Flex>
+  )
 }
 
 const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
@@ -321,49 +461,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     value: TimeField,
     setValue: (value: TimeField) => void,
     hint?: string
-  ) => {
-    const ripple = value.$type === 'time.ripple'
-    return (
-      <Flex column fluid>
-        <Flex fluid css={{ alignItems: 'center' }}>
-          <Input
-            type="number"
-            value={value.$value}
-            onChange={e => setValue({ ...value, $value: e.target.value })}
-            css={{
-              flex: 'inherit',
-              '-moz-appearance': 'textfield',
-              '&::-webkit-outer-spin-button': {
-                '-webkit-appearance': 'none',
-                margin: 0
-              },
-              '&::-webkit-inner-spin-button ': {
-                '-webkit-appearance': 'none',
-                margin: 0
-              }
-            }}
-          />
-          <Box css={{ ml: '$2', width: '200px', flexShrink: 0 }}>
-            <Input
-              key={String(value.$value)}
-              placeholder="yyyy/MM/dd HH:mm:ss"
-              defaultValue={formatLocalDate(value.$value, ripple)}
-              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
-              onBlur={e => {
-                const seconds = parseLocalDate(e.target.value, ripple)
-                if (seconds !== undefined) setValue({ ...value, $value: seconds })
-              }}
-            />
-          </Box>
-        </Flex>
-        {hint && (
-          <Text muted css={{ fontSize: '$xs' }}>
-            {hint}
-          </Text>
-        )}
-      </Flex>
-    )
-  }
+  ) => <TimeInput value={value} onChange={setValue} hint={hint} />
 
   const renderAmountField = (
     value: XrpAmountField | TokenAmountField,
