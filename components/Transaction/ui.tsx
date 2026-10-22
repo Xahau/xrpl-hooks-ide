@@ -76,21 +76,26 @@ const RIPPLE_EPOCH_OFFSET = 946684800
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
-// seconds in the field's epoch -> local `YYYY-MM-DDTHH:mm:ss` for datetime-local
-const toInputDate = (seconds: number | string, ripple: boolean) => {
+// seconds in the field's epoch -> local `yyyy/MM/dd HH:mm:ss`
+const formatLocalDate = (seconds: number | string, ripple: boolean) => {
   if (seconds === '' || !Number.isFinite(+seconds)) return ''
   const d = new Date((+seconds + (ripple ? RIPPLE_EPOCH_OFFSET : 0)) * 1000)
   if (Number.isNaN(d.getTime())) return ''
   return (
-    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
-    `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+    `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}` +
+    ` ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
   )
 }
 
-// datetime-local string -> seconds in the field's epoch, undefined if empty/invalid
-const fromInputDate = (input: string, ripple: boolean) => {
-  const ms = new Date(input).getTime()
-  if (!input || Number.isNaN(ms)) return undefined
+// local `yyyy/MM/dd[ HH:mm[:ss]]` -> seconds in the field's epoch, undefined if invalid
+const parseLocalDate = (input: string, ripple: boolean) => {
+  const m = input
+    .trim()
+    .match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/)
+  if (!m) return undefined
+  const [y, mo, d, h, mi, s] = m.slice(1).map(n => Number(n || 0))
+  const ms = new Date(y, mo - 1, d, h, mi, s).getTime()
+  if (Number.isNaN(ms)) return undefined
   return Math.floor(ms / 1000) - (ripple ? RIPPLE_EPOCH_OFFSET : 0)
 }
 
@@ -338,13 +343,14 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               }
             }}
           />
-          <Box css={{ ml: '$2', width: '270px', flexShrink: 0 }}>
+          <Box css={{ ml: '$2', width: '200px', flexShrink: 0 }}>
             <Input
-              type="datetime-local"
-              step="1"
-              value={toInputDate(value.$value, ripple)}
-              onChange={e => {
-                const seconds = fromInputDate(e.target.value, ripple)
+              key={String(value.$value)}
+              placeholder="yyyy/MM/dd HH:mm:ss"
+              defaultValue={formatLocalDate(value.$value, ripple)}
+              onKeyDown={e => e.key === 'Enter' && e.currentTarget.blur()}
+              onBlur={e => {
+                const seconds = parseLocalDate(e.target.value, ripple)
                 if (seconds !== undefined) setValue({ ...value, $value: seconds })
               }}
             />
