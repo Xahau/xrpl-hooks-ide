@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, ReactNode } from 'react'
+import React, { useState, useRef, ReactNode } from 'react'
 import {
   Share,
   DownloadSimple,
@@ -22,7 +22,6 @@ import {
   DropdownMenuArrow,
   DropdownMenuSeparator
 } from './DropdownMenu'
-import NewWindow from 'react-new-window'
 import { signOut, useSession } from 'next-auth/react'
 import { useSnapshot } from 'valtio'
 import toast from 'react-hot-toast'
@@ -52,7 +51,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
   const snap = useSnapshot(state)
   const [editorSettingsOpen, setEditorSettingsOpen] = useState(false)
   const { data: session, status } = useSession()
-  const [popup, setPopUp] = useState(false)
   const [updating, setUpdating] = useState(false)
   const handleUpdateHeaders = () => {
     const names = Object.keys(defaultHookHeaders)
@@ -90,12 +88,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
     })
   }
   const [editorSettings, setEditorSettings] = useState(snap.editorSettings)
-
-  useEffect(() => {
-    if (session && session.user && popup) {
-      setPopUp(false)
-    }
-  }, [session, popup])
 
   const showNewGistAlert = () => {
     showAlert('Are you sure?', {
@@ -220,7 +212,13 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button outline size="sm" css={{ mr: '$3' }} onClick={() => setPopUp(true)}>
+            <Button outline size="sm" css={{ mr: '$3' }} onClick={() =>
+                window.open(
+                  '/sign-in',
+                  'signin',
+                  `width=640,height=480,left=${window.screenX + (window.outerWidth - 640) / 2},top=${window.screenY + (window.outerHeight - 480) / 2}`
+                )
+              }>
               <GithubLogo size="16px" /> Login
             </Button>
           )}
@@ -379,7 +377,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
             </DropdownMenu>
           </Stack>
 
-          {popup && !session ? <NewWindow center="parent" url="/sign-in" /> : null}
         </Container>
       </Flex>
 
