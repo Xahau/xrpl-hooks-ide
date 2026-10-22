@@ -3,33 +3,16 @@ import type { IAccount } from '..'
 import ResultLink from '../../components/ResultLink'
 import { ref } from 'valtio'
 import { xrplSend } from './xrpl-client'
-import { fromHex } from '../../utils/setHook'
+import { sendTransaction } from './sendTransaction'
 
-interface TransactionOptions {
-  TransactionType: string
-  Account?: string
-  Fee?: string
-  [index: string]: any
-}
-interface OtherOptions {
-  logPrefix?: string
-}
+type TransactionOptions = Parameters<typeof sendTransaction>[1]
+type OtherOptions = Parameters<typeof sendTransaction>[2]
 
 // hook::ExitType in xahaud
 const hookResultNames = ['UNSET', 'WASM_ERROR', 'ROLLBACK', 'ACCEPT']
 
-const hexToUtf8 = (hex: string) => {
-  try {
-    return decodeURIComponent(
-      fromHex(hex)
-        .split('')
-        .map(c => '%' + c.charCodeAt(0).toString(16).padStart(2, '0'))
-        .join('')
-    )
-  } catch {
-    return hex
-  }
-}
+const hexToUtf8 = (hex: string) =>
+  new TextDecoder().decode(Uint8Array.from(hex.match(/../g) ?? [], h => parseInt(h, 16)))
 
 export const simulateTransaction = async (
   account: IAccount,
