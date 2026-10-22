@@ -9,6 +9,9 @@ import estimateFee from '../../utils/estimateFee'
 import { SetHookData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { xrplSend } from './xrpl-client'
+import { refreshAccounts } from '../../utils/refreshAccounts'
+import { asfTshCollect, combineFlags, lsfTshCollect } from '../constants/flags'
+import fetchAccountInfo from '../../utils/accountInfo'
 import { XrplDefinitions } from 'xrpl-accountlib'
 import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
@@ -109,7 +112,7 @@ export const prepareDeployHookTx = async (
           ...(hookName && { HookName: toHex(hookName) }),
           HookNamespace,
           HookApiVersion: 0,
-          Flags: 1,
+          Flags: Number(combineFlags(data.Flags?.map(f => f.value))) || 1,
           // ...(filteredHookGrants.length > 0 && { HookGrants: filteredHookGrants }),
           ...(filteredHookParameters.length > 0 && {
             HookParameters: filteredHookParameters
@@ -274,5 +277,42 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   if (currentAccount) {
     currentAccount.isLoading = false
   }
+  return submitRes
+}
+
+export const hasTshCollect = async (address: string) => {
+  const info = await fetchAccountInfo(address)
+  return !!info && (info.Flags & lsfTshCollect) !== 0
+}
+
+export const setTshCollect = async (account: IAccount & { name?: string }) => {
+  const info = await fetchAccountInfo(account.address)
+  if (!info) return
+  const tx: Record<string, unknown> = {
+    Account: account.address,
+    TransactionType: 'AccountSet',
+    Sequence: info.Sequence,
+    ...networkIdField(),
+    SetFlag: asfTshCollect
+  }
+  tx.Fee = (await estimateFee(tx, account))?.base_fee || '1000'
+  const keypair = derive.familySeed(account.secret)
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
+  const toastId = toast.loading('Setting TSH collect flag...')
+  let submitRes
+  try {
+    submitRes = await xrplSend({ command: 'submit', tx_blob: signedTransaction })
+  } catch (err) {
+    console.error(err)
+  }
+  const ok = submitRes?.engine_result === 'tesSUCCESS'
+  const message = ok
+    ? 'TSH collect flag set ✅'
+    : `[${submitRes?.engine_result || submitRes?.error}] ${
+        submitRes?.engine_result_message || submitRes?.error_exception || 'Error occurred while setting TSH collect flag'
+      }`
+  toast[ok ? 'success' : 'error'](message, { id: toastId })
+  state.deployLogs.push({ type: ok ? 'success' : 'error', message })
+  await refreshAccounts()
   return submitRes
 }

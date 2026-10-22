@@ -4,6 +4,17 @@ interface Flags {
     [key: string]: string;
 }
 
+export const hookSetFlags: Flags = {
+    hsfOVERRIDE: '0x00000001',
+    hsfNSDELETE: '0x00000002',
+    hsfCOLLECT: '0x00000004',
+}
+
+/** AccountRoot flag required for a hook to receive weak/collect executions. */
+export const lsfTshCollect = 0x02000000
+/** AccountSet SetFlag value that sets lsfTshCollect. */
+export const asfTshCollect = 11
+
 export const transactionFlags: { [key: /* TransactionType */ string]: Flags } = {
     "*": {
         tfFullyCanonicalSig: '0x80000000'
