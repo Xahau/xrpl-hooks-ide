@@ -65,7 +65,34 @@ interface Vec256Field {
   $value: string[]
 }
 
+interface TimeField {
+  $type: 'time.ripple' | 'time.unix'
+  $value: number | string
+}
+
 type StructuredField = ObjectField | ArrayField | Vec256Field
+
+const RIPPLE_EPOCH_OFFSET = 946684800
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+// seconds in the field's epoch -> local `YYYY-MM-DDTHH:mm:ss` for datetime-local
+const toInputDate = (seconds: number | string, ripple: boolean) => {
+  if (seconds === '' || !Number.isFinite(+seconds)) return ''
+  const d = new Date((+seconds + (ripple ? RIPPLE_EPOCH_OFFSET : 0)) * 1000)
+  if (Number.isNaN(d.getTime())) return ''
+  return (
+    `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}` +
+    `T${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  )
+}
+
+// datetime-local string -> seconds in the field's epoch, undefined if empty/invalid
+const fromInputDate = (input: string, ripple: boolean) => {
+  const ms = new Date(input).getTime()
+  if (!input || Number.isNaN(ms)) return undefined
+  return Math.floor(ms / 1000) - (ripple ? RIPPLE_EPOCH_OFFSET : 0)
+}
 
 const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
 
@@ -229,6 +256,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     typeIs(value, 'object') && value.$type === 'array'
   const isVec256Field = (value: any): value is Vec256Field =>
     typeIs(value, 'object') && value.$type === 'vec256'
+  const isTimeField = (value: any): value is TimeField =>
+    typeIs(value, 'object') && (value.$type === 'time.ripple' || value.$type === 'time.unix')
   const isStructuredField = (value: any): value is StructuredField =>
     isObjectField(value) || isArrayField(value) || isVec256Field(value)
 
@@ -282,6 +311,53 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
       }}
     />
   )
+
+  const renderTimeField = (
+    value: TimeField,
+    setValue: (value: TimeField) => void,
+    hint?: string
+  ) => {
+    const ripple = value.$type === 'time.ripple'
+    return (
+      <Flex column fluid>
+        <Flex fluid css={{ alignItems: 'center' }}>
+          <Input
+            type="number"
+            value={value.$value}
+            onChange={e => setValue({ ...value, $value: e.target.value })}
+            css={{
+              flex: 'inherit',
+              '-moz-appearance': 'textfield',
+              '&::-webkit-outer-spin-button': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              },
+              '&::-webkit-inner-spin-button ': {
+                '-webkit-appearance': 'none',
+                margin: 0
+              }
+            }}
+          />
+          <Box css={{ ml: '$2', width: '270px', flexShrink: 0 }}>
+            <Input
+              type="datetime-local"
+              step="1"
+              value={toInputDate(value.$value, ripple)}
+              onChange={e => {
+                const seconds = fromInputDate(e.target.value, ripple)
+                if (seconds !== undefined) setValue({ ...value, $value: seconds })
+              }}
+            />
+          </Box>
+        </Flex>
+        {hint && (
+          <Text muted css={{ fontSize: '$xs' }}>
+            {hint}
+          </Text>
+        )}
+      </Flex>
+    )
+  }
 
   const renderAmountField = (
     value: XrpAmountField | TokenAmountField,
@@ -461,6 +537,10 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   }
 
   const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
+    if (isTimeField(value)) {
+      return renderTimeField(value, nextValue => setValue(nextValue))
+    }
+
     if (isXrpAmount(value) || isTokenAmount(value)) {
       return renderAmountField(value, nextValue => setValue(nextValue))
     }
@@ -714,6 +794,18 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               <TxField key={field} label={field}>
                 {renderAccountField(_value, nextValue =>
                   setRawField(field, nextValue.$type, nextValue.$value)
+                )}
+                {fieldDeleteButton}
+              </TxField>
+            )
+          }
+          if (isTimeField(_value)) {
+            return (
+              <TxField key={field} label={field}>
+                {renderTimeField(
+                  _value,
+                  nextValue => setRawField(field, nextValue.$type, nextValue.$value),
+                  (field as string) === 'StartTime' ? '0 = run immediately' : undefined
                 )}
                 {fieldDeleteButton}
               </TxField>

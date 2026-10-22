@@ -169,7 +169,7 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
       const optionalFields = getOptionalTxFields(transactionType?.value)
 
       if ('LastUpdateTime' in fields) {
-        fields.LastUpdateTime = Math.floor(Date.now() / 1000)
+        fields.LastUpdateTime = { $type: 'time.unix', $value: Math.floor(Date.now() / 1000) } as any
       }
 
       const nwState: Partial<TransactionState> = {
