@@ -142,7 +142,8 @@ const TimeInput: FC<{
   value: TimeField
   onChange: (v: TimeField) => void
   hint?: string
-}> = ({ value, onChange, hint }) => {
+  children?: ReactNode
+}> = ({ value, onChange, hint, children }) => {
   const ripple = value.$type === 'time.ripple'
   const [draft, setDraft] = useState(formatLocalDate(value.$value, ripple))
   const [error, setError] = useState('')
@@ -218,6 +219,7 @@ const TimeInput: FC<{
             <CalendarBlank size="16px" />
           </Button>
         </Box>
+        {children}
       </Flex>
       {message ? (
         <Text error css={{ fontSize: '$xs' }}>
@@ -455,8 +457,13 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   const renderTimeField = (
     value: TimeField,
     setValue: (value: TimeField) => void,
-    hint?: string
-  ) => <TimeInput value={value} onChange={setValue} hint={hint} />
+    hint?: string,
+    action?: ReactNode
+  ) => (
+    <TimeInput value={value} onChange={setValue} hint={hint}>
+      {action}
+    </TimeInput>
+  )
 
   const renderAmountField = (
     value: XrpAmountField | TokenAmountField,
@@ -900,13 +907,13 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           }
           if (isTimeField(_value)) {
             return (
-              <TxField key={field} label={field}>
+              <TxField multiLine key={field} label={field}>
                 {renderTimeField(
                   _value,
                   nextValue => setRawField(field, nextValue.$type, nextValue.$value),
-                  (field as string) === 'StartTime' ? '0 = run immediately' : undefined
+                  (field as string) === 'StartTime' ? '0 = run immediately' : undefined,
+                  fieldDeleteButton
                 )}
-                {fieldDeleteButton}
               </TxField>
             )
           }
