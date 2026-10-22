@@ -62,7 +62,7 @@ export const AccountDialog = ({
           },
           p: '$3',
           '&:before': {
-            content: ' ',
+            content: '" "',
             position: 'absolute',
             top: 0,
             right: 0,
