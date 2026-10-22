@@ -3698,14 +3698,7 @@ iterator.prototype@^1.1.5:
     has-symbols "^1.1.0"
     set-function-name "^2.0.2"
 
-javascript-time-ago@^2.3.11:
-  version "2.3.13"
-  resolved "https://registry.npmjs.org/javascript-time-ago/-/javascript-time-ago-2.3.13.tgz"
-  integrity sha512-LiNqRLERXpePGLejdqjbxfMkFlwx+2RDz21Jfw/3l2mH20fTa6nAtwOFQmAK5l0SfaV7HvixJgTCxyph9VmG1Q==
-  dependencies:
-    relative-time-format "^1.0.7"
-
-javascript-time-ago@^2.3.7:
+javascript-time-ago@^2.3.7, javascript-time-ago@^2.6.4:
   version "2.6.4"
   resolved "https://registry.yarnpkg.com/javascript-time-ago/-/javascript-time-ago-2.6.4.tgz#3149de049ffe3c374eb5a357cd9aaa911aa98fb9"
   integrity sha512-7K/Z37LuwVaxxjutUDd1pXpznufPcox0b1UYu00ksAMMlV6IsxIvduwL3kgfPxuBVF8jVj7nhrKMPDslMq94aQ==
@@ -4977,11 +4970,6 @@ regexp.prototype.flags@^1.5.3, regexp.prototype.flags@^1.5.4:
     get-proto "^1.0.1"
     gopd "^1.2.0"
     set-function-name "^2.0.2"
-
-relative-time-format@^1.0.7:
-  version "1.0.7"
-  resolved "https://registry.npmjs.org/relative-time-format/-/relative-time-format-1.0.7.tgz"
-  integrity sha512-BoLPaoL5y94ngPI4iJ9mNHqRS8NA+Hjs6oYHL5UYkbnA7/iTlvJiMoQQt8txhHhc+Y3e6yXWhwTAKvsQhnx2yg==
 
 relative-time-format@^1.1.12:
   version "1.1.12"
