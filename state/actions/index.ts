@@ -9,6 +9,7 @@ import { syncToGist } from './syncToGist'
 import { updateEditorSettings } from './updateEditorSettings'
 import { downloadAsZip } from './downloadAsZip'
 import { sendTransaction } from './sendTransaction'
+import { simulateTransaction } from './simulateTransaction'
 import { updateHeaders } from './updateHeaders'
 
 export {
@@ -23,5 +24,6 @@ export {
   updateEditorSettings,
   downloadAsZip,
   sendTransaction,
+  simulateTransaction,
   updateHeaders
 }
