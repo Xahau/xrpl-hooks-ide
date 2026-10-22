@@ -348,7 +348,7 @@ export const Tabs = ({
       {keepAllAlive
         ? tabs.map((tab, idx) => {
             // TODO Maybe rule out fragments as children
-            if (!isValidElement(tab.children)) {
+            if (!isValidElement<{ style?: React.CSSProperties }>(tab.children)) {
               if (active !== idx) return null
               return tab.children
             }

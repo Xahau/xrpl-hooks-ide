@@ -136,8 +136,8 @@ const setMarkers = (monacoE: typeof monaco) => {
 }
 
 const HooksEditor = () => {
-  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor>()
-  const monacoRef = useRef<typeof monaco>()
+  const editorRef = useRef<monaco.editor.IStandaloneCodeEditor | undefined>(undefined)
+  const monacoRef = useRef<typeof monaco | undefined>(undefined)
   const subscriptionRef = useRef<{ close: () => void; reparse?: () => void } | null>(null)
   const startedRef = useRef(false)
   const snap = useSnapshot(state)
