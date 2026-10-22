@@ -81,7 +81,7 @@ const isOptionalFieldName = (field: string) => field.endsWith('?')
 const unwrapTypedValue = (value: any): any => {
   if (!typeIs(value, 'object')) return value
 
-  if (value.$type === 'amount.xrp') {
+  if (value.$type === 'amount.native') {
     if (value.$value) return +value.$value * 1000000 + ''
     return ''
   }
@@ -171,7 +171,7 @@ const scoreSchemaMatch = (value: any, schemaValue: any): number => {
   }
 
   if (schemaValue.$type === 'amount.token') return typeIs(value, 'object') ? 3 : 0
-  if (schemaValue.$type === 'amount.xrp') return typeIs(value, ['string', 'number']) ? 3 : 0
+  if (schemaValue.$type === 'amount.native') return typeIs(value, ['string', 'number']) ? 3 : 0
   if (schemaValue.$type === 'account') return typeIs(value, 'string') ? 2 : 0
   if (schemaValue.$type === 'issue') return typeIs(value, 'object') ? 2 : 0
   if (schemaValue.$type === 'object') return typeIs(value, 'object') ? 2 : 0
@@ -190,7 +190,7 @@ const applySchemaValue = (value: any, schemaValue: any): any => {
 
   if (isTypedSchemaValue(schemaValue, 'amount.')) {
     return {
-      $type: typeIs(value, 'object') ? 'amount.token' : 'amount.xrp',
+      $type: typeIs(value, 'object') ? 'amount.token' : 'amount.native',
       $value: typeIs(value, 'object') ? value : +value / 1000000
     }
   }
