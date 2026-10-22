@@ -1,4 +1,4 @@
-import { FC, ReactNode, useCallback, useEffect, useState } from 'react'
+import { FC, ReactNode, useCallback, useEffect, useRef, useState } from 'react'
 import Container from '../Container'
 import Flex from '../Flex'
 import Input from '../Input'
@@ -18,7 +18,7 @@ import state from '../../state'
 import { streamState } from '../DebugStream'
 import { Box, Button } from '..'
 import { getFlags } from '../../state/constants/flags'
-import { Plus, Trash } from 'phosphor-react'
+import { CalendarBlank, Plus, Trash } from 'phosphor-react'
 import AccountSequence from '../Sequence'
 import { capitalize, typeIs } from '../../utils/helpers'
 
@@ -65,7 +65,174 @@ interface Vec256Field {
   $value: string[]
 }
 
+interface TimeField {
+  $type: 'time.ripple' | 'time.unix'
+  $value: number | string
+}
+
 type StructuredField = ObjectField | ArrayField | Vec256Field
+
+const RIPPLE_EPOCH_OFFSET = 946684800
+
+const pad = (n: number) => String(n).padStart(2, '0')
+
+// seconds in the field's epoch -> local `yyyy/MM/dd HH:mm:ss`
+const formatLocalDate = (seconds: number | string, ripple: boolean) => {
+  if (seconds === '' || !Number.isFinite(+seconds)) return ''
+  const d = new Date((+seconds + (ripple ? RIPPLE_EPOCH_OFFSET : 0)) * 1000)
+  if (Number.isNaN(d.getTime())) return ''
+  return (
+    `${d.getFullYear()}/${pad(d.getMonth() + 1)}/${pad(d.getDate())}` +
+    ` ${pad(d.getHours())}:${pad(d.getMinutes())}:${pad(d.getSeconds())}`
+  )
+}
+
+const MAX_UINT32 = 4294967295
+
+// local date parts -> seconds in the field's epoch, or an error message
+const fromParts = (
+  y: number,
+  mo: number,
+  d: number,
+  h: number,
+  mi: number,
+  s: number,
+  ripple: boolean
+): { seconds: number } | { error: string } => {
+  const date = new Date(y, mo - 1, d, h, mi, s)
+  // rebuilding the date and comparing rejects values that would roll over (02/30, 25:00)
+  if (
+    date.getFullYear() !== y ||
+    date.getMonth() !== mo - 1 ||
+    date.getDate() !== d ||
+    date.getHours() !== h ||
+    date.getMinutes() !== mi ||
+    date.getSeconds() !== s
+  ) {
+    return { error: 'Invalid date' }
+  }
+  const seconds = Math.floor(date.getTime() / 1000) - (ripple ? RIPPLE_EPOCH_OFFSET : 0)
+  if (seconds < 0 && ripple) return { error: 'Must be on or after 2000/01/01 00:00:00 UTC' }
+  if (seconds < 0 || seconds > MAX_UINT32) return { error: 'Out of range for this field' }
+  return { seconds }
+}
+
+// local `yyyy/MM/dd[ HH:mm[:ss]]` -> seconds in the field's epoch, or an error message
+const parseLocalDate = (input: string, ripple: boolean) => {
+  const m = input
+    .trim()
+    .match(/^(\d{4})\/(\d{1,2})\/(\d{1,2})(?:[ T](\d{1,2}):(\d{2})(?::(\d{2}))?)?$/)
+  if (!m) return { error: 'Use yyyy/MM/dd HH:mm:ss' }
+  const [y, mo, d, h, mi, sec] = m.slice(1).map(n => Number(n || 0))
+  return fromParts(y, mo, d, h, mi, sec, ripple)
+}
+
+// seconds in the field's epoch -> local `YYYY-MM-DDTHH:mm:ss` for <input type="datetime-local">
+const toDatetimeLocal = (seconds: number | string, ripple: boolean) =>
+  formatLocalDate(seconds, ripple).replace(/\//g, '-').replace(' ', 'T')
+
+// `YYYY-MM-DDTHH:mm[:ss]` from <input type="datetime-local">
+const parseDatetimeLocal = (input: string, ripple: boolean) =>
+  parseLocalDate(input.replace(/-/g, '/'), ripple)
+
+const isUInt32 = (v: number | string) =>
+  v === '' || (/^\d+$/.test(String(v)) && Number(v) <= MAX_UINT32)
+
+const TimeInput: FC<{
+  value: TimeField
+  onChange: (v: TimeField) => void
+  hint?: string
+}> = ({ value, onChange, hint }) => {
+  const ripple = value.$type === 'time.ripple'
+  const [draft, setDraft] = useState(formatLocalDate(value.$value, ripple))
+  const [error, setError] = useState('')
+  const pickerRef = useRef<HTMLInputElement>(null)
+
+  useEffect(() => {
+    setDraft(formatLocalDate(value.$value, ripple))
+  }, [value.$value, ripple])
+
+  const commit = (result: { seconds: number } | { error: string }) => {
+    if ('error' in result) return setError(result.error)
+    setError('')
+    // same value: the effect above will not run, so re-format explicitly
+    setDraft(formatLocalDate(result.seconds, ripple))
+    onChange({ ...value, $value: result.seconds })
+  }
+
+  const openPicker = () => {
+    const el = pickerRef.current
+    if (!el) return
+    try {
+      el.showPicker()
+    } catch {
+      // showPicker throws without user activation or when unsupported
+      el.focus()
+    }
+  }
+
+  const secondsError = isUInt32(value.$value)
+    ? ''
+    : `Must be a whole number between 0 and ${MAX_UINT32}`
+  const message = error || secondsError
+
+  return (
+    <Flex column fluid>
+      <Flex fluid css={{ alignItems: 'center' }}>
+        <Input
+          type="number"
+          value={value.$value}
+          onChange={e => onChange({ ...value, $value: e.target.value })}
+          css={{
+            flex: 'inherit',
+            '-moz-appearance': 'textfield',
+            '&::-webkit-outer-spin-button': {
+              '-webkit-appearance': 'none',
+              margin: 0
+            },
+            '&::-webkit-inner-spin-button ': {
+              '-webkit-appearance': 'none',
+              margin: 0
+            }
+          }}
+        />
+        <Box css={{ ml: '$2', width: '240px', flexShrink: 0, position: 'relative', display: 'flex' }}>
+          <Input
+            placeholder="yyyy/MM/dd HH:mm:ss"
+            value={draft}
+            onChange={e => setDraft(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && commit(parseLocalDate(draft, ripple))}
+            onBlur={() => commit(parseLocalDate(draft, ripple))}
+          />
+          <input
+            ref={pickerRef}
+            type="datetime-local"
+            step="1"
+            tabIndex={-1}
+            aria-hidden
+            style={{ position: 'absolute', opacity: 0, width: 0, height: 0, pointerEvents: 'none' }}
+            value={toDatetimeLocal(value.$value, ripple)}
+            onChange={e => e.target.value && commit(parseDatetimeLocal(e.target.value, ripple))}
+          />
+          <Button outline type="button" css={{ ml: '$1', px: '$2' }} title="Pick a date" onClick={openPicker}>
+            <CalendarBlank size="16px" />
+          </Button>
+        </Box>
+      </Flex>
+      {message ? (
+        <Text error css={{ fontSize: '$xs' }}>
+          {message}
+        </Text>
+      ) : (
+        hint && (
+          <Text muted css={{ fontSize: '$xs' }}>
+            {hint}
+          </Text>
+        )
+      )}
+    </Flex>
+  )
+}
 
 const normalizeFieldName = (field: string) => field.replace(/\?$/, '')
 
@@ -229,6 +396,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
     typeIs(value, 'object') && value.$type === 'array'
   const isVec256Field = (value: any): value is Vec256Field =>
     typeIs(value, 'object') && value.$type === 'vec256'
+  const isTimeField = (value: any): value is TimeField =>
+    typeIs(value, 'object') && (value.$type === 'time.ripple' || value.$type === 'time.unix')
   const isStructuredField = (value: any): value is StructuredField =>
     isObjectField(value) || isArrayField(value) || isVec256Field(value)
 
@@ -282,6 +451,12 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
       }}
     />
   )
+
+  const renderTimeField = (
+    value: TimeField,
+    setValue: (value: TimeField) => void,
+    hint?: string
+  ) => <TimeInput value={value} onChange={setValue} hint={hint} />
 
   const renderAmountField = (
     value: XrpAmountField | TokenAmountField,
@@ -461,6 +636,10 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   }
 
   const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
+    if (isTimeField(value)) {
+      return renderTimeField(value, nextValue => setValue(nextValue))
+    }
+
     if (isXrpAmount(value) || isTokenAmount(value)) {
       return renderAmountField(value, nextValue => setValue(nextValue))
     }
@@ -714,6 +893,18 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               <TxField key={field} label={field}>
                 {renderAccountField(_value, nextValue =>
                   setRawField(field, nextValue.$type, nextValue.$value)
+                )}
+                {fieldDeleteButton}
+              </TxField>
+            )
+          }
+          if (isTimeField(_value)) {
+            return (
+              <TxField key={field} label={field}>
+                {renderTimeField(
+                  _value,
+                  nextValue => setRawField(field, nextValue.$type, nextValue.$value),
+                  (field as string) === 'StartTime' ? '0 = run immediately' : undefined
                 )}
                 {fieldDeleteButton}
               </TxField>

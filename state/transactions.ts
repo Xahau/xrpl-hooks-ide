@@ -92,6 +92,10 @@ const unwrapTypedValue = (value: any): any => {
     return undefined
   }
 
+  if (value.$type === 'time.ripple' || value.$type === 'time.unix') {
+    return value.$value === '' ? undefined : Number(value.$value)
+  }
+
   if (value.$type === 'account') {
     return value.$value?.toString() || ''
   }
@@ -172,6 +176,7 @@ const scoreSchemaMatch = (value: any, schemaValue: any): number => {
 
   if (schemaValue.$type === 'amount.token') return typeIs(value, 'object') ? 3 : 0
   if (schemaValue.$type === 'amount.xrp') return typeIs(value, ['string', 'number']) ? 3 : 0
+  if (schemaValue.$type.startsWith('time.')) return typeIs(value, ['string', 'number']) ? 2 : 0
   if (schemaValue.$type === 'account') return typeIs(value, 'string') ? 2 : 0
   if (schemaValue.$type === 'issue') return typeIs(value, 'object') ? 2 : 0
   if (schemaValue.$type === 'object') return typeIs(value, 'object') ? 2 : 0
@@ -193,6 +198,10 @@ const applySchemaValue = (value: any, schemaValue: any): any => {
       $type: typeIs(value, 'object') ? 'amount.token' : 'amount.xrp',
       $value: typeIs(value, 'object') ? value : +value / 1000000
     }
+  }
+
+  if (schemaValue.$type.startsWith('time.')) {
+    return { $type: schemaValue.$type, $value: value }
   }
 
   if (schemaValue.$type === 'account') {
