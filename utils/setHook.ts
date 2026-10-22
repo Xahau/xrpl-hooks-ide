@@ -23,6 +23,10 @@ export type SetHookData = {
     value: keyof TTS
     label: string
   }[]
+  Flags?: {
+    value: string
+    label: string
+  }[]
   Fee: string
   HookName?: string
   HookNamespace: string

@@ -366,11 +366,11 @@ export type StyledComponent<T extends React.ElementType, V = {}> = {
   <C extends React.ElementType>(
     props: { as: C } & Omit<React.ComponentPropsWithoutRef<C>, keyof OwnProps<V> | 'as'> &
       OwnProps<V> &
-      React.RefAttributes<React.ElementRef<C>>
+      React.RefAttributes<React.ComponentRef<C>>
   ): React.ReactElement | null
   (
     props: Omit<React.ComponentPropsWithoutRef<T>, keyof OwnProps<V> | 'as'> &
-      OwnProps<V> & { as?: React.ElementType } & React.RefAttributes<React.ElementRef<T>>
+      OwnProps<V> & { as?: React.ElementType } & React.RefAttributes<React.ComponentRef<T>>
   ): React.ReactElement | null
   displayName?: string
   toString(): string
