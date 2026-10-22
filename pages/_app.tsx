@@ -106,7 +106,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
                 <Script
                   async
                   defer
-                  data-domain="hooks-builder.xrpl.org"
+                  data-domain="builder.xahau.network"
                   src="https://plausible.io/js/plausible.outbound-links.js"
                 />
                 <Script

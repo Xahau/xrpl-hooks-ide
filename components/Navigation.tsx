@@ -253,9 +253,9 @@ const Navigation = () => {
                               as="a"
                               rel="noreferrer noopener"
                               target="_blank"
-                              href="https://xrpl.org/docs.html"
+                              href="https://xahau.network/docs/"
                             >
-                              <ArrowUpRight size="15px" /> XRPL documentation
+                              <ArrowUpRight size="15px" /> Xahau documentation
                             </Text>
                           </Flex>
                         </DialogDescription>
