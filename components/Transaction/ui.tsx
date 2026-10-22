@@ -131,13 +131,9 @@ const parseLocalDate = (input: string, ripple: boolean) => {
 const toDatetimeLocal = (seconds: number | string, ripple: boolean) =>
   formatLocalDate(seconds, ripple).replace(/\//g, '-').replace(' ', 'T')
 
-// `YYYY-MM-DDTHH:mm[:ss]` from <input type="datetime-local"> -> seconds, or an error message
-const parseDatetimeLocal = (input: string, ripple: boolean) => {
-  const m = input.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})(?::(\d{2}))?$/)
-  if (!m) return { error: 'Invalid date' }
-  const [y, mo, d, h, mi, sec] = m.slice(1).map(n => Number(n || 0))
-  return fromParts(y, mo, d, h, mi, sec, ripple)
-}
+// `YYYY-MM-DDTHH:mm[:ss]` from <input type="datetime-local">
+const parseDatetimeLocal = (input: string, ripple: boolean) =>
+  parseLocalDate(input.replace(/-/g, '/'), ripple)
 
 const isUInt32 = (v: number | string) =>
   v === '' || (/^\d+$/.test(String(v)) && Number(v) <= MAX_UINT32)
@@ -168,8 +164,7 @@ const TimeInput: FC<{
     const el = pickerRef.current
     if (!el) return
     try {
-      if (typeof el.showPicker === 'function') el.showPicker()
-      else el.focus()
+      el.showPicker()
     } catch {
       // showPicker throws without user activation or when unsupported
       el.focus()
