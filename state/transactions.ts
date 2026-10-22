@@ -271,7 +271,7 @@ export const transactionsState = proxy({
   transactions: [
     {
       header: 'test1.json',
-      state: { ...defaultTransaction }
+      state: structuredClone(defaultTransaction)
     }
   ],
   activeHeader: 'test1.json'
@@ -307,7 +307,7 @@ export const modifyTxState = (
 
   if (!tx) {
     const state = {
-      ...defaultTransaction,
+      ...structuredClone(defaultTransaction),
       ...partialTx
     }
     transactionsState.transactions.push({
@@ -319,7 +319,7 @@ export const modifyTxState = (
 
   if (opts.replaceState) {
     const repTx: TransactionState = {
-      ...defaultTransaction,
+      ...structuredClone(defaultTransaction),
       ...partialTx
     }
     tx.state = repTx
