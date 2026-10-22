@@ -5078,7 +5078,7 @@ ripple-address-codec@^5.0.0:
     "@scure/base" "^1.1.3"
     "@xrplf/isomorphic" "^1.0.0"
 
-"ripple-binary-codec@npm:xahau-binary-codec@^2.2.0":
+"ripple-binary-codec@npm:xahau-binary-codec@^2.3.0":
   version "2.3.0"
   resolved "https://registry.yarnpkg.com/xahau-binary-codec/-/xahau-binary-codec-2.3.0.tgz#930edabc21835cc233b8552592c596cca9f0feb6"
   integrity sha512-Q5D5CrZhvOUQduGWKjJO217KBMqTnRVg8r0xShtq2g7m9G0nzJkh6OrVLlrvyaNCYu5z2St58FEM+k84BeQ+hQ==

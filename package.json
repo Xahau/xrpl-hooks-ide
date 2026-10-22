@@ -55,7 +55,7 @@
     "react-time-ago": "^7.4.4",
     "reconnecting-websocket": "^4.4.0",
     "regexify-string": "^1.0.17",
-    "ripple-binary-codec": "npm:xahau-binary-codec@^2.2.0",
+    "ripple-binary-codec": "npm:xahau-binary-codec@^2.3.0",
     "valtio": "^2.3.2",
     "vscode-jsonrpc": "6.0.0",
     "wabt": "^1.0.30",
