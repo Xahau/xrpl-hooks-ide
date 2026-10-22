@@ -35,8 +35,8 @@ interface AccountField {
   $value: string
 }
 
-interface XrpAmountField {
-  $type: 'amount.xrp'
+interface NativeAmountField {
+  $type: 'amount.native'
   $value: string
 }
 
@@ -217,8 +217,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
 
   const isAccount = (value: any): value is AccountField =>
     typeIs(value, 'object') && value.$type === 'account'
-  const isXrpAmount = (value: any): value is XrpAmountField =>
-    typeIs(value, 'object') && value.$type === 'amount.xrp'
+  const isNativeAmount = (value: any): value is NativeAmountField =>
+    typeIs(value, 'object') && value.$type === 'amount.native'
   const isTokenAmount = (value: any): value is TokenAmountField =>
     typeIs(value, 'object') && value.$type === 'amount.token'
   const isIssue = (value: any): value is IssueField =>
@@ -284,8 +284,8 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   )
 
   const renderAmountField = (
-    value: XrpAmountField | TokenAmountField,
-    setValue: (value: XrpAmountField | TokenAmountField) => void
+    value: NativeAmountField | TokenAmountField,
+    setValue: (value: NativeAmountField | TokenAmountField) => void
   ) => {
     const tokenAmount = isTokenAmount(value)
       ? {
@@ -362,11 +362,11 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           <Select
             instanceId="currency-type"
             options={amountOptions}
-            value={isXrpAmount(value) ? amountOptions['0'] : amountOptions['1']}
+            value={isNativeAmount(value) ? amountOptions['0'] : amountOptions['1']}
             onChange={(e: any) => {
               const opt = e as typeof amountOptions[number]
               if (opt.value === 'xah') {
-                setValue({ $type: 'amount.xrp', $value: '0' })
+                setValue({ $type: 'amount.native', $value: '0' })
               } else {
                 setValue({ $type: 'amount.token', $value: defaultTokenAmount })
               }
@@ -461,7 +461,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   }
 
   const renderNestedValue = (value: any, setValue: (value: any) => void): ReactNode => {
-    if (isXrpAmount(value) || isTokenAmount(value)) {
+    if (isNativeAmount(value) || isTokenAmount(value)) {
       return renderAmountField(value, nextValue => setValue(nextValue))
     }
 
@@ -699,7 +699,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
             )
           }
 
-          if (isXrpAmount(_value) || isTokenAmount(_value)) {
+          if (isNativeAmount(_value) || isTokenAmount(_value)) {
             return (
               <TxField key={field} label={field}>
                 {renderAmountField(_value, nextValue =>
