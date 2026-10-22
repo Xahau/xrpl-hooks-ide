@@ -9,7 +9,9 @@ import estimateFee from '../../utils/estimateFee'
 import { SetHookData, toHex } from '../../utils/setHook'
 import ResultLink from '../../components/ResultLink'
 import { xrplSend } from './xrpl-client'
-import { combineFlags } from '../constants/flags'
+import { refreshAccounts } from '../../utils/refreshAccounts'
+import { asfTshCollect, combineFlags, lsfTshCollect } from '../constants/flags'
+import fetchAccountInfo from '../../utils/accountInfo'
 import { XrplDefinitions } from 'xrpl-accountlib'
 import definitions from 'ripple-binary-codec/dist/enums/definitions.json'
 
@@ -275,5 +277,65 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
   if (currentAccount) {
     currentAccount.isLoading = false
   }
+  return submitRes
+}
+
+export const hasTshCollect = async (address: string) => {
+  const info = await fetchAccountInfo(address)
+  return !!info && (info.Flags & lsfTshCollect) !== 0
+}
+
+export const setTshCollect = async (account: IAccount & { name?: string }) => {
+  const info = await fetchAccountInfo(account.address)
+  if (!info) return
+  const tx = {
+    Account: account.address,
+    TransactionType: 'AccountSet',
+    Sequence: info.Sequence,
+    Fee: '1000',
+    ...networkIdField(),
+    SetFlag: asfTshCollect
+  }
+  const keypair = derive.familySeed(account.secret)
+  try {
+    const res = await estimateFee(tx, account)
+    tx['Fee'] = res?.base_fee || '1000'
+  } catch (err) {
+    console.error(err)
+  }
+  const { signedTransaction } = sign(tx, keypair, new XrplDefinitions(definitions as any))
+  let submitRes
+  const toastId = toast.loading('Setting TSH collect flag...')
+  try {
+    submitRes = await xrplSend({
+      command: 'submit',
+      tx_blob: signedTransaction
+    })
+    if (submitRes.engine_result === 'tesSUCCESS') {
+      toast.success('TSH collect flag set ✅', { id: toastId })
+      state.deployLogs.push({
+        type: 'success',
+        message: `[${submitRes.engine_result}] ${submitRes.engine_result_message} TSH collect flag set ✅`
+      })
+    } else {
+      toast.error(`${submitRes.engine_result_message || submitRes.error_exception}`, {
+        id: toastId
+      })
+      state.deployLogs.push({
+        type: 'error',
+        message: `[${submitRes.engine_result || submitRes.error}] ${
+          submitRes.engine_result_message || submitRes.error_exception
+        }`
+      })
+    }
+  } catch (err) {
+    console.error(err)
+    toast.error('Error occurred while setting TSH collect flag', { id: toastId })
+    state.deployLogs.push({
+      type: 'error',
+      message: 'Error occurred while setting TSH collect flag'
+    })
+  }
+  await refreshAccounts()
   return submitRes
 }

@@ -17,12 +17,13 @@ import { deployHook } from '../state/actions'
 import { useSnapshot } from 'valtio'
 import state, { IFile, SelectOption } from '../state'
 import toast from 'react-hot-toast'
-import { prepareDeployHookTx, sha256 } from '../state/actions/deployHook'
+import { hasTshCollect, prepareDeployHookTx, setTshCollect, sha256 } from '../state/actions/deployHook'
 import estimateFee from '../utils/estimateFee'
 import { getParameters, getInvokeOptions, transactionOptions, SetHookData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
 import AccountSequence from './Sequence'
 import { hookSetFlags } from '../state/constants/flags'
+import { showAlert } from '../state/actions/showAlert'
 
 export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
   ({ accountAddress }) => {
@@ -164,7 +165,19 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
 
       if (res && res.engine_result === 'tesSUCCESS') {
         toast.success('Transaction succeeded!')
-        return setIsSetHookDialogOpen(false)
+        setIsSetHookDialogOpen(false)
+        if (
+          data.Flags?.some(f => f.value === hookSetFlags.hsfCOLLECT) &&
+          !(await hasTshCollect(account.address))
+        ) {
+          showAlert('Enable TSH collect on the account?', {
+            body: `The hook was deployed with hsfCOLLECT, but collect executions only run if the account has the lsfTshCollect flag. Send an AccountSet transaction with SetFlag asfTshCollect for ${account.name} (${account.address})?`,
+            confirmText: 'Set flag',
+            cancelText: 'Not now',
+            onConfirm: () => setTshCollect(account)
+          })
+        }
+        return
       }
       toast.error(`Transaction failed! (${res?.engine_result_message})`)
     }
