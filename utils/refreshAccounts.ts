@@ -43,7 +43,7 @@ export const refreshAccounts = async () => {
       accountToUpdate.hooks =
         res.account_objects
           ?.find((ac: any) => ac?.LedgerEntryType === 'Hook')
-          ?.Hooks?.map((oo: any) => oo.Hook.HookHash) || []
+          ?.Hooks?.map((oo: any) => oo.Hook?.HookHash || '') || []
     }
   })
 }
