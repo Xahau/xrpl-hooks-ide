@@ -1,5 +1,9 @@
+const { withPlausibleProxy } = require('next-plausible')
+
 /** @type {import('next').NextConfig} */
-module.exports = {
+// withPlausibleProxy serves the Plausible script and event endpoint from this origin (rewrites to
+// plausible.io), so content blockers no longer fail the request and log errors in the console
+module.exports = withPlausibleProxy()({
   reactStrictMode: true,
   async redirects() {
     return [{ source: '/', destination: '/develop', permanent: false }]
@@ -37,4 +41,4 @@ module.exports = {
     })
     return config
   }
-}
+})
