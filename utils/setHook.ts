@@ -1,5 +1,6 @@
-import { getTags } from './comment-parser'
+import { getTags, getTagValues } from './comment-parser'
 import { tts, TTS } from './hookOnCalculator'
+import { hookSetFlags } from '../state/constants/flags'
 
 export const transactionOptions = Object.keys(tts).map(key => ({
   label: key,
@@ -53,10 +54,7 @@ export type SetHookData = {
 }
 
 export const getParameters = (content?: string) => {
-  const fieldTags = ['field', 'param', 'arg', 'argument']
-  const tags = getTags(content)
-    .filter(tag => fieldTags.includes(tag.tag))
-    .filter(tag => !!tag.name)
+  const tags = getTags(content, ['field', 'param', 'arg', 'argument']).filter(tag => !!tag.name)
 
   const paramters: SetHookData['HookParameters'] = tags.map(tag => ({
     HookParameter: {
@@ -72,24 +70,35 @@ export const getParameters = (content?: string) => {
   return paramters
 }
 
-export const getInvokeOptions = (content?: string) => {
-  const invokeTags = ['invoke', 'invoke-on']
+const toOptions = <T extends Record<string, unknown>>(values: string[], allowed: T) =>
+  (Object.keys(allowed) as (keyof T & string)[])
+    .filter(key => values.includes(key))
+    .map(key => ({ label: key, value: key }))
 
-  const options = getTags(content)
-    .filter(tag => invokeTags.includes(tag.tag))
-    .reduce((cumm, curr) => {
-      const combined = curr.type || `${curr.name} ${curr.description}`
-      const opts = combined.split(' ')
+const toTTOptions = (values: string[]): SetHookData['Invoke'] => toOptions(values, tts)
 
-      return cumm.concat(opts as any)
-    }, [] as (keyof TTS)[])
-    .filter(opt => Object.keys(tts).includes(opt))
-
-  const invokeOptions: SetHookData['Invoke'] = options.map(opt => ({
-    label: opt,
-    value: opt
+/** SetHook form defaults derived from the source comment tags (see commentTags). */
+export const getSetHookDefaults = (content?: string): Partial<SetHookData> => {
+  const incoming = toTTOptions(getTagValues(content, ['on_incoming']))
+  const outgoing = toTTOptions(getTagValues(content, ['on_outgoing']))
+  const flags = toOptions(getTagValues(content, ['flag']), hookSetFlags).map(f => ({
+    label: f.label,
+    value: hookSetFlags[f.label]
   }))
-  return invokeOptions
+  const name = getTagValues(content, ['name']).join(' ')
+  return {
+    // incoming/outgoing take priority over @invoke when both are given
+    Invoke:
+      incoming.length || outgoing.length
+        ? []
+        : toTTOptions(getTagValues(content, ['invoke', 'invoke-on', 'on'])),
+    InvokeIncoming: incoming,
+    InvokeOutgoing: outgoing,
+    HookCanEmit: toTTOptions(getTagValues(content, ['emit'])),
+    Flags: flags.length ? flags : [{ label: 'hsfOVERRIDE', value: hookSetFlags.hsfOVERRIDE }],
+    ...(name && { HookName: name }),
+    HookParameters: getParameters(content)
+  }
 }
 
 export function toHex(str: string) {
