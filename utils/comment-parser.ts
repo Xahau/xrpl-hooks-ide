@@ -6,17 +6,17 @@ import { Spec, parse, Problem } from 'comment-parser'
  */
 export const commentTags = {
   // Hook parameters (SetHook dialog) and script inputs (Run Script)
-  field: '@field [name=default] description  -> HookParameter',
-  param: 'alias of @field',
-  arg: 'alias of @field',
-  argument: 'alias of @field',
+  param: '@param [name=default] description  -> HookParameter',
+  field: 'alias of @param',
+  arg: 'alias of @param',
+  argument: 'alias of @param',
   input: '@input [name=default] description  -> Run Script field',
   // HookOn
-  invoke: '@invoke ttPAYMENT ttINVOKE  -> HookOn',
-  'invoke-on': 'alias of @invoke',
-  on: 'alias of @invoke',
-  on_incoming: '@on_incoming ttPAYMENT  -> HookOn (incoming only, overrides @invoke)',
-  on_outgoing: '@on_outgoing ttPAYMENT  -> HookOn (outgoing only, overrides @invoke)',
+  on: '@on ttPAYMENT ttINVOKE  -> HookOn',
+  invoke: 'alias of @on',
+  'invoke-on': 'alias of @on',
+  on_incoming: '@on_incoming ttPAYMENT  -> HookOn (incoming only, overrides @on)',
+  on_outgoing: '@on_outgoing ttPAYMENT  -> HookOn (outgoing only, overrides @on)',
   // Other SetHook fields
   emit: '@emit ttPAYMENT  -> HookCanEmit',
   name: '@name My Hook  -> HookName',

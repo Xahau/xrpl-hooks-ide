@@ -54,7 +54,7 @@ export type SetHookData = {
 }
 
 export const getParameters = (content?: string) => {
-  const tags = getTags(content, ['field', 'param', 'arg', 'argument']).filter(tag => !!tag.name)
+  const tags = getTags(content, ['param', 'field', 'arg', 'argument']).filter(tag => !!tag.name)
 
   const paramters: SetHookData['HookParameters'] = tags.map(tag => ({
     HookParameter: {
@@ -87,11 +87,11 @@ export const getSetHookDefaults = (content?: string): Partial<SetHookData> => {
   }))
   const name = getTagValues(content, ['name']).join(' ')
   return {
-    // incoming/outgoing take priority over @invoke when both are given
+    // incoming/outgoing take priority over @on when both are given
     Invoke:
       incoming.length || outgoing.length
         ? []
-        : toTTOptions(getTagValues(content, ['invoke', 'invoke-on', 'on'])),
+        : toTTOptions(getTagValues(content, ['on', 'invoke', 'invoke-on'])),
     InvokeIncoming: incoming,
     InvokeOutgoing: outgoing,
     HookCanEmit: toTTOptions(getTagValues(content, ['emit'])),

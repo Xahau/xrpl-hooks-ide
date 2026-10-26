@@ -107,7 +107,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
   const [isLoading, setIsLoading] = useState(false)
 
   const getFields = useCallback(() => {
-    const tags = getTags(content, ['input', 'param', 'arg', 'argument']).filter(tag => !!tag.name)
+    const tags = getTags(content, ['param', 'input', 'arg', 'argument']).filter(tag => !!tag.name)
 
     let _fields = tags.map(tag => ({
       name: tag.name,
