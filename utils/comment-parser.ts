@@ -27,10 +27,9 @@ export type CommentTag = keyof typeof commentTags
 
 export type Tag = Omit<Spec, 'tag'> & { tag: CommentTag }
 
-export const getTags = (source?: string, names?: readonly CommentTag[]): Tag[] => {
+export const getTags = (source: string | undefined, names: readonly CommentTag[]): Tag[] => {
   if (!source) return []
-  const tags = parse(source).flatMap(block => block.tags) as Tag[]
-  return names ? tags.filter(tag => names.includes(tag.tag)) : tags
+  return parse(source).flatMap(block => block.tags as Tag[]).filter(tag => names.includes(tag.tag))
 }
 
 /** Whitespace-separated values of the matching tags, e.g. `@invoke ttPAYMENT ttINVOKE` -> ['ttPAYMENT', 'ttINVOKE']. */
