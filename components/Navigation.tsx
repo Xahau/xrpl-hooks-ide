@@ -28,7 +28,7 @@ import {
   DialogTrigger
 } from './Dialog'
 import PanelBox from './PanelBox'
-import { templateFileIds } from '../state/constants'
+import { templateFileIds, templatesRepo } from '../state/constants'
 import { styled } from '../stitches.config'
 
 const ImageWrapper = styled(Flex, {
@@ -49,6 +49,7 @@ const ImageWrapper = styled(Flex, {
 const Navigation = () => {
   const router = useRouter()
   const snap = useSnapshot(state)
+  const template = Object.values(templateFileIds).find(tmp => tmp.id === snap.gistId)
   const slug = router.query?.slug
   const gistId = Array.isArray(slug) ? slug[0] : null
 
@@ -104,16 +105,22 @@ const Navigation = () => {
               <>
                 <Heading css={{ lineHeight: 1 }}>{snap.gistName || 'Xahau Hooks'}</Heading>
                 <Text css={{ fontSize: '$xs', color: '$mauve10', lineHeight: 1 }}>
-                  {snap.files.length > 0 ? 'Gist: ' : 'Builder'}
+                  {snap.files.length > 0 ? (template ? 'Template: ' : 'Gist: ') : 'Builder'}
                   {snap.files.length > 0 && (
                     <Text
                       as="a"
-                      href={`https://gist.github.com/${snap.gistOwner || ''}/${snap.gistId || ''}`}
+                      href={
+                        template
+                          ? `https://github.com/${templatesRepo.owner}/${templatesRepo.repo}/tree/${templatesRepo.ref}/templates/${template.id}`
+                          : `https://gist.github.com/${snap.gistOwner || ''}/${snap.gistId || ''}`
+                      }
                       target="_blank"
                       rel="noreferrer noopener"
                       css={{ color: '$mauve12' }}
                     >
-                      {`${snap.gistOwner || '-'}/${truncate(snap.gistId || '')}`}
+                      {template
+                        ? template.name
+                        : `${snap.gistOwner || '-'}/${truncate(snap.gistId || '')}`}
                     </Text>
                   )}
                 </Text>
