@@ -243,47 +243,45 @@ export const AccountDialog = ({
                 </Flex>
               )}
             </Flex>
-            <Flex css={{ alignItems: 'center' }}>
-              <Flex css={{ flexDirection: 'column' }}>
-                <Text className={labelStyle()}>Installed Hooks</Text>
-                <Text
-                  css={{
-                    fontFamily: '$monospace',
-                    a: { '&:hover': { textDecoration: 'underline' } }
-                  }}
-                >
-                  {activeAccount && activeAccount.hooks.length > 0
-                    ? activeAccount.hooks.map(i => {
-                        return (
-                          <a
-                            key={i}
-                            href={
-                              snap.network.explorer ? `${snap.network.explorer}/${i}` : undefined
-                            }
-                            target="_blank"
-                            rel="noopener noreferrer"
-                          >
-                            {truncate(i, 12)}
-                          </a>
-                        )
-                      })
-                    : '–'}
-                </Text>
-              </Flex>
-              {activeAccount && activeAccount?.hooks?.length > 0 && (
-                <Flex css={{ marginLeft: 'auto' }}>
-                  <Button
-                    size="xs"
-                    outline
-                    disabled={activeAccount.isLoading}
-                    css={{ mt: '$3', mr: '$1', ml: 'auto' }}
-                    onClick={() => {
-                      deleteHook(activeAccount)
-                    }}
-                  >
-                    Delete Hook <Trash size="15px" />
-                  </Button>
-                </Flex>
+            <Flex css={{ flexDirection: 'column' }}>
+              <Text className={labelStyle()}>Installed Hooks</Text>
+              {activeAccount && activeAccount.hooks.some(Boolean) ? (
+                activeAccount.hooks.map((hash, position) =>
+                  hash ? (
+                    <Flex key={position} css={{ alignItems: 'center', gap: '$2' }}>
+                      <Text css={{ color: '$mauve10', fontSize: '$xs' }}>Slot {position}</Text>
+                      <Text
+                        css={{
+                          fontFamily: '$monospace',
+                          a: { '&:hover': { textDecoration: 'underline' } }
+                        }}
+                      >
+                        <a
+                          href={
+                            snap.network.explorer ? `${snap.network.explorer}/${hash}` : undefined
+                          }
+                          target="_blank"
+                          rel="noopener noreferrer"
+                        >
+                          {truncate(hash, 12)}
+                        </a>
+                      </Text>
+                      <Button
+                        size="xs"
+                        outline
+                        disabled={activeAccount.isLoading}
+                        css={{ mt: '$1', mr: '$1', ml: 'auto' }}
+                        onClick={() => {
+                          deleteHook(activeAccount, position)
+                        }}
+                      >
+                        Delete <Trash size="15px" />
+                      </Button>
+                    </Flex>
+                  ) : null
+                )
+              ) : (
+                <Text css={{ fontFamily: '$monospace' }}>–</Text>
               )}
             </Flex>
           </Stack>
@@ -444,8 +442,8 @@ const Accounts: FC<AccountProps> = props => {
               </Flex>
               {props.showHookStats && (
                 <Text muted small css={{ mt: '$2' }}>
-                  {account.hooks.length} hook
-                  {account.hooks.length === 1 ? '' : 's'} installed
+                  {account.hooks.filter(Boolean).length} hook
+                  {account.hooks.filter(Boolean).length === 1 ? '' : 's'} installed
                 </Text>
               )}
             </Flex>

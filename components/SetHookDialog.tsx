@@ -22,6 +22,7 @@ import estimateFee from '../utils/estimateFee'
 import { getSetHookDefaults, transactionOptions, SetHookData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
 import AccountSequence from './Sequence'
+import truncate from '../utils/truncate'
 import { hookSetFlags } from '../state/constants/flags'
 import { showAlert } from '../state/actions/showAlert'
 
@@ -46,6 +47,11 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
     )
     const account = snap.accounts.find(acc => acc.address === selectedAccount?.value)
 
+    const positionOptions = Array.from({ length: 10 }, (_, i) => ({
+      label: `${i} – ${account?.hooks[i] ? truncate(account.hooks[i], 12) : 'empty'}`,
+      value: i
+    }))
+
     const getHookNamespace = useCallback(
       () =>
         (activeFile && snap.deployValues[activeFile.name]?.HookNamespace) ||
@@ -58,6 +64,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       const content = activeFile?.compiledValueSnapshot
       return {
         HookNamespace: getHookNamespace(),
+        HookPosition: 0,
         ...getSetHookDefaults(content),
         ...(activeFile && snap.deployValues[activeFile.name])
       }
@@ -258,6 +265,22 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                 <Box css={{ width: '100%', position: 'relative' }}>
                   <Label>Sequence</Label>
                   <AccountSequence address={selectedAccount?.value} />
+                </Box>
+                <Box css={{ width: '100%' }}>
+                  <Label>Hook position</Label>
+                  <Controller
+                    name="HookPosition"
+                    control={control}
+                    render={({ field }) => (
+                      <Select
+                        instanceId="deploy-hook-position"
+                        menuPosition="fixed"
+                        options={positionOptions as any}
+                        value={positionOptions.find(o => o.value === field.value) as any}
+                        onChange={(opt: any) => field.onChange(opt.value)}
+                      />
+                    )}
+                  />
                 </Box>
                 {!incomingOutgoingMode && (
                   <Box css={{ width: '100%' }}>
