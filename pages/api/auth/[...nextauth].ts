@@ -24,6 +24,7 @@ export default NextAuth({
       authorization: 'https://github.com/login/oauth/authorize?scope=read:user+user:email+gist',
       token: 'https://github.com/login/oauth/access_token',
       userinfo: 'https://api.github.com/user',
+      issuer: 'https://github.com/login/oauth',
       profile(profile) {
         return {
           id: profile.id.toString(),

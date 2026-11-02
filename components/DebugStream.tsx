@@ -7,6 +7,7 @@ import state, { ILog, transactionsState } from '../state'
 import { extractJSON } from '../utils/json'
 import EnrichLog from './EnrichLog'
 import LogBox from './LogBox'
+import Text from './Text'
 
 interface ISelect<T = string> {
   label: string
@@ -65,11 +66,12 @@ const onMessage = (event: any) => {
 let interval: NodeJS.Timer | null = null
 
 const addListeners = (account: ISelect | null) => {
+  const template = state.network.debugStream
   if (account?.value && streamState.socket?.url.endsWith(account?.value)) {
     return
   }
   streamState.logs = []
-  if (account?.value) {
+  if (account?.value && template) {
     if (interval) {
       clearInterval(interval)
     }
@@ -81,9 +83,7 @@ const addListeners = (account: ISelect | null) => {
     }
 
     streamState.socket = ref(
-      new ReconnectingWebSocket(
-        `wss://${process.env.NEXT_PUBLIC_DEBUG_STREAM_URL}/${account?.value}`
-      )
+      new ReconnectingWebSocket(template.replace('{address}', account.value))
     )
     if (streamState.socket) {
       interval = setInterval(() => {
@@ -100,6 +100,14 @@ const addListeners = (account: ISelect | null) => {
 
 subscribeKey(streamState, 'selectedAccount', addListeners)
 
+// Reconnect the stream to the new network's endpoint when the network changes
+subscribeKey(state, 'network', () => {
+  streamState.socket?.close(4999, 'Old connection closed because user switched network')
+  streamState.socket = undefined
+  if (interval) clearInterval(interval)
+  addListeners(streamState.selectedAccount)
+})
+
 const clearLog = () => {
   streamState.logs = []
   streamState.statusChangeTimestamp = Date.now()
@@ -108,29 +116,32 @@ const clearLog = () => {
 const DebugStream = () => {
   const { selectedAccount, logs } = useSnapshot(streamState)
   const { activeHeader: activeTxTab } = useSnapshot(transactionsState)
-  const { accounts } = useSnapshot(state)
+  const { accounts, network } = useSnapshot(state)
 
   const accountOptions = accounts.map(acc => ({
     label: acc.name,
     value: acc.address
   }))
 
-  const renderNav = () => (
-    <>
-      <Select
-        instanceId="DSAccount"
-        placeholder="Select account"
-        options={accountOptions}
-        hideSelectedOptions
-        value={selectedAccount}
-        onChange={acc => {
-          streamState.socket?.close(4999, 'Old connection closed because user switched account')
-          streamState.selectedAccount = acc as any
-        }}
-        css={{ width: '100%' }}
-      />
-    </>
-  )
+  const renderNav = () =>
+    !network.debugStream ? (
+      <Text css={{ color: '$mauve10', fontSize: '$sm' }}>{network.name} has no debug stream.</Text>
+    ) : (
+      <>
+        <Select
+          instanceId="DSAccount"
+          placeholder="Select account"
+          options={accountOptions}
+          hideSelectedOptions
+          value={selectedAccount}
+          onChange={acc => {
+            streamState.socket?.close(4999, 'Old connection closed because user switched account')
+            streamState.selectedAccount = acc as any
+          }}
+          css={{ width: '100%' }}
+        />
+      </>
+    )
 
   useEffect(() => {
     const account = transactionsState.transactions.find(tx => tx.header === activeTxTab)?.state

@@ -2,90 +2,39 @@
   "base": "vs",
   "inherit": true,
   "rules": [
-    {
-      "background": "F4F2F4",
-      "token": ""
-    },
-    {
-      "foreground": "008e00",
-      "token": "comment"
-    },
-    {
-      "foreground": "7d4726",
-      "token": "meta.preprocessor"
-    },
-    {
-      "foreground": "7d4726",
-      "token": "keyword.control.import"
-    },
-    {
-      "foreground": "df0002",
-      "token": "string"
-    },
-    {
-      "foreground": "3a00dc",
-      "token": "constant.numeric"
-    },
-    {
-      "foreground": "c800a4",
-      "token": "constant.language"
-    },
-    {
-      "foreground": "275a5e",
-      "token": "constant.character"
-    },
-    {
-      "foreground": "275a5e",
-      "token": "constant.other"
-    },
-    {
-      "foreground": "c800a4",
-      "token": "variable.language"
-    },
-    {
-      "foreground": "c800a4",
-      "token": "variable.other"
-    },
-    {
-      "foreground": "c800a4",
-      "token": "keyword"
-    },
-    {
-      "foreground": "c900a4",
-      "token": "storage"
-    },
-    {
-      "foreground": "438288",
-      "token": "entity.name.class"
-    },
-    {
-      "foreground": "790ead",
-      "token": "entity.name.tag"
-    },
-    {
-      "foreground": "450084",
-      "token": "entity.other.attribute-name"
-    },
-    {
-      "foreground": "450084",
-      "token": "support.function"
-    },
-    {
-      "foreground": "450084",
-      "token": "support.constant"
-    },
-    {
-      "foreground": "790ead",
-      "token": "support.type"
-    },
-    {
-      "foreground": "790ead",
-      "token": "support.class"
-    },
-    {
-      "foreground": "790ead",
-      "token": "support.other.variable"
-    }
+    { "token": "", "background": "F4F2F4" },
+    { "token": "comment", "foreground": "008000" },
+    { "token": "string", "foreground": "A31515" },
+    { "token": "string.escape", "foreground": "EE0000" },
+    { "token": "number", "foreground": "098658" },
+    { "token": "keyword", "foreground": "0000FF" },
+    { "token": "keyword.if", "foreground": "AF00DB" },
+    { "token": "keyword.else", "foreground": "AF00DB" },
+    { "token": "keyword.for", "foreground": "AF00DB" },
+    { "token": "keyword.while", "foreground": "AF00DB" },
+    { "token": "keyword.do", "foreground": "AF00DB" },
+    { "token": "keyword.switch", "foreground": "AF00DB" },
+    { "token": "keyword.case", "foreground": "AF00DB" },
+    { "token": "keyword.default", "foreground": "AF00DB" },
+    { "token": "keyword.break", "foreground": "AF00DB" },
+    { "token": "keyword.continue", "foreground": "AF00DB" },
+    { "token": "keyword.return", "foreground": "AF00DB" },
+    { "token": "keyword.goto", "foreground": "AF00DB" },
+    { "token": "keyword.directive", "foreground": "AF00DB" },
+    { "token": "type", "foreground": "267F99" },
+    { "token": "class", "foreground": "267F99" },
+    { "token": "struct", "foreground": "267F99" },
+    { "token": "enum", "foreground": "267F99" },
+    { "token": "interface", "foreground": "267F99" },
+    { "token": "typeParameter", "foreground": "267F99" },
+    { "token": "namespace", "foreground": "267F99" },
+    { "token": "macro", "foreground": "0000FF" },
+    { "token": "function", "foreground": "795E26" },
+    { "token": "method", "foreground": "795E26" },
+    { "token": "variable", "foreground": "001080" },
+    { "token": "parameter", "foreground": "001080" },
+    { "token": "property", "foreground": "001080" },
+    { "token": "enumMember", "foreground": "0070C1" }
   ],
   "colors": {
     "editor.foreground": "#000000",

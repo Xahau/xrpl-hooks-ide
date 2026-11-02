@@ -1,20 +1,29 @@
 import Document, { Html, Head, Main, NextScript, DocumentContext } from 'next/document'
 
-import { globalStyles, getCssText } from '../stitches.config'
+import { extractCritical } from '@emotion/server'
+
+import { globalStyles } from '../stitches.config'
 
 class MyDocument extends Document {
   static async getInitialProps(ctx: DocumentContext) {
+    globalStyles()
     const initialProps = await Document.getInitialProps(ctx)
+    const { ids, css } = extractCritical(initialProps.html)
 
-    return initialProps
+    return {
+      ...initialProps,
+      styles: (
+        <>
+          {initialProps.styles}
+          <style data-emotion={`css ${ids.join(' ')}`} dangerouslySetInnerHTML={{ __html: css }} />
+        </>
+      )
+    }
   }
   render() {
-    globalStyles()
-
     return (
       <Html>
         <Head>
-          <style id="stitches" dangerouslySetInnerHTML={{ __html: getCssText() }} />
           <link rel="preconnect" href="https://fonts.googleapis.com" />
           <link rel="preconnect" href="https://fonts.gstatic.com" crossOrigin="" />
           <link

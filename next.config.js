@@ -5,8 +5,28 @@ const { withPlausibleProxy } = require('next-plausible')
 // plausible.io), so content blockers no longer fail the request and log errors in the console
 module.exports = withPlausibleProxy()({
   reactStrictMode: true,
+  async redirects() {
+    return [{ source: '/', destination: '/develop', permanent: false }]
+  },
   images: {
-    domains: ['avatars.githubusercontent.com']
+    remotePatterns: [
+      {
+        protocol: 'https',
+        hostname: 'avatars.githubusercontent.com',
+      },
+    ],
+  },
+  async headers() {
+    // required for SharedArrayBuffer (multithreaded clangd wasm)
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          { key: 'Cross-Origin-Opener-Policy', value: 'same-origin' },
+          { key: 'Cross-Origin-Embedder-Policy', value: 'require-corp' }
+        ]
+      }
+    ]
   },
   webpack(config, { isServer }) {
     config.resolve.alias['vscode'] = require.resolve(
@@ -16,8 +36,8 @@ module.exports = withPlausibleProxy()({
       config.resolve.fallback.fs = false
     }
     config.module.rules.push({
-      test: [/\.md$/, /hook-bundle\.js$/],
-      use: 'raw-loader'
+      test: [/\.md$/, /\.h$/, /hook-bundle\.js$/],
+      type: 'asset/source'
     })
     return config
   }

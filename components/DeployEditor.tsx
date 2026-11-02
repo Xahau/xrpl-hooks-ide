@@ -94,9 +94,9 @@ const DeployEditor = () => {
       }}
     >
       {`You haven't compiled any files yet, compile files on `}
-      <NextLink shallow href={`/develop/${router.query.slug}`} passHref>
-        <Link as="a">develop view</Link>
-      </NextLink>
+      <Link as={NextLink} shallow href={`/develop/${router.query.slug}`} css={{ textDecoration: 'underline' }}>
+        develop view
+      </Link>
     </Text>
   )
 
