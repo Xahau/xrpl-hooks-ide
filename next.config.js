@@ -33,7 +33,7 @@ module.exports = {
     }
     config.module.rules.push({
       test: [/\.md$/, /\.h$/, /hook-bundle\.js$/],
-      use: 'raw-loader'
+      type: 'asset/source'
     })
     return config
   }
