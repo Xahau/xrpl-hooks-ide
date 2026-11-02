@@ -19,7 +19,7 @@ import state, { IFile, SelectOption } from '../state'
 import toast from 'react-hot-toast'
 import { hasTshCollect, prepareDeployHookTx, setTshCollect, sha256 } from '../state/actions/deployHook'
 import estimateFee from '../utils/estimateFee'
-import { getParameters, getInvokeOptions, transactionOptions, SetHookData } from '../utils/setHook'
+import { getSetHookDefaults, transactionOptions, SetHookData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
 import AccountSequence from './Sequence'
 import { hookSetFlags } from '../state/constants/flags'
@@ -58,11 +58,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
       const content = activeFile?.compiledValueSnapshot
       return {
         HookNamespace: getHookNamespace(),
-        Invoke: getInvokeOptions(content),
-        InvokeIncoming: [],
-        InvokeOutgoing: [],
-        Flags: [{ label: 'hsfOVERRIDE', value: hookSetFlags.hsfOVERRIDE }],
-        HookParameters: getParameters(content),
+        ...getSetHookDefaults(content),
         ...(activeFile && snap.deployValues[activeFile.name])
       }
     }, [activeFile, getHookNamespace, snap.deployValues])
