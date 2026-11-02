@@ -4,6 +4,14 @@ module.exports = {
   async redirects() {
     return [{ source: '/', destination: '/develop', permanent: false }]
   },
+  // Serve the Plausible script and event endpoint from this origin so content blockers no longer
+  // fail the request and log errors in the console (same paths next-plausible's proxy used)
+  async rewrites() {
+    return [
+      { source: '/js/script.:ext*.js', destination: 'https://plausible.io/js/script.:ext*.js' },
+      { source: '/proxy/api/event', destination: 'https://plausible.io/api/event' }
+    ]
+  },
   images: {
     remotePatterns: [
       {
