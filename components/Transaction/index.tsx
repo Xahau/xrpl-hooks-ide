@@ -1,5 +1,5 @@
-import { Play } from 'phosphor-react'
-import { FC, useCallback, useEffect } from 'react'
+import { Flask, Play } from 'phosphor-react'
+import { FC, useCallback, useEffect, useState } from 'react'
 import { useSnapshot } from 'valtio'
 import state from '../../state'
 import {
@@ -12,7 +12,7 @@ import {
   SelectOption,
   TransactionState
 } from '../../state/transactions'
-import { sendTransaction } from '../../state/actions'
+import { sendTransaction, simulateTransaction } from '../../state/actions'
 import Box from '../Box'
 import Button from '../Button'
 import Flex from '../Flex'
@@ -114,54 +114,68 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
     [getJsonString, setState]
   )
 
-  const submitTest = useCallback(async () => {
-    let st: TransactionState | undefined
-    const tt = txState.selectedTransaction?.value
-    if (viewType === 'json') {
-      st = saveEditorState(editorValue, tt)
-      if (!st) return
-    }
+  const [isSimulating, setIsSimulating] = useState(false)
 
-    const account = accounts.find(acc => acc.address === selectedAccount?.value)
-    if (txIsDisabled) return
-
-    setState({ txIsLoading: true })
-    const logPrefix = header ? `${header.split('.')[0]}: ` : undefined
-    try {
-      if (!account) {
-        throw Error('Account must be selected from imported accounts!')
+  const runWith = useCallback(
+    async (fn: typeof sendTransaction) => {
+      let st: TransactionState | undefined
+      const tt = txState.selectedTransaction?.value
+      if (viewType === 'json') {
+        st = saveEditorState(editorValue, tt)
+        if (!st) return
       }
-      const options = prepareOptions(st)
-      // delete unnecessary fields
-      Object.keys(options).forEach(field => {
-        if (!options[field] && field !== 'StartTime') { // StartTime Can be 0
-          delete options[field]
+
+      const account = accounts.find(acc => acc.address === selectedAccount?.value)
+      if (txIsDisabled) return
+
+      setState({ txIsLoading: true })
+      const logPrefix = header ? `${header.split('.')[0]}: ` : undefined
+      try {
+        if (!account) {
+          throw Error('Account must be selected from imported accounts!')
         }
-      })
-
-      await sendTransaction(account, options, { logPrefix })
-    } catch (error) {
-      console.error(error)
-      if (error instanceof Error) {
-        state.transactionLogs.push({
-          type: 'error',
-          message: `${logPrefix}${error.message}`
+        const options = prepareOptions(st)
+        // delete unnecessary fields
+        Object.keys(options).forEach(field => {
+          if (!options[field] && field !== 'StartTime') {
+            // StartTime Can be 0
+            delete options[field]
+          }
         })
+
+        await fn(account, options, { logPrefix })
+      } catch (error) {
+        console.error(error)
+        if (error instanceof Error) {
+          state.transactionLogs.push({
+            type: 'error',
+            message: `${logPrefix}${error.message}`
+          })
+        }
       }
-    }
-    setState({ txIsLoading: false })
-  }, [
-    txState.selectedTransaction?.value,
-    viewType,
-    accounts,
-    txIsDisabled,
-    setState,
-    header,
-    saveEditorState,
-    editorValue,
-    selectedAccount?.value,
-    prepareOptions
-  ])
+      setState({ txIsLoading: false })
+    },
+    [
+      txState.selectedTransaction?.value,
+      viewType,
+      accounts,
+      txIsDisabled,
+      setState,
+      header,
+      saveEditorState,
+      editorValue,
+      selectedAccount?.value,
+      prepareOptions
+    ]
+  )
+
+  const submitTest = useCallback(() => runWith(sendTransaction), [runWith])
+
+  const simulateTest = useCallback(async () => {
+    setIsSimulating(true)
+    await runWith(simulateTransaction)
+    setIsSimulating(false)
+  }, [runWith])
 
   const resetState = useCallback(
     (transactionType: SelectOption | undefined = defaultTransactionType) => {
@@ -268,9 +282,19 @@ const Transaction: FC<TransactionProps> = ({ header, state: txState, ...props })
             RESET
           </Button>
           <Button
+            outline
+            onClick={simulateTest}
+            isLoading={isSimulating}
+            disabled={txIsDisabled}
+            css={{ mr: '$3' }}
+          >
+            <Flask weight="bold" size="16px" />
+            SIMULATE
+          </Button>
+          <Button
             variant="primary"
             onClick={submitTest}
-            isLoading={txIsLoading}
+            isLoading={txIsLoading && !isSimulating}
             disabled={txIsDisabled}
           >
             <Play weight="bold" size="16px" />

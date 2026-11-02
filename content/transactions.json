@@ -21,11 +21,11 @@
     "TransactionType": "CheckCash",
     "Amount?": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "DeliverMin?": {
       "$value": "",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "CheckID": "838766BA2B995C00744175F69A1B11E32C3DBC40E64801A4056FCBD657F57334"
   },
@@ -63,7 +63,7 @@
     "TransactionType": "EscrowCreate",
     "Amount": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "Destination": {
       "$type": "account",
@@ -91,7 +91,7 @@
   {
     "TransactionType": "OfferCreate",
     "TakerGets": {
-      "$type": "amount.xrp",
+      "$type": "amount.native",
       "$value": "6000000"
     },
     "TakerPays": {
@@ -111,14 +111,14 @@
     },
     "Amount": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     }
   },
   {
     "TransactionType": "PaymentChannelCreate",
     "Amount": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "Destination": {
       "$type": "account",
@@ -134,7 +134,7 @@
     "Channel": "C1AE6DDDEEC05CF2978C0BAD6FE302948E9533691DC749DCDD3B9E5992CA6198",
     "Amount": {
       "$value": "200",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "Expiration?": 543171558
   },
@@ -211,7 +211,7 @@
         {
           "AmountEntry": {
             "Amount": {
-              "$type": "amount.xrp",
+              "$type": "amount.native",
               "$value": "6"
             }
           }
@@ -272,7 +272,7 @@
     "URI": "697066733A2F2F434944",
     "Amount?": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     },
     "Destination?": {
       "$type": "account",
@@ -289,7 +289,7 @@
     "Destination?": "rf1BiGeXwwQoi8Z2ueFYTEXSwuJYfV2Jpn",
     "Amount": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     }
   },
   {
@@ -301,7 +301,7 @@
     "URITokenID": "B792B56B558C89C4E942E41B5DB66074E005CB198DB70C26C707AAC2FF5F74CB",
     "Amount": {
       "$value": "100",
-      "$type": "amount.xrp"
+      "$type": "amount.native"
     }
   },
   {

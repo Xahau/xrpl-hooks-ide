@@ -27,7 +27,7 @@ const LogBox: FC<ILogBox> = ({
   enhanced,
   Icon = Notepad
 }) => {
-  const logRef = useRef<HTMLPreElement>(null)
+  const logRef = useRef<HTMLPreElement>(null!)
   const { stayScrolled /*, scrollBottom*/ } = useStayScrolled(logRef)
 
   useLayoutEffect(() => {
