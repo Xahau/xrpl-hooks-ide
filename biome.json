@@ -1,0 +1,41 @@
+{
+  "$schema": "./node_modules/@biomejs/biome/configuration_schema.json",
+  "vcs": { "enabled": true, "clientKind": "git", "useIgnoreFile": true },
+  "files": { "includes": ["**", "!public", "!**/*.md", "!!.claude"] },
+  "formatter": { "indentStyle": "space", "lineWidth": 100 },
+  "javascript": {
+    "formatter": {
+      "quoteStyle": "single",
+      "semicolons": "asNeeded",
+      "arrowParentheses": "asNeeded",
+      "trailingCommas": "none"
+    }
+  },
+  "assist": { "actions": { "source": { "organizeImports": "off" } } },
+  "linter": {
+    "domains": { "next": "recommended", "react": "recommended" },
+    "rules": {
+      "a11y": {
+        "noStaticElementInteractions": "warn",
+        "noSvgWithoutTitle": "warn",
+        "useIframeTitle": "warn",
+        "useKeyWithClickEvents": "warn"
+      },
+      "correctness": {
+        "noComponentHookFactories": "warn",
+        "noInnerDeclarations": "warn",
+        "noUnreachable": "warn",
+        "useExhaustiveDependencies": "warn"
+      },
+      "security": { "noDangerouslySetInnerHtml": "warn" },
+      "suspicious": {
+        "noArrayIndexKey": "warn",
+        "noAssignInExpressions": "warn",
+        "noDoubleEquals": "warn",
+        "noImplicitAnyLet": "warn",
+        "noRedeclare": "warn",
+        "useIterableCallbackReturn": "warn"
+      }
+    }
+  }
+}

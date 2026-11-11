@@ -128,7 +128,6 @@ const getStyles = (isDark: boolean) => {
   return styles
 }
 
-// eslint-disable-next-line react/display-name
 const Select = forwardRef<any, Props>((props, ref) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
@@ -143,7 +142,6 @@ const Select = forwardRef<any, Props>((props, ref) => {
   )
 })
 
-// eslint-disable-next-line react/display-name
 const Creatable = forwardRef<any, Props>((props, ref) => {
   const { theme } = useTheme()
   const isDark = theme === 'dark'
