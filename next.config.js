@@ -8,9 +8,9 @@ module.exports = {
     remotePatterns: [
       {
         protocol: 'https',
-        hostname: 'avatars.githubusercontent.com',
-      },
-    ],
+        hostname: 'avatars.githubusercontent.com'
+      }
+    ]
   },
   async headers() {
     // required for SharedArrayBuffer (multithreaded clangd wasm)

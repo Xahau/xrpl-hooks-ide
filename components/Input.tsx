@@ -150,7 +150,6 @@ export const Input = styled('input', {
   }
 })
 
-// eslint-disable-next-line react/display-name
 const ReffedInput = React.forwardRef<HTMLInputElement, React.ComponentProps<typeof Input>>(
   (props, ref) => <Input {...props} ref={ref} />
 )

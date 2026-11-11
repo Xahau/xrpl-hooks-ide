@@ -26,7 +26,7 @@ const estimateFee = async (
 
     const res = await xrplSend({ command: 'fee', tx_blob: signedTransaction })
     if (res.error) {
-      throw new Error(`[${res.error}] ${res.error_exception}.`);
+      throw new Error(`[${res.error}] ${res.error_exception}.`)
     }
     if (res && res.drops) {
       return res.drops
@@ -35,8 +35,8 @@ const estimateFee = async (
   } catch (err) {
     if (!opts.silent) {
       console.error(err)
-      const msg = err instanceof Error ? err.message : 'Error estimating fee!';
-      toast.error(msg);
+      const msg = err instanceof Error ? err.message : 'Error estimating fee!'
+      toast.error(msg)
     }
     return null
   }

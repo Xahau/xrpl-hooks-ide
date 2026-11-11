@@ -53,8 +53,8 @@ const Test = () => {
           hasScripts && getSplit('testVertical')?.length === 2
             ? [50, 20, 30]
             : hasScripts
-            ? [50, 20, 50]
-            : [50, 50]
+              ? [50, 20, 50]
+              : [50, 50]
         }
         gutterSize={4}
         gutterAlign="center"

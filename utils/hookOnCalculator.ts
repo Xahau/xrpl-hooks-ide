@@ -34,7 +34,7 @@ export const tts = {
   ttREMIT: 95,
   ttIMPORT: 97,
   ttCLAIM_REWARD: 98,
-  ttINVOKE: 99,
+  ttINVOKE: 99
 }
 
 export type TTS = typeof tts
@@ -44,7 +44,7 @@ const calculateHookOn = (arr: (keyof TTS)[]) => {
   arr.forEach(n => {
     let v = BigInt(s)
     v ^= BigInt(1) << BigInt(tts[n])
-    s = "0x" + v.toString(16)
+    s = '0x' + v.toString(16)
   })
   s = s.replace('0x', '')
   s = s.padStart(64, '0')

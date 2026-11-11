@@ -61,11 +61,7 @@ export const setNetwork = async (name: string) => {
 }
 
 export const addCustomNetwork = (net: INetwork) => {
-  if (
-    allNetworks().some(n => n.name === net.name) ||
-    !net.name ||
-    !net.ws
-  ) {
+  if (allNetworks().some(n => n.name === net.name) || !net.name || !net.ws) {
     throw new Error(`Network name "${net.name}" is empty or already in use`)
   }
   state.customNetworks.push(net)

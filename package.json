@@ -6,10 +6,10 @@
     "dev": "node scripts/fetch-clangd.mjs && next dev",
     "build": "node scripts/fetch-clangd.mjs && next build",
     "start": "next start",
-    "lint": "next lint",
+    "lint": "biome check .",
     "typecheck": "tsc --noEmit",
     "test": "node --experimental-strip-types --test \"**/*.test.ts\" \"**/*.test.mjs\"",
-    "format": "prettier --write .",
+    "format": "biome format --write .",
     "postinstall": "./node_modules/.bin/browserify -r ripple-binary-codec -r ripple-keypairs -r ripple-address-codec -r ripple-secret-codec -r ./node_modules/xrpl-accountlib/dist/index.js:xrpl-accountlib -o node_modules/xrpl-accountlib/dist/browser.hook-bundle.js && ./node_modules/.bin/hooks-compiler copy-assets public/compiler"
   },
   "dependencies": {
@@ -60,14 +60,12 @@
     "xrpl-client": "^2.0.2"
   },
   "devDependencies": {
+    "@biomejs/biome": "2.6.6",
     "@types/dinero.js": "^1.9.0",
     "@types/file-saver": "^2.0.4",
     "@types/react": "19.3.0",
     "@types/react-dom": "19.3.0",
     "browserify": "^17.0.0",
-    "eslint": "^8.56.0",
-    "eslint-config-next": "15.5.28",
-    "prettier": "^2.7.1",
     "typescript": "^5.3.3"
   },
   "engines": {

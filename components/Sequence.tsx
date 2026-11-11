@@ -38,7 +38,7 @@ const AccountSequence: FC<AccountSequenceProps> = ({ address }) => {
     <Flex row align="center" fluid>
       <Input
         placeholder="Account sequence"
-        value={account?.sequence || ""}
+        value={account?.sequence || ''}
         disabled={!account}
         type="number"
         readOnly={true}

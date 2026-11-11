@@ -40,7 +40,7 @@ export type SetHookData = {
   }[]
   Memos?: {
     Memo: {
-      MemoType: string,
+      MemoType: string
       MemoData: string
       MemoFormat: string
     }

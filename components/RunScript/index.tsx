@@ -32,7 +32,7 @@ const generateHtmlTemplate = async (code: string, data?: Record<string, any>) =>
 
   processString = JSON.stringify(process)
 
-  const libs = (await import("xrpl-accountlib/dist/browser.hook-bundle.js")).default;
+  const libs = (await import('xrpl-accountlib/dist/browser.hook-bundle.js')).default
   return `
   <html>
   <head>
@@ -130,15 +130,15 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
   }, [content])
 
   const runScript = useCallback(async () => {
-    setIsLoading(true);
+    setIsLoading(true)
     try {
       // Show loading toast only after 1 second, otherwise skip it.
       let loaded = false
-      let toastId: string | undefined;
+      let toastId: string | undefined
       setTimeout(() => {
         if (!loaded) {
           toastId = toast.loading('Loading packages, may take a few seconds...', {
-            position: 'bottom-center',
+            position: 'bottom-center'
           })
         }
       }, 1000)
@@ -162,7 +162,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
         { type: 'error', message: err?.message || 'Could not parse template' }
       ]
     }
-    setIsLoading(false);
+    setIsLoading(false)
   }, [content, fields, snap.scriptLogs])
 
   useEffect(() => {
@@ -196,7 +196,7 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
     if (isDisabled) return toast.error('Please fill in all the required fields.')
 
     state.scriptLogs = []
-    await runScript();
+    await runScript()
     setIsDialogOpen(false)
   }, [isDisabled, runScript])
 
@@ -297,7 +297,12 @@ const RunScript: React.FC<{ file: IFile }> = ({ file: { content, name } }) => {
               <DialogClose asChild>
                 <Button outline>Cancel</Button>
               </DialogClose>
-              <Button variant="primary" isDisabled={isDisabled || isLoading} isLoading={isLoading} onClick={handleRun}>
+              <Button
+                variant="primary"
+                isDisabled={isDisabled || isLoading}
+                isLoading={isLoading}
+                onClick={handleRun}
+              >
                 Run script
               </Button>
             </Flex>

@@ -29,7 +29,9 @@ export type Tag = Omit<Spec, 'tag'> & { tag: CommentTag }
 
 export const getTags = (source: string | undefined, names: readonly CommentTag[]): Tag[] => {
   if (!source) return []
-  return parse(source).flatMap(block => block.tags as Tag[]).filter(tag => names.includes(tag.tag))
+  return parse(source)
+    .flatMap(block => block.tags as Tag[])
+    .filter(tag => names.includes(tag.tag))
 }
 
 /** Whitespace-separated values of the matching tags, e.g. `@invoke ttPAYMENT ttINVOKE` -> ['ttPAYMENT', 'ttINVOKE']. */

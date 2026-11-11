@@ -41,8 +41,8 @@ const DeployEditor = () => {
     compiledSize > FILESIZE_BREAKPOINTS[1]
       ? '$error'
       : compiledSize > FILESIZE_BREAKPOINTS[0]
-      ? '$warning'
-      : '$success'
+        ? '$warning'
+        : '$success'
 
   const isContentChanged = activeFile && activeFile.compiledValueSnapshot !== activeFile.content
   // const hasDeployErrors = activeFile && activeFile.containsErrors;
@@ -65,13 +65,14 @@ const DeployEditor = () => {
           <Text css={{ ml: '$2', color }}>({filesize(activeFile.compiledContent.byteLength)})</Text>
         )}
       </Flex>
-      {activeFile.compiledContent?.byteLength && activeFile.compiledContent?.byteLength >= 64000 && (
-        <Flex css={{ flexDirection: 'column', py: '$3', pb: '$1' }}>
-          <Text css={{ ml: '$2', color: '$error' }}>
-            File size is larger than 64kB, cannot set hook!
-          </Text>
-        </Flex>
-      )}
+      {activeFile.compiledContent?.byteLength &&
+        activeFile.compiledContent?.byteLength >= 64000 && (
+          <Flex css={{ flexDirection: 'column', py: '$3', pb: '$1' }}>
+            <Text css={{ ml: '$2', color: '$error' }}>
+              File size is larger than 64kB, cannot set hook!
+            </Text>
+          </Flex>
+        )}
       <Button variant="link" onClick={() => setShowContent(true)}>
         View as WAT-file
       </Button>
@@ -94,7 +95,12 @@ const DeployEditor = () => {
       }}
     >
       {`You haven't compiled any files yet, compile files on `}
-      <Link as={NextLink} shallow href={`/develop/${router.query.slug}`} css={{ textDecoration: 'underline' }}>
+      <Link
+        as={NextLink}
+        shallow
+        href={`/develop/${router.query.slug}`}
+        css={{ textDecoration: 'underline' }}
+      >
         develop view
       </Link>
     </Text>
