@@ -29,7 +29,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
   const slug = router.query?.slug
   const gistId = (Array.isArray(slug) && slug[0]) ?? null
 
-  const origin = 'https://xrpl-hooks-ide.vercel.app' // TODO: Change when site is deployed
+  const origin = 'https://builder.xahau.network'
   const shareImg = '/share-image.png'
 
   const snap = useSnapshot(state)
@@ -62,7 +62,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <meta property="og:title" content="Xahau Hooks Builder" />
         <meta name="twitter:title" content="Xahau Hooks Builder" />
         <meta name="twitter:card" content="summary_large_image" />
-        <meta name="twitter:site" content="@XRPLF" />
+        <meta name="twitter:site" content="@XahauNetwork" />
         <meta
           name="description"
           content="Hooks Builder, add smart contract functionality to the Xahau Network."
@@ -84,7 +84,7 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
         <link rel="icon" type="image/png" sizes="16x16" href="/favicon-16x16.png" />
         <link rel="manifest" href="/site.webmanifest" />
         <link rel="mask-icon" href="/safari-pinned-tab.svg" color="#161618" />
-        <meta name="application-name" content="XRPL Hooks Builder" />
+        <meta name="application-name" content="Xahau Hooks Builder" />
         <meta name="msapplication-TileColor" content="#c10ad0" />
         <meta name="theme-color" content="#161618" media="(prefers-color-scheme: dark)" />
         <meta name="theme-color" content="#FDFCFD" media="(prefers-color-scheme: light)" />

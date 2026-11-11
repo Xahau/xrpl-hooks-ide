@@ -46,7 +46,7 @@ If you want to use your Github app to provide login, here's the guide to do that
 
 - First go to https://github.com/settings/profile -> Developer Settings -> OAuth Apps
 - Click "New OAuth App" button
-- Give application some name eg. Xrpl Hooks Development
+- Give application some name eg. Xahau Hooks Development
 - Give some homepage url eg. localhost:3000
 - Give some optional description (these values will show up on the popup when you login)
 - Authorization callback URL should be http://localhost:3000/api/auth/callback (if you're creating the app for local development)
