@@ -99,6 +99,7 @@ export const prepareDeployHookTx = async (
     Fee: data.Fee,
     ...networkIdField(),
     Hooks: [
+      ...Array(data.HookPosition ?? 0).fill({ Hook: {} }),
       {
         Hook: {
           CreateCode: arrayBufferToHex(activeFile?.compiledContent).toUpperCase(),
@@ -204,9 +205,9 @@ export const deployHook = async (account: IAccount & { name?: string }, data: Se
   return submitRes
 }
 
-export const deleteHook = async (account: IAccount & { name?: string }) => {
+export const deleteHook = async (account: IAccount & { name?: string }, position = 0) => {
   const currentAccount = state.accounts.find(acc => acc.address === account.address)
-  if (currentAccount?.isLoading || !currentAccount?.hooks.length) {
+  if (currentAccount?.isLoading || !currentAccount?.hooks[position]) {
     return
   }
   const tx = {
@@ -216,6 +217,7 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
     Fee: '100000',
     ...networkIdField(),
     Hooks: [
+      ...Array(position).fill({ Hook: {} }),
       {
         Hook: {
           CreateCode: '',
@@ -254,7 +256,7 @@ export const deleteHook = async (account: IAccount & { name?: string }) => {
         type: 'success',
         message: `[${submitRes.engine_result}] ${submitRes.engine_result_message} Validated ledger index: ${submitRes.validated_ledger_index}`
       })
-      currentAccount.hooks = []
+      await refreshAccounts()
     } else {
       toast.error(`${submitRes.engine_result_message || submitRes.error_exception}`, {
         id: toastId
