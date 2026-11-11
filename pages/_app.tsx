@@ -107,7 +107,8 @@ function MyApp({ Component, pageProps: { session, ...pageProps } }: AppProps) {
                   async
                   defer
                   data-domain="builder.xahau.network"
-                  src="https://plausible.io/js/plausible.outbound-links.js"
+                  data-api="/proxy/api/event"
+                  src="/js/script.outbound-links.js"
                 />
                 <Script
                   id="next-plausible-init"
