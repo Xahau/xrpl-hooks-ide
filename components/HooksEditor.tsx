@@ -275,7 +275,7 @@ const HooksEditor = () => {
                 monaco.languages.register({
                   id: 'text',
                   extensions: ['.txt'],
-                  mimetypes: ['text/plain'],
+                  mimetypes: ['text/plain']
                 })
                 MonacoServices.install(monaco)
                 syncFileModels(monaco)

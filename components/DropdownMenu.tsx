@@ -107,7 +107,9 @@ const StyledArrow = styled(DropdownMenuPrimitive.Arrow, {
 })
 
 // Wrap Content with Portal for Radix UI v2
-const ContentWithPortal: React.FC<React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }> = ({ children, ...props }) => (
+const ContentWithPortal: React.FC<
+  React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }
+> = ({ children, ...props }) => (
   <DropdownMenuPrimitive.Portal>
     <StyledContent {...props}>{children}</StyledContent>
   </DropdownMenuPrimitive.Portal>

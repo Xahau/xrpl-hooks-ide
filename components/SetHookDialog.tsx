@@ -17,7 +17,12 @@ import { deployHook } from '../state/actions'
 import { useSnapshot } from 'valtio'
 import state, { IFile, SelectOption } from '../state'
 import toast from 'react-hot-toast'
-import { hasTshCollect, prepareDeployHookTx, setTshCollect, sha256 } from '../state/actions/deployHook'
+import {
+  hasTshCollect,
+  prepareDeployHookTx,
+  setTshCollect,
+  sha256
+} from '../state/actions/deployHook'
 import estimateFee from '../utils/estimateFee'
 import { getSetHookDefaults, transactionOptions, SetHookData } from '../utils/setHook'
 import { capitalize } from '../utils/helpers'
@@ -189,12 +194,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
 
     const InvokeModeSwitch = () => {
       return (
-        <Flex
-          row
-          align="center"
-          justify="end"
-          css={{ gap: '$2', mt: '$2', color: '$mauve11' }}
-        >
+        <Flex row align="center" justify="end" css={{ gap: '$2', mt: '$2', color: '$mauve11' }}>
           <Label
             htmlFor="invoke-mode-switch"
             css={{ fontSize: '$xs', lineHeight: 1, mb: 0, cursor: 'pointer' }}
@@ -343,21 +343,33 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                         closeMenuOnSelect={false}
                         isMulti
                         menuPosition="fixed"
-                        options={Object.entries(hookSetFlags).map(([label, value]) => ({ label, value }))}
+                        options={Object.entries(hookSetFlags).map(([label, value]) => ({
+                          label,
+                          value
+                        }))}
                       />
                     )}
                   />
                   <Label css={{ fontSize: '$sm', mt: '$1' }}>
-                    hsfOVERRIDE replaces an existing hook at this position. Cron hooks need hsfCOLLECT.
+                    hsfOVERRIDE replaces an existing hook at this position. Cron hooks need
+                    hsfCOLLECT.
                   </Label>
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Name</Label>
-                  <Input {...register('HookName', { required: false })} autoComplete={'off'} placeholder="Hook name (utf-8)" />
+                  <Input
+                    {...register('HookName', { required: false })}
+                    autoComplete={'off'}
+                    placeholder="Hook name (utf-8)"
+                  />
                 </Box>
                 <Box css={{ width: '100%' }}>
                   <Label>Hook Namespace Seed</Label>
-                  <Input {...register('HookNamespace', { required: true })} autoComplete={'off'} placeholder="Hook namespace seed" />
+                  <Input
+                    {...register('HookNamespace', { required: true })}
+                    autoComplete={'off'}
+                    placeholder="Hook namespace seed"
+                  />
                   {errors.HookNamespace?.type === 'required' && (
                     <Box css={{ display: 'inline', color: '$red11' }}>Namespace is required</Box>
                   )}
@@ -473,7 +485,7 @@ export const SetHookDialog: React.FC<{ accountAddress: string }> = React.memo(
                               setValue('Fee', Math.round(Number(res.base_fee || '')).toString())
                             }
                           }
-                        } catch (err) { }
+                        } catch (err) {}
 
                         setEstimateLoading(false)
                       }}

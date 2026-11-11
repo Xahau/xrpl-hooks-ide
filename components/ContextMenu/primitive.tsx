@@ -96,7 +96,9 @@ const StyledItemIndicator = styled(ContextMenuPrimitive.ItemIndicator, {
 })
 
 // Wrap Content with Portal for Radix UI v2
-const ContentWithPortal: React.FC<React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }> = ({ children, ...props }) => (
+const ContentWithPortal: React.FC<
+  React.ComponentProps<typeof StyledContent> & { children?: React.ReactNode }
+> = ({ children, ...props }) => (
   <ContextMenuPrimitive.Portal>
     <StyledContent {...props}>{children}</StyledContent>
   </ContextMenuPrimitive.Portal>

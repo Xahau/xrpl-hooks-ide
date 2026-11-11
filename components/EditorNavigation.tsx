@@ -212,13 +212,18 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           ) : (
-            <Button outline size="sm" css={{ mr: '$3' }} onClick={() =>
+            <Button
+              outline
+              size="sm"
+              css={{ mr: '$3' }}
+              onClick={() =>
                 window.open(
                   '/sign-in',
                   'signin',
                   `width=640,height=480,left=${window.screenX + (window.outerWidth - 640) / 2},top=${window.screenY + (window.outerHeight - 480) / 2}`
                 )
-              }>
+              }
+            >
               <GithubLogo size="16px" /> Login
             </Button>
           )}
@@ -376,7 +381,6 @@ const EditorNavigation = ({ renderNav }: { renderNav?: () => ReactNode }) => {
               </DropdownMenuContent>
             </DropdownMenu>
           </Stack>
-
         </Container>
       </Flex>
 

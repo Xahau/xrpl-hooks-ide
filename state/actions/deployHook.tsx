@@ -309,7 +309,9 @@ export const setTshCollect = async (account: IAccount & { name?: string }) => {
   const message = ok
     ? 'TSH collect flag set ✅'
     : `[${submitRes?.engine_result || submitRes?.error}] ${
-        submitRes?.engine_result_message || submitRes?.error_exception || 'Error occurred while setting TSH collect flag'
+        submitRes?.engine_result_message ||
+        submitRes?.error_exception ||
+        'Error occurred while setting TSH collect flag'
       }`
   toast[ok ? 'success' : 'error'](message, { id: toastId })
   state.deployLogs.push({ type: ok ? 'success' : 'error', message })

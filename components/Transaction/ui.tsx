@@ -47,7 +47,7 @@ interface TokenAmountField {
 
 interface IssueField {
   $type: 'issue'
-  $value: { currency: string, issuer: string }
+  $value: { currency: string; issuer: string }
 }
 
 interface ObjectField {
@@ -242,10 +242,13 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
   const cloneValue = (value: any): any => {
     if (Array.isArray(value)) return value.map(cloneValue)
     if (typeIs(value, 'object'))
-      return Object.entries(value).reduce((acc, [key, val]) => {
-        acc[key] = cloneValue(val)
-        return acc
-      }, {} as Record<string, any>)
+      return Object.entries(value).reduce(
+        (acc, [key, val]) => {
+          acc[key] = cloneValue(val)
+          return acc
+        },
+        {} as Record<string, any>
+      )
     return value
   }
 
@@ -364,7 +367,7 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
             options={amountOptions}
             value={isNativeAmount(value) ? amountOptions['0'] : amountOptions['1']}
             onChange={(e: any) => {
-              const opt = e as typeof amountOptions[number]
+              const opt = e as (typeof amountOptions)[number]
               if (opt.value === 'xah') {
                 setValue({ $type: 'amount.native', $value: '0' })
               } else {
@@ -669,9 +672,9 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
           if (_value === undefined) return null
 
           const fieldDeleteButton =
-            isOptionalField && !isArrayField(_value) && !isVec256Field(_value) ? (
-              optionalFieldDeleteButton(() => handleRemoveOptionalField(field))
-            ) : null
+            isOptionalField && !isArrayField(_value) && !isVec256Field(_value)
+              ? optionalFieldDeleteButton(() => handleRemoveOptionalField(field))
+              : null
 
           if (isIssue(_value)) {
             const value = _value.$value
@@ -683,7 +686,9 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
                     placeholder="Currency (e.g. USD)"
                     value={value.currency}
                     css={{ flex: '0 0 30%' }}
-                    onChange={e => setRawField(field, 'issue', { ...value, currency: e.target.value })}
+                    onChange={e =>
+                      setRawField(field, 'issue', { ...value, currency: e.target.value })
+                    }
                   />
                   <Box css={{ flex: 1 }}>
                     <CreatableAccount
@@ -843,20 +848,19 @@ export const TxUI: FC<UIProps> = ({ state: txState, setState, resetState, estima
               value={hookName || ''}
               onChange={(e: any) => setState({ hookName: e.target.value })}
             />
-            ) :
-            (
-              <Button
-                outline
-                fullWidth
-                type="button"
-                onClick={() => {
-                  setState({ hookName: '' })
-                }}
-              >
-                <Plus size="16px" />
-                Add Hook Name
-              </Button>
-            )}
+          ) : (
+            <Button
+              outline
+              fullWidth
+              type="button"
+              onClick={() => {
+                setState({ hookName: '' })
+              }}
+            >
+              <Plus size="16px" />
+              Add Hook Name
+            </Button>
+          )}
           {hookName ? optionalFieldDeleteButton(() => setState({ hookName: null })) : null}
         </TxField>
         <TxField multiLine label="Memos">

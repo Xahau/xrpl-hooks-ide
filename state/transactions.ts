@@ -128,13 +128,16 @@ const unwrapTypedValue = (value: any): any => {
 const normalizeObjectValue = (obj: any): any => {
   if (!typeIs(obj, 'object')) return unwrapTypedValue(obj)
 
-  return Object.keys(obj).reduce((acc, field) => {
-    if (isOptionalFieldName(field)) return acc
+  return Object.keys(obj).reduce(
+    (acc, field) => {
+      if (isOptionalFieldName(field)) return acc
 
-    const normalizedField = normalizeFieldName(field)
-    acc[normalizedField] = unwrapTypedValue(obj[field])
-    return acc
-  }, {} as Record<string, any>)
+      const normalizedField = normalizeFieldName(field)
+      acc[normalizedField] = unwrapTypedValue(obj[field])
+      return acc
+    },
+    {} as Record<string, any>
+  )
 }
 
 const getStructuredType = (value: any): 'object' | 'array' | 'vec256' | undefined => {
@@ -147,10 +150,13 @@ const getStructuredType = (value: any): 'object' | 'array' | 'vec256' | undefine
 const cloneValue = (value: any): any => {
   if (Array.isArray(value)) return value.map(cloneValue)
   if (typeIs(value, 'object')) {
-    return Object.entries(value).reduce((acc, [key, val]) => {
-      acc[key] = cloneValue(val)
-      return acc
-    }, {} as Record<string, any>)
+    return Object.entries(value).reduce(
+      (acc, [key, val]) => {
+        acc[key] = cloneValue(val)
+        return acc
+      },
+      {} as Record<string, any>
+    )
   }
   return value
 }
@@ -249,11 +255,14 @@ const applySchemaValue = (value: any, schemaValue: any): any => {
 const applyObjectSchema = (value: any, schemaValue: any): any => {
   if (!typeIs(value, 'object') || !typeIs(schemaValue, 'object')) return value
 
-  const nextValue = Object.keys(value).reduce((acc, key) => {
-    const schemaKey = schemaValue[key] !== undefined ? key : `${key}?`
-    acc[key] = applySchemaValue(value[key], schemaValue[schemaKey])
-    return acc
-  }, {} as Record<string, any>)
+  const nextValue = Object.keys(value).reduce(
+    (acc, key) => {
+      const schemaKey = schemaValue[key] !== undefined ? key : `${key}?`
+      acc[key] = applySchemaValue(value[key], schemaValue[schemaKey])
+      return acc
+    },
+    {} as Record<string, any>
+  )
 
   Object.keys(schemaValue).forEach(key => {
     if (!isOptionalFieldName(key)) return
